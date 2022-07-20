@@ -72,7 +72,7 @@ public class UserController {
      * @return
      * @author leitianyu999
      */
-    @GetMapping("/{id}")
+    @GetMapping()
     public R<User> getById(@RequestParam Long id){
         User user = userService.getById(id);
 
@@ -82,7 +82,7 @@ public class UserController {
         return R.error("没有查询到对应员工信息");
     }
 
-    @GetMapping("/use")
+    @GetMapping("/getuser")
     public R<UserDto> getByIdForUser(@RequestParam Long id){
         User user = userService.getById(id);
 
