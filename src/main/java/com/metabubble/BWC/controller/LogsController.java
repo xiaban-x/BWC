@@ -5,9 +5,10 @@ import com.metabubble.BWC.entity.Logs;
 import com.metabubble.BWC.service.LogsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/logs")
@@ -16,11 +17,15 @@ public class LogsController {
     @Autowired
     private LogsService logService;
 
+    /**
+     * 查询日志
+     * @return
+     */
     @PostMapping
-    public R<String> saveLog(@RequestBody Logs logs){
-        System.out.println(logs.toString());
-        logService.save(logs);
-        return R.success("保存日志");
-
+    public R<List<Logs>> saveLog(){
+        List<Logs> logs = logService.list();
+        return R.success(logs);
     }
+
+
 }

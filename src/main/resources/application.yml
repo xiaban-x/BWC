@@ -18,6 +18,11 @@ spring:
   cache:
     redis:
       time-to-live: 1800000 # 设置缓存有效期为30分钟
+  # 设置单文件最大上传大小
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
 mybatis-plus:
   configuration:
     #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
@@ -31,4 +36,6 @@ mybatis-plus:
 #      id-type: ASSIGN_ID
 #      图片存放位置
 BWC:
-  path: src/main/resources/photo/
+  path: E:/IDEA/BWC/src/main/resources/photo/
+
+

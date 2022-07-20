@@ -84,15 +84,15 @@ public class CommonController {
     /**
      * 文件下载
      * author 晴天小杰
-     * @param name 文件名称
+     * @param filename 文件名称
      * @param response 文件
      */
     @GetMapping("/download")
-    public void download(String name, HttpServletResponse response){
+    public void download(String filename, HttpServletResponse response){
         try {
             //输入流，通过输入流读取文件内容
             FileInputStream fileInputStream =
-                    new FileInputStream(new File(basePath+name));
+                    new FileInputStream(new File(basePath+filename));
             //输出流，通过输出流将文件写回浏览器，在浏览器展示图片
             ServletOutputStream outputStream = response.getOutputStream();
             response.setContentType("image/jpeg");//设定格式为图片
