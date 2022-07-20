@@ -11,5 +11,6 @@ public abstract class UserConverter {
     public static UserConverter INSTANCES = Mappers.getMapper(UserConverter.class);
 
     public abstract UserDto toUserRoleDto(User user);
+    public abstract User toUserDtoRoleUser(UserDto userDto);
 }
 
