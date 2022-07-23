@@ -2,6 +2,7 @@ package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.service.AdminService;
@@ -91,9 +92,45 @@ public class AdminController {
      * @return
      */
     @PostMapping
-    public R save(@RequestBody Admin admin) {
+    public R<String> save(@RequestBody Admin admin) {
         adminService.save(admin);
         return R.success("添加成功");
+    }
+
+    // 不需要“查询所有”的功能
+//    /**
+//     * 查询所有
+//     * author cclucky
+//     * @return
+//     */
+//    @GetMapping
+//    public R<List<Admin>> getAll() {
+//        return R.success(adminService.list());
+//    }
+
+    /**
+     * 分页查询、根据管理员名字查询
+     * author cclucky
+     * @param offset
+     * @param limit
+     * @param condition
+     * @return
+     */
+    @GetMapping("/page")
+    public R<Page> page(int offset, int limit,String condition) {
+        // 构建分页构造器
+        Page pageInfo = new Page(offset, limit);
+
+        // 构建条件构造器
+        LambdaQueryWrapper<Admin> adminLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        adminLambdaQueryWrapper.like(condition != null, Admin::getName, condition);
+        // 添加排序
+        adminLambdaQueryWrapper.orderByAsc(Admin::getType);
+
+        // 执行查询
+        adminService.page(pageInfo, adminLambdaQueryWrapper);
+
+        return  R.success(pageInfo);
     }
 
     /**
@@ -103,50 +140,25 @@ public class AdminController {
      * @return
      */
     @PutMapping
-    public R update(@RequestBody Admin admin) {
-        if (admin.getId() != null){
-            return R.success(adminService.updateById(admin));
-        } else {
-            return R.error("不存在该用户！");
-        }
+    public R<String> update(@RequestBody Admin admin) {
+
+
+        adminService.updateById(admin);
+
+        return R.success("数据修改成功");
     }
 
     /**
      * 删除管理员
      * author cclucky
      */
-//    @DeleteMapping
-//    public R delete(@RequestBody Admin admin) {
-//        return R.success(adminService.removeById(admin.getId()));
-//    }
 
-    @DeleteMapping("{id}")
-    public R delete(@PathVariable Long id) {
-        return R.success(adminService.removeById(id));
-    }
+    @DeleteMapping
+    public R<String> delete(Long id) {
 
-    /**
-     * 查询所有
-     * author cclucky
-     * @return
-     */
-    @GetMapping
-    public R getAll() {
-        return R.success(adminService.list());
-    }
+        adminService.removeById(id);
 
-    /**
-     * 分页查询、根据管理员名字查询
-     * author cclucky
-     * @param currentPage
-     * @param pageSize
-     * @param admin
-     * @return
-     */
-    @GetMapping("{currentPage}/{pageSize}")
-    public R getPage(@PathVariable int currentPage, @PathVariable int pageSize,@RequestBody Admin admin) {
-        IPage<Admin> page = adminService.getPage(currentPage, pageSize, admin);
-        return R.success(page);
+        return R.success("删除成功");
     }
 
 }

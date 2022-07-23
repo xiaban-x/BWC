@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 /**
  * 配置
@@ -29,21 +31,22 @@ public class ConfigController {
      * @return
      */
     @GetMapping
-    public R getAll() {
-        return R.success(configService.list());
+    public R<List<Config>> getAll() {
+        List<Config> configList = configService.list();
+        return R.success(configList);
     }
 
-    /**
-     * 增加配置
-     * author cclucky
-     * @param config
-     * @return
-     */
-    @PostMapping
-    public R save(@RequestBody Config config) {
-        configService.save(config);
-        return R.success("添加成功");
-    }
+//    /**
+//     * 增加配置
+//     * author cclucky
+//     * @param config
+//     * @return
+//     */
+//    @PostMapping
+//    public R<String> save(@RequestBody Config config) {
+//        configService.save(config);
+//        return R.success("添加成功");
+//    }
 
     /**
      * 更新配置
@@ -52,7 +55,7 @@ public class ConfigController {
      * @return
      */
     @PutMapping
-    public R updateById(@RequestBody Config config) {
+    public R<String> updateById(@RequestBody Config config) {
         configService.updateById(config);
         return R.success("修改成功");
     }
