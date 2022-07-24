@@ -16,17 +16,20 @@ public class Team implements Serializable {
     //序列化
     private static final long serialVersionUID = 1L;
 
-    //团队id
+    //用户ID
     private Long id;
 
-    //一级团长id
-    private Long user01Id;
+    //上级一级成员ID
+    private Long upUser01Id;
 
-    //二级团长id
-    private Long user02Id;
+    //上级二级成员ID
+    private Long upUser02Id;
 
-    //成员id
-    private Long userId;
+    //下级一级成员ID
+    private Long downUser01Id;
+
+    //下级二级成员ID
+    private Long downUser02Id;
 
     //全部消费金额
     private BigDecimal totalAmount;

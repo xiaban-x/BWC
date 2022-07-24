@@ -12,9 +12,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ServletComponentScan//对Servlet组件扫描
 @EnableTransactionManagement //开启管理事务（多张表处理）
 @EnableCaching //开启缓存注解
-public class ReggieApplication {
+public class BWCApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ReggieApplication.class,args);
+        SpringApplication.run(BWCApplication.class,args);
         log.info("项目启动成功");
     }
 }

@@ -25,8 +25,8 @@ public class Merchant implements Serializable {
     //商家图片
     private String pic;
 
-    //平台类型，0为美团，1为饿了么
-    private String plaType;
+    //平台类型，0为美团(默认)，1为饿了么
+    private Integer plaType;
 
     //地址
     private String address;
@@ -36,24 +36,6 @@ public class Merchant implements Serializable {
 
     //纬度
     private String lat;
-
-    //订单要求
-    private String requirement;
-
-    //订单备注
-    private String remark;
-
-    //非会员最低消费
-    private BigDecimal minConsumption_0;
-
-    //非会员满减额
-    private BigDecimal rebate_0;
-
-    //会员最低消费
-    private BigDecimal minConsumption_1;
-
-    //会员满减额
-    private BigDecimal rebate_1;
 
     //创建时间
     @TableField(fill = FieldFill.INSERT)

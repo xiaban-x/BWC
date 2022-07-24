@@ -27,10 +27,10 @@ public class Admin implements Serializable {
     //密码
     private String password;
 
-    //类型，0为业务管理员，1为财务管理员，2为超级管理员
+    //类型，0为业务管理员(默认)，1为财务管理员，2为超级管理员
     private Integer type;
 
-    //是否启用,0为禁用，1为启用
+    //是否启用,0为禁用，1为启用(默认)
     private Integer status;
 
     //创建时间

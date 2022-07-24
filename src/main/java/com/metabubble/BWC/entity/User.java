@@ -19,8 +19,11 @@ public class User implements Serializable {
     //主键id
     private Long id;
 
-    //用户id
-    private Long userId;
+    //上级邀请码
+    private Long upId;
+
+    //下级邀请码
+    private Long downId;
 
     //用户名
     private String name;
@@ -40,6 +43,9 @@ public class User implements Serializable {
     //手机号
     private String tel;
 
+    //支付宝ID
+    private String aliPayId;
+
     //支付宝名称
     private String aliPayName;
 
@@ -52,7 +58,7 @@ public class User implements Serializable {
     //头像文件名
     private String avatar;
 
-    //用户等级，0为普通用户；1为会员
+    //用户等级，0为普通用户(默认)；1为会员
     private Integer grade;
 
     //会员过期日期
