@@ -37,6 +37,9 @@ public class Orders implements Serializable {
     //返现金额
     private BigDecimal rebate;
 
+    //审核理由
+    private String reason;
+
     //订单截图
     private String picOrder;
 
