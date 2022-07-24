@@ -20,6 +20,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @PostMapping
+    public R<String> add(@RequestBody User user){
+        userService.save(user);
+        return R.success("添加成功");
+    }
+
 
     /**
      * 分页查询
@@ -31,11 +37,11 @@ public class UserController {
      * @author leitianyu999
      * @return
      */
-    @PostMapping("/page")
+    @GetMapping("/page")
     public R<Page> page(int offset, int limit,String wxId,String grade,String tel){
 
         //分页构造器
-        Page pageSearch = new Page(offset,limit);
+        Page<User> pageSearch = new Page(offset,limit);
         //条件构造器
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
         //添加过滤条件
