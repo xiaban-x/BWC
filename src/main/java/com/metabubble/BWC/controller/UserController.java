@@ -67,7 +67,7 @@ public class UserController {
     }
 
     /**
-     * 根据id查询用户
+     * 根据主键id查询用户
      * @param id 用户id
      * @return
      * @author leitianyu999
@@ -82,9 +82,31 @@ public class UserController {
         return R.error("没有查询到对应员工信息");
     }
 
+
+
+    /**
+     * 根据主键id删除用户
+     * @param id
+     * @return
+     */
+    @DeleteMapping
+    public R<String> delete(@RequestParam Long id){
+        userService.removeById(id);
+        return R.success("删除成功");
+    }
+
+
+    /**
+     * 用户端根据用户id查询用户信息
+     * @param id 用户id
+     * @return
+     */
     @GetMapping("/getuser")
     public R<UserDto> getByIdForUser(@RequestParam Long id){
-        User user = userService.getById(id);
+        //条件构造器
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(User::getId,id);
+        User user = userService.getOne(queryWrapper);
 
         if (user!=null) {
 
@@ -97,14 +119,21 @@ public class UserController {
         return R.error("没有查询到对应员工信息");
     }
 
+
     /**
-     * 根据id删除用户
-     * @param id
+     * 用户端修改用户数据
+     * @param userDto  修改的用户属性
      * @return
+     * @author leitianyu999
      */
-    @DeleteMapping
-    public R<String> delete(@RequestParam Long id){
-        userService.removeById(id);
-        return R.success("删除成功");
+    @PutMapping("/getuser")
+    public R<String> updateForUser(@RequestBody UserDto userDto){
+        //条件构造器
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
+        User user = UserConverter.INSTANCES.toUserDtoRoleUser(userDto);
+        queryWrapper.eq(User::getId,user.getId());
+        userService.update(user,queryWrapper);
+        return R.success("修改成功");
+
     }
 }
