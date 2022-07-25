@@ -25,6 +25,9 @@ public class Orders implements Serializable {
     //商家id
     private Long merchantId;
 
+    //任务id
+    private Long taskId;
+
     //订单状态，0为已下单(默认)；1为待审核；2为已完成；3为订单取消
     private Integer status;
 

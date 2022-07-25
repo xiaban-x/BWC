@@ -16,8 +16,11 @@ public class Task{
     //序列化
     private static final long serialVersionUID = 1L;
 
-    //商家id
+    //任务id
     private Long id;
+
+    //商家id
+    private Long merchantId;
 
     //非会员最低消费
     private BigDecimal minConsumption_0;
