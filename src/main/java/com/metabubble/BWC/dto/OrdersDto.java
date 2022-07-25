@@ -17,7 +17,7 @@ public class OrdersDto {
     //商家id
     private Long merchantId;
 
-    //订单状态，0为已下单(默认)；1为待审核；2为已完成；3为订单取消
+    //订单状态，0为已下单(默认)；1为一审待审核；2为二审待审核；3为已完成；4为订单取消
     private Integer status;
 
     //外卖平台的订单编号
@@ -31,7 +31,7 @@ public class OrdersDto {
 
     //审核理由
     private String reason;
-    
+
     //订单截图
     private String picOrder;
 
