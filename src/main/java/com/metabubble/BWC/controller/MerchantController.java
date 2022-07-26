@@ -35,6 +35,14 @@ public class MerchantController {
 
     public static final String KEY_1 = "XEABZ-GFERQ-GVY5M-GZCOR-EJGOT-OWBOP";
 
+    /**
+     * 查询
+     * @param condition
+     * @param limit
+     * @param offset
+     * @Author 看客
+     * @return
+     */
     @GetMapping(value={"/{offset}/{limit}"})
     public R<List<MerchantDto>> getMerchantByPage(@RequestBody(required = false) Condition condition, @PathVariable Integer limit,@PathVariable Integer offset) {
 
@@ -65,6 +73,12 @@ public class MerchantController {
         return R.success(merchants);
     }
 
+    /**
+     * 新增
+     * @param merchant
+     * @Author 看客
+     * @return
+     */
     @PostMapping
     public R<String> save(@RequestBody Merchant merchant) {
         //获取经纬度
@@ -78,6 +92,12 @@ public class MerchantController {
        return R.error("保存失败");
     }
 
+    /**
+     * 修改
+     * @param merchant
+     * @Author 看客
+     * @return
+     */
     @PutMapping
     public R<String> update(@RequestBody Merchant merchant) {
         merchant.setLng(BigDecimal.valueOf(Double.parseDouble(getGeocoderLatitude(merchant.getAddress()).get("lng"))));
@@ -90,6 +110,12 @@ public class MerchantController {
 
     }
 
+    /**
+     * 根据id删除
+     * @param id
+     * @Author 看客
+     * @return
+     */
     @DeleteMapping("/{id}")
     public R<String> delete(@PathVariable("id") Long id){
         boolean flag = merchantService.removeById(id);
@@ -98,9 +124,13 @@ public class MerchantController {
         }
         return R.error("删除失败");
     }
+
     /**
      * 返回输入地址的经纬度坐标
      * key lng(经度),lat(纬度)
+     * @param address
+     * @Author 看客
+     * @return
      */
     public static Map<String, String> getGeocoderLatitude(String address) {
         BufferedReader in = null;

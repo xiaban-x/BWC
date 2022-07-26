@@ -18,6 +18,13 @@ public class TaskController {
     @Autowired
     TaskService taskService;
 
+    /**
+     * 查询全部
+     * @param offset
+     * @param limit
+     * @Author 看客
+     * @return
+     */
     @GetMapping(value={"/{offset}/{limit}"})
     public R<List<TaskDto>> getAll(@PathVariable Integer offset, @PathVariable Integer limit){
 
@@ -35,6 +42,12 @@ public class TaskController {
         return R.success(taskDtos);
     }
 
+    /**
+     * 修改
+     * @param task
+     * @Author 看客
+     * @return
+     */
     @PutMapping
     public R<String> update(@RequestBody Task task){
         boolean flag = taskService.updateById(task);
@@ -45,6 +58,12 @@ public class TaskController {
         }
     }
 
+    /**
+     * 根据id删除
+     * @param id
+     * @Author 看客
+     * @return
+     */
     @DeleteMapping("/{id}")
     public R<String> delete(@PathVariable Long id){
         boolean flag = taskService.removeById(id);
@@ -55,6 +74,12 @@ public class TaskController {
         }
     }
 
+    /**
+     * 新增
+     * @param task
+     * @Author 看客
+     * @return
+     */
     @PostMapping
     public R<String> save(@RequestBody Task task){
         boolean flag = taskService.save(task);
