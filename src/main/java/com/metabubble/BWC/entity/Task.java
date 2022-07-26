@@ -1,7 +1,9 @@
 package com.metabubble.BWC.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -17,22 +19,23 @@ public class Task{
     private static final long serialVersionUID = 1L;
 
     //任务id
+    @TableId(type= IdType.AUTO)
     private Long id;
 
     //商家id
     private Long merchantId;
 
     //非会员最低消费
-    private BigDecimal minConsumption_0;
+    private BigDecimal minConsumptionA;
 
     //非会员满减额
-    private BigDecimal rebate_0;
+    private BigDecimal rebateA;
 
     //会员最低消费
-    private BigDecimal minConsumption_1;
+    private BigDecimal minConsumptionB;
 
     //会员满减额
-    private BigDecimal rebate_1;
+    private BigDecimal rebateB;
 
     //任务要求
     private String requirement;
@@ -50,7 +53,4 @@ public class Task{
     //更新时间
     @TableField(fill = FieldFill.INSERT_UPDATE) //插入和更新时填充字段
     private LocalDateTime updateTime;
-
-
-
 }

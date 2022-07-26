@@ -1,7 +1,9 @@
 package com.metabubble.BWC.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 
 /**
  * 商家
+ * 未完善
  */
 @Data
 public class Merchant implements Serializable {
@@ -17,6 +20,7 @@ public class Merchant implements Serializable {
     private static final long serialVersionUID = 1L;
 
     //商家id
+    @TableId(type= IdType.AUTO)
     private Long id;
 
     //商家名称
@@ -25,17 +29,20 @@ public class Merchant implements Serializable {
     //商家图片
     private String pic;
 
-    //平台类型，0为美团(默认)，1为饿了么
-    private Integer plaType;
+    //电话号码
+    private String tel;
+
+    //平台类型，0为美团，1为饿了么
+    private String plaType;
 
     //地址
     private String address;
 
     //经度
-    private String lng;
+    private BigDecimal lng;
 
     //纬度
-    private String lat;
+    private BigDecimal lat;
 
     //创建时间
     @TableField(fill = FieldFill.INSERT)
