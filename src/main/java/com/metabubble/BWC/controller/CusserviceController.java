@@ -32,8 +32,8 @@ public class CusserviceController {
      * @return
      */
     @GetMapping
-    //注释原因：添加缓存需配合configController类修改功能的缓存更新
-    @Cacheable(value = "cusserviceMsg",unless = "#result == null")
+    //注释原因：可能不用缓存，暂时注释
+//    @Cacheable(value = "cusserviceMsg",unless = "#result == null")
     public R<List<Cusservice>> getCusservice(){
         List<Cusservice> cusserviceMsg = cusserviceService.list();
         return R.success(cusserviceMsg);
