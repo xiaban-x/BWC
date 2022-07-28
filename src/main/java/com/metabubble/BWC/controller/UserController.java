@@ -20,6 +20,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     * 后台添加用户
+     * @param user  用户对象
+     * @return
+     * @author leitianyu999
+     */
     @PostMapping
     public R<String> add(@RequestBody User user){
         userService.save(user);
@@ -34,8 +40,8 @@ public class UserController {
      * @param wxId 微信号
      * @param grade 会员信息
      * @param tel 电话号
-     * @author leitianyu999
      * @return
+     * @author leitianyu999
      */
     @GetMapping("/page")
     public R<Page> page(int offset, int limit,String wxId,String grade,String tel){
@@ -92,8 +98,9 @@ public class UserController {
 
     /**
      * 根据主键id删除用户
-     * @param id
+     * @param id 用户id
      * @return
+     * @author leitianyu999
      */
     @DeleteMapping
     public R<String> delete(@RequestParam Long id){
@@ -106,6 +113,7 @@ public class UserController {
      * 用户端根据用户id查询用户信息
      * @param id 用户id
      * @return
+     * @author leitianyu999
      */
     @GetMapping("/getuser")
     public R<UserDto> getByIdForUser(@RequestParam Long id){
