@@ -87,12 +87,12 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     public Boolean checkByMachine(Orders orders) {
         Task task = taskService.getById(orders.getTaskId());
         if (userService.checkGrade(orders.getUserId())){
-            if (task.getMinConsumptionA().compareTo(new BigDecimal(String.valueOf(task.getMinConsumptionA())))==1){
+            if (task.getMinConsumptionA().compareTo(new BigDecimal(String.valueOf(orders.getAmount())))==1){
                 return false;
             }
             return true;
         }else {
-            if (task.getMinConsumptionB().compareTo(new BigDecimal(String.valueOf(task.getMinConsumptionA())))==1){
+            if (task.getMinConsumptionB().compareTo(new BigDecimal(String.valueOf(orders.getAmount())))==1){
                 return false;
             }
                 return true;
