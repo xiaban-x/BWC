@@ -36,7 +36,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @author leitianyu999
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void cashback(Orders orders) {
         Long userId = orders.getUserId();
         BigDecimal rebate = orders.getRebate();
@@ -53,6 +53,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @author leitianyu999
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Boolean checkGrade(Long id) {
         User byId = this.getById(id);
         //判断是否过期
@@ -65,7 +66,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (after){
             byId.setGrade(1);
         }
-
+        this.updateById(byId);
         return after;
     }
 
