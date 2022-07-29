@@ -161,6 +161,11 @@ public class OrdersController {
      */
     @PutMapping("/secondaudit")
     public R<String> secondAudit(@RequestBody Orders orders){
+        //查询订单是否过期
+        if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {
+            return R.error("订单过期");
+        }
+
         Orders orders1 = ordersService.getById(orders);
         //查询状态
         orders.setStatus(orders1.getStatus());
@@ -253,20 +258,21 @@ public class OrdersController {
         Integer status = orders.getStatus();
         //待一审
         if (status==1) {
+            //添加一审成功状态
             orders.setStatus(2);
             //添加审核人id
-            orders.setReviewerIdA(BaseContext.getCurrentId());
+            //orders.setReviewerIdA(BaseContext.getCurrentId());
             ordersService.updateById(orders);
             return R.success("一审成功");
         }
         //待二审
         if (status==4){
+            //查询用户会员等级并跟新订单金额
+            orders = ordersService.updateRebate(orders);
             //获取团队资料
             Team team = teamService.getById(orders.getUserId());
             //订单状态改成完成
             orders.setStatus(6);
-            //查询用户会员等级并跟新订单金额
-            orders = ordersService.updateRebate(orders);
             //用户返现金额到账
             userService.cashback(orders);
             //给上一级返现
@@ -278,7 +284,7 @@ public class OrdersController {
                 teamService.cashbackForUserFromSecond(team.getUpUser02Id());
             }
             //添加审核人id
-            orders.setReviewerIdB(BaseContext.getCurrentId());
+            //orders.setReviewerIdB(BaseContext.getCurrentId());
             //更新订单状态
             ordersService.updateById(orders);
             return R.success("二审成功");
