@@ -33,7 +33,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * @author leitianyu999
      */
     @Override
-    @Transactional
     public void cashbackForUserFromFirst(Long id) {
         Team team = this.getById(id);
         //查询是否为会员
@@ -42,18 +41,18 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithVip));
         }else {
             //非会员返现
+            BigDecimal add = team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip);
             team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip));
         }
         this.updateById(team);
     }
 
     /**
-     * 团队向上一级返现
+     * 团队向上二级返现
      * @param id 返现对象id
      * @author leitianyu999
      */
     @Override
-    @Transactional
     public void cashbackForUserFromSecond(Long id) {
         Team team = this.getById(id);
         //查询是否为会员
