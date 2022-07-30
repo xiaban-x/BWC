@@ -1,9 +1,9 @@
 package com.metabubble.BWC.entity;
 
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
  */
 @Data
 public class Cashable {
-
     //序列化
     private static final long serialVersionUID = 1L;
 
@@ -38,9 +37,11 @@ public class Cashable {
     private String withdrawReason;
 
     //申请时间
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     //转账、退款时间
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
 }

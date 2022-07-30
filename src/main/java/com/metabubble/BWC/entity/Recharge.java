@@ -22,6 +22,9 @@ public class Recharge {
     //用户id
     private Long userId;
 
+    //充值方式 0零钱（默认） 1微信 2支付宝
+    private Integer rechargeType;
+
     //订单号
     private Long outTradeNo;
 
@@ -32,8 +35,10 @@ public class Recharge {
     private Integer status;
 
     //创建时间
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     //支付时间
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 }
