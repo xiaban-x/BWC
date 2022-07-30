@@ -605,8 +605,8 @@ public class CashableController {
      * 用户端提现信息增加与修改
      * author Kenlihankun
      * HttpRequest 获取session的用户id
-     * @Param 获取用户填写的可提现金额
-     * @Param 获取用户选择的提现方式
+     * @Param amount 获取用户填写的可提现金额
+     * @Param  payType 获取用户选择的提现方式
      * @return
      */
     //用户端提现
@@ -663,18 +663,30 @@ public class CashableController {
     /**
      * 管理端的提现退款
      * author Kenlihankun
-     * @Param 获取
+     * @Param withdrawReason 获取退款原因
+     * cashableDto 接收必要参数
      * @return
      */
     @RequestMapping("/withdraw")
-    public R<String> withdraw(@RequestParam("withdrawReason") String withDrawReason,
-                              @RequestParam("id") Long id){
+    public R<String> withdraw(CashableDto cashableDto,@RequestParam("withdrawReason") String withDrawReason){
         UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
-        wrapper.eq("id",id);
-        Cashable cashable = cashableService.getById(id);
+        UpdateWrapper<User> userUpdateWrapper = new UpdateWrapper<>();
+
+        //更新提现表
+        wrapper.eq("id",cashableDto.getId());
+        Cashable cashable = cashableService.getById(cashableDto.getId());
         cashable.setWithdrawReason(withDrawReason);
         cashable.setStatus(3);
         cashableService.update(cashable,wrapper);
+
+        //更新用户表
+        userUpdateWrapper.eq("id",cashable.getUserId());
+        User user = userService.getById(cashable.getUserId());
+        BigDecimal beforeAmount = user.getCashableAmount();
+        BigDecimal afterAmount = beforeAmount.add(cashableDto.getCashableAmount());
+        user.setCashableAmount(afterAmount);
+        userService.update(user,userUpdateWrapper);
+
         return R.success("success");
     }
 
