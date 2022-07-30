@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -659,5 +660,23 @@ public class CashableController {
 
         return R.success("success");
     }
+    /**
+     * 管理端的提现退款
+     * author Kenlihankun
+     * @Param 获取
+     * @return
+     */
+    @RequestMapping("/withdraw")
+    public R<String> withdraw(@RequestParam("withdrawReason") String withDrawReason,
+                              @RequestParam("id") Long id){
+        UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
+        wrapper.eq("id",id);
+        Cashable cashable = cashableService.getById(id);
+        cashable.setWithdrawReason(withDrawReason);
+        cashable.setStatus(3);
+        cashableService.update(cashable,wrapper);
+        return R.success("success");
+    }
+
 
 }
