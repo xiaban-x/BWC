@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,28 +32,30 @@ public class CashableController {
      * 提现统计查询
      * author Kenlihankun
      * @RequestBody map
+     * beginTime 选择的查询时间
+     * type 选择的查询类型 1:按天查询 2：按月查询 3：按年查询
      * @return
      */
     @GetMapping("/cashableAmount")
     public R<Map> cashable_amount(@RequestBody Map map) {
         String beginTime = (String) map.get("beginTime");
-        String type = (String) map.get("type");
+        Integer type = (Integer) map.get("type");
 
         Map<String, BigDecimal> map0 = new HashMap<>();
         QueryWrapper<Cashable> queryWrapper = new QueryWrapper<>();
         QueryWrapper<Cashable> qw = new QueryWrapper<>();
 
-        if (type.equals("按天查询") && beginTime!=null) {
+        if (type.equals(1) && beginTime!=null) {
             String beginTime02 = beginTime.substring(0, 10);
             beginTime = beginTime02;
 
         }
-        if (type.equals("按月查询") && beginTime!=null) {
+        if (type.equals(2) && beginTime!=null) {
             String beginTime03 = beginTime.substring(0, 7);
             beginTime = beginTime03;
 
         }
-        if (type.equals("按年查询")  && beginTime!=null) {
+        if (type.equals(3)  && beginTime!=null) {
             String beginTime04 = beginTime.substring(0, 4);
             beginTime = beginTime04;
 
@@ -98,15 +99,15 @@ public class CashableController {
      * author Kenlihankun
      * @Param Page 页码
      * @Param PageSize 条数
-     * @Param chooseType 选择类型
+     * @Param chooseType 选择类型 0:全部 1：待转账 2：已转账 3：已退款
      * @Param zfbId 支付宝id
      * @Param zfbName 支付宝名称
      * @return
      */
 //提现管理
     @GetMapping("/Page")
-    public R<Page> Page(int Page, int PageSize, String chooseType,String zfbId,String zfbName) {
-    //分页构造器
+    public R<Page> Page(int Page, int PageSize, Integer chooseType,String zfbId,String zfbName) {
+        //分页构造器
         Page<User> pageInfo = new Page(Page,PageSize);
         Page<Cashable> page = new Page<>(Page,PageSize);
         Page<CashableDto> cashableDtoPage = new Page<>();
@@ -114,7 +115,7 @@ public class CashableController {
         QueryWrapper<User> qw0 = new QueryWrapper<>();
         QueryWrapper<Cashable> qw1 = new QueryWrapper<>();
 
-        if (chooseType.equals("全部")){
+        if (chooseType.equals(0)){
             if(zfbId == null &&zfbName == null){
                 qw1.orderByDesc("create_time");
                 //执行分页查询
@@ -236,7 +237,7 @@ public class CashableController {
             }
 
         }
-        if (chooseType.equals("待转账")){
+        if (chooseType.equals(1)){
             if(zfbId == null &&zfbName == null){
                 qw1.eq("status",1);
                 qw1.orderByDesc("create_time");
@@ -356,7 +357,7 @@ public class CashableController {
             }
 
         }
-        if (chooseType.equals("已转账")){
+        if (chooseType.equals(2)){
             if(zfbId == null &&zfbName == null){
                 qw1.eq("status",2);
                 qw1.orderByDesc("create_time");
@@ -477,7 +478,7 @@ public class CashableController {
             }
 
         }
-        if (chooseType.equals("已退款")){
+        if (chooseType.equals(3)){
             if(zfbId == null &&zfbName == null){
                 qw1.eq("status",3);
                 qw1.orderByDesc("create_time");
@@ -606,7 +607,7 @@ public class CashableController {
      * author Kenlihankun
      * HttpRequest 获取session的用户id
      * @Param amount 获取用户填写的可提现金额
-     * @Param  payType 获取用户选择的提现方式
+     * @Param  payType 获取用户选择的提现方式 1:支付宝(默认) 2:微信
      * @return
      */
     //用户端提现
@@ -689,6 +690,5 @@ public class CashableController {
 
         return R.success("success");
     }
-
 
 }

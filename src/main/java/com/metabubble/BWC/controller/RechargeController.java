@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -33,7 +32,8 @@ public class RechargeController {
     /**
      * 充值统计
      * author Kenlihankun
-     *
+     * beginTime 要查询的时间
+     * type 查询条件 1：按天查询 2：按月查询 3：按年查询
      * @return
      * @RequestBody map
      */
@@ -41,7 +41,7 @@ public class RechargeController {
     @GetMapping("/recharge_amount")
     public R<Map> recharge_amount(@RequestBody Map map) {
         String beginTime = (String) map.get("beginTime");
-        String type = (String) map.get("type");
+        Integer type = (Integer) map.get("type");
 
         Map<String, BigDecimal> map0 = new HashMap<>();
 
@@ -50,17 +50,17 @@ public class RechargeController {
         QueryWrapper<Recharge> queryAll = new QueryWrapper<>();
 
         //充值
-        if (type.equals("按天查询") && beginTime != null) {
+        if (type.equals(1) && beginTime != null) {
             String beginTime02 = beginTime.substring(0, 10);
             beginTime = beginTime02;
 
         }
-        if (type.equals("按月查询") && beginTime != null) {
+        if (type.equals(2) && beginTime != null) {
             String beginTime03 = beginTime.substring(0, 7);
             beginTime = beginTime03;
 
         }
-        if (type.equals("按年查询") && beginTime != null) {
+        if (type.equals(3) && beginTime != null) {
             String beginTime04 = beginTime.substring(0, 4);
             beginTime = beginTime04;
 
@@ -151,19 +151,20 @@ public class RechargeController {
     }
 
     /**
-     * 用户端：充值成功
-     * 更新冲值表和用户表信息，插入选择充值会员时间
+     * 用户端：充值成功以及续费成功
+     * 更新充值表和用户表信息，插入选择充值会员时间
      * author Kenlihankun
-     *
      * @return
+     * @Param rechargeType 选择的充值类型 0：零钱 1：微信 2：支付宝
      * @Param tradeNo 订单号
-     * @Param membershipTime 选择充值的会员时间
+     * @Param membershipTime 选择充值的会员时间 1：月卡 2：季卡 3：年卡
      */
     //充值成功
     //
     @PutMapping("/recharge_success")
     public R<Map> recharge_confirm(@RequestParam("tradeNo") Long tradeNo,
-                                   @RequestParam("membershipTime") String membershipTime) {
+                                   @RequestParam("membershipTime") Integer membershipTime ,
+                                   @RequestParam("rechargeType") Integer rechargeType) {
         //返回会员到期时间
         Map<String, LocalDateTime> map = new HashMap<>();
 
@@ -175,6 +176,7 @@ public class RechargeController {
         Recharge recharge = rechargeService.getOne(queryWrapper);
         wrapper.eq("out_trade_no", tradeNo);
         recharge.setStatus(2);
+        recharge.setRechargeType(rechargeType);
         rechargeService.update(recharge, wrapper);
 
         //根据冲值表数据更新用户表数据
@@ -185,27 +187,55 @@ public class RechargeController {
         //充值成功，修改用户表数据
         User user = userService.getById(id);
         BigDecimal cashableAmount0 = user.getCashableAmount();
+
+
         if (recharge.getRechargeType().equals(0)) {//判断是否为零钱充值
             updateWrapper.eq("id", id);
             if (rechargeAmount.compareTo(cashableAmount0) < 1) {
-                if (membershipTime.equals("月卡")) {
-                    user.setMembershipExpTime(localDateTime.plusMonths(1L));
-                    map.put("会员到期时间", localDateTime.plusMonths(1L));
+                if (membershipTime.equals(1)) {
+                    //充值会员
+                    if (user.getGrade().equals(0)){
+                        user.setMembershipExpTime(localDateTime.plusMonths(1L));
+                    }
+                    if (user.getGrade().equals(1)){
+                        //续费会员
+                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(1L));
+
+                    }
                 }
-                if (membershipTime.equals("季卡")) {
-                    user.setMembershipExpTime(localDateTime.plusMonths(3L));
-                    map.put("会员到期时间", localDateTime.plusMonths(3L));
+                if (membershipTime.equals(2)) {
+                    //充值会员
+                    if (user.getGrade().equals(0)){
+                        user.setMembershipExpTime(localDateTime.plusMonths(3L));
+                    }
+                    if (user.getGrade().equals(1)){
+                        //续费会员
+                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(3L));
+
+                    }
                 }
-                if (membershipTime.equals("年卡")) {
-                    user.setMembershipExpTime(localDateTime.plusYears(1L));
-                    map.put("会员到期时间", localDateTime.plusYears(1L));
+                if (membershipTime.equals(3)) {
+                    //充值会员
+                    if (user.getGrade().equals(0)){
+                        user.setMembershipExpTime(localDateTime.plusYears(1L));
+                    }
+                    if (user.getGrade().equals(1)){
+                        //续费会员
+                        user.setMembershipExpTime(user.getMembershipExpTime().plusYears(1L));
+
+                    }
                 }
                 BigDecimal cashableAmount = user.getCashableAmount().subtract(rechargeAmount);
                 user.setCashableAmount(cashableAmount);
+                // 修改用户等级为会员
+                user.setGrade(1);
                 userService.update(user, updateWrapper);
 
             }
         }
+
+        map.put("会员到期时间", user.getMembershipExpTime());
+
         return R.success(map);
     }
 
@@ -230,62 +260,6 @@ public class RechargeController {
         return R.success("success");
     }
 
-    /**
-     * 用户端：续费充值
-     * 更新冲值表
-     * author Kenlihankun
-     *
-     * @return
-     * @Param tradeNo 充值订单号
-     * @Param membershipTime 选择的充值时长
-     */
-    //续费会员
-    @PutMapping("/recharge_insist")
-    public R<Map> recharge_insist(@RequestParam("tradeNo") Long tradeNo,
-                                  @RequestParam("membershipTime") String membershipTime) {
-        //返回会员到期时间
-        Map<String, LocalDateTime> map = new HashMap<>();
-
-        //充值成功，根据订单号更新冲值表数据
-        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
-        UpdateWrapper<Recharge> wrapper = new UpdateWrapper<>();
-        QueryWrapper<Recharge> queryWrapper = new QueryWrapper();
-        queryWrapper.eq("out_trade_no", tradeNo);
-        Recharge recharge = rechargeService.getOne(queryWrapper);
-        wrapper.eq("out_trade_no", tradeNo);
-        recharge.setStatus(2);
-        rechargeService.update(recharge, wrapper);
-
-        //根据冲值表数据更新用户表数据
-        BigDecimal rechargeAmount = recharge.getRechargeAmount();
-        Long id = recharge.getUserId();
-
-        //充值成功，修改用户表数据
-        User user = userService.getById(id);
-        BigDecimal cashableAmount0 = user.getCashableAmount();
-        LocalDateTime localDateTime = user.getMembershipExpTime();
-        if (recharge.getRechargeType().equals(0)) {//判断是否为零钱充值
-            updateWrapper.eq("id", id);
-            if (rechargeAmount.compareTo(cashableAmount0) < 1) {
-                if (membershipTime.equals("月卡")) {
-                    user.setMembershipExpTime(localDateTime.plusMonths(1L));
-                    map.put("会员到期时间", localDateTime.plusMonths(1L));
-                }
-                if (membershipTime.equals("季卡")) {
-                    user.setMembershipExpTime(localDateTime.plusMonths(3L));
-                    map.put("会员到期时间", localDateTime.plusMonths(3L));
-                }
-                if (membershipTime.equals("年卡")) {
-                    user.setMembershipExpTime(localDateTime.plusYears(1L));
-                    map.put("会员到期时间", localDateTime.plusYears(1L));
-                }
-                BigDecimal cashableAmount = user.getCashableAmount().subtract(rechargeAmount);
-                user.setCashableAmount(cashableAmount);
-                userService.update(user, updateWrapper);
-            }
-        }
-        return R.success(map);
-    }
 
     /**
      * 用户端：显示会员到期时间
@@ -299,11 +273,17 @@ public class RechargeController {
     public R<Map> recharge_query(HttpServletRequest request) {
         Map<String, LocalDateTime> map = new HashMap<>();
         Long userId = (Long) request.getSession().getAttribute("id");
+        //测试：Long userId = 1L;
         User user = userService.getById(userId);
-        map.put("会员到期时间", user.getMembershipExpTime());
-        if (user.getMembershipExpTime().isBefore(LocalDateTime.now())) {
-            map.remove("会员到期时间");
+        if (user.getGrade().equals(1)){
             map.put("会员到期时间", user.getMembershipExpTime());
+            if (user.getMembershipExpTime().isBefore(LocalDateTime.now())) {
+                map.remove("会员到期时间");
+                map.put("会员到期时间", user.getMembershipExpTime());
+                user.setGrade(0);
+                userService.updateById(user);
+            }
+
         }
         return R.success(map);
     }
@@ -313,13 +293,13 @@ public class RechargeController {
      * author Kenlihankun
      * @Param Page 页码
      * @Param PageSize 条数
-     * @Param chooseType 选择类型
+     * @Param chooseType 选择类型 0:全部 1：待充值 2：充值成功 3：充值失败
      * @Param beginTime 选择开始时间
      * @Param endTime 选择截至时间
      * @return
      */
     @GetMapping("/page")
-    public R<Page> Page(int Page, int PageSize, String chooseType, String beginTime, String endTime) {
+    public R<Page> Page(int Page, int PageSize, Integer chooseType, String beginTime, String endTime) {
         Page<Recharge> pageInfo = new Page(Page, PageSize);
         Page<RechargeDto> rechargeDtoPage = new Page<>();
         QueryWrapper<Recharge> wrapper = new QueryWrapper<>();
@@ -327,20 +307,20 @@ public class RechargeController {
         endTime = endTime + " 00:00:00";
         String finalEndTime = endTime;
 
-        if (chooseType.equals("全部")) {
+        if (chooseType.equals(0)) {
             wrapper.ge("update_time", beginTime).and(c -> c.le("update_time", finalEndTime));
         }
-        if(chooseType.equals("待充值")){
+        if(chooseType.equals(1)){
             wrapper.ge("update_time", beginTime).and(c -> c.le("update_time", finalEndTime))
-            .and(c -> c.eq("status",1));
+                    .and(c -> c.eq("status",1));
 
         }
-        if (chooseType.equals("充值成功")){
+        if (chooseType.equals(2)){
             wrapper.ge("update_time", beginTime).and(c -> c.le("update_time", finalEndTime))
-                    .and(c -> c.eq("status",2));
+                    .and(c -> c.eq("status", 2));
 
         }
-        if (chooseType.equals("充值失败")){
+        if (chooseType.equals(3)){
             wrapper.ge("update_time", beginTime).and(c -> c.le("update_time", finalEndTime))
                     .and(c -> c.eq("status",3));
         }
