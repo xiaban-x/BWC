@@ -1,25 +1,24 @@
-package com.metabubble.BWC.entity;
+package com.metabubble.BWC.dto;
 
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * 提现管理
- */
+
 @Data
-public class Cashable {
+public class CashableDto {
+    //支付宝ID
+    private String aliPayId;
+
+    //支付宝名称
+    private String aliPayName;
     //序列化
     private static final long serialVersionUID = 1L;
 
     //提现编号
     private Long id;
-
-    //用户id
-    private Long userId;
 
     //转账订单号
     private Long tradeNo;
@@ -37,11 +36,9 @@ public class Cashable {
     private String withdrawReason;
 
     //申请时间
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     //转账、退款时间
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
 }

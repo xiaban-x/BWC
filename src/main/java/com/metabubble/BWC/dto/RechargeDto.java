@@ -1,32 +1,20 @@
-package com.metabubble.BWC.entity;
+package com.metabubble.BWC.dto;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * 充值管理
- */
 @Data
-public class Recharge {
+public class RechargeDto {
+    //用户名
+    private String name;
 
     //序列化
     private static final long serialVersionUID = 1L;
 
     //充值编号
     private Integer id;
-
-    //用户id
-    private Long userId;
-
-    //充值方式 0零钱（默认） 1微信 2支付宝
-    private Integer rechargeType;
-
-    //订单号
-    private Long outTradeNo;
 
     //充值金额
     private BigDecimal rechargeAmount;
@@ -35,10 +23,9 @@ public class Recharge {
     private Integer status;
 
     //创建时间
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     //支付时间
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
 }
