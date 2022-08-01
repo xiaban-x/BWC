@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
@@ -56,20 +57,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Boolean checkGrade(Long id) {
         User byId = this.getById(id);
-        //判断是否过期
-        boolean after = byId.getMembershipExpTime().isAfter(LocalDateTime.now());
-        //更改会员等级为0
-        if (after==false){
+        if (byId.getMembershipExpTime()==null) {
+            //判断是否过期
+            boolean after = byId.getMembershipExpTime().isAfter(LocalDateTime.now());
+            //更改会员等级为0
+            if (after==false){
+
+                if (byId.getGrade()==1) {
+                    //更改会员等级为0
+                    byId.setGrade(0);
+                    this.updateById(byId);
+                }
+            }
+
+            if (after){
+                if (byId.getGrade()==0) {
+                    //更改会员等级为1
+                    byId.setGrade(1);
+                    this.updateById(byId);
+                }
+            }
+            return after;
+        }
+        if (byId.getGrade()==1){
             byId.setGrade(0);
+            this.updateById(byId);
         }
-        //更改会员等级为1
-        if (after){
-            byId.setGrade(1);
-        }
-        this.updateById(byId);
-        return after;
+        return false;
     }
 
+    @Override
+    public String createUUID() {
+        String s = UUID.randomUUID().toString();
+        return s;
+    }
 
 
 //    @Override
