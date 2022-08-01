@@ -163,7 +163,7 @@ public class OrdersController {
     public R<String> secondAudit(@RequestBody Orders orders){
         //查询订单是否过期
         if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {
-            return R.error("订单过期");
+            return R.error("订单已过期");
         }
 
         Orders orders1 = ordersService.getById(orders);
@@ -185,12 +185,13 @@ public class OrdersController {
      * @param offset    页码
      * @param limit 分页条数
      * @param merchantName  商家名称
+     * @param status 状态
      * @return
      * @author leitianyu999
      */
     @GetMapping("/page")
     @Transactional
-    public R<Page> page(String name,int offset,int limit,String merchantName){
+    public R<Page> page(String name,int offset,int limit,String merchantName,String status){
         Page<Orders> page = new Page(offset,limit);
 
         LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper();
@@ -201,6 +202,7 @@ public class OrdersController {
         if (name!=null){
             queryWrapper1.like(User::getName,name);
             List<User> list = userService.list(queryWrapper1);
+
             if (list!=null&&list.size()!=0){
                 queryWrapper3.and(ordersLambdaQueryWrapper -> {
                     for (User user : list) {
@@ -225,6 +227,9 @@ public class OrdersController {
             }
         }
 
+        //添加状态判断
+        queryWrapper3.eq(StringUtils.isNotEmpty(status),Orders::getStatus,status);
+        //根据创建时间排序
         queryWrapper3.orderByDesc(Orders::getUpdateTime);
 
 
@@ -338,7 +343,7 @@ public class OrdersController {
         if (status==0||status==1||status==2||status==3||status==4||status==5) {
             orders.setStatus(7);
             ordersService.updateById(orders);
-            return R.success("取消成功");
+            return R.success("取消订单成功");
         }
         //判断订单是否已完成
         if (status==6) {
