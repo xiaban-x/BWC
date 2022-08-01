@@ -25,12 +25,6 @@ public class Team implements Serializable {
     //上级二级成员ID
     private Long upUser02Id;
 
-    //下级一级成员ID
-    private Long downUser01Id;
-
-    //下级二级成员ID
-    private Long downUser02Id;
-
     //全部消费金额
     private BigDecimal totalAmount;
 
