@@ -1,6 +1,7 @@
 package com.metabubble.BWC.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.metabubble.BWC.common.CustomException;
 import com.metabubble.BWC.entity.Orders;
 import com.metabubble.BWC.entity.Task;
 import com.metabubble.BWC.mapper.OrdersMapper;
@@ -39,12 +40,10 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Boolean updateStatusFormExpiredTime(Long id) {
         Orders orders = this.getById(id);
-        LocalDateTime createTime = orders.getCreateTime();
         LocalDateTime expiredTime = orders.getExpiredTime();
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime firstExpiredTime = createTime.plusMinutes(30);
         if (orders.getStatus()==0||orders.getStatus()==3){
-            if (now.isAfter(firstExpiredTime)) {
+            if (now.isAfter(expiredTime)) {
                 orders.setStatus(8);
                 this.updateById(orders);
                 return false;
@@ -59,7 +58,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
             }
             return true;
         }
-        return null;
+        throw new CustomException("订单状态错误");
     }
 
     /**
@@ -69,12 +68,21 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
      */
     @Override
     public Orders addExpiredTime(Orders orders) {
-        LocalDate localDate = LocalDate.now();
-        LocalDate localDate1 = localDate.plusDays(1);
-        LocalTime localTime = LocalTime.of(9, 0);
-        LocalDateTime localDateTime = LocalDateTime.of(localDate1, localTime);
-        orders.setExpiredTime(localDateTime);
-        return orders;
+        if (orders.getStatus()==2||orders.getStatus()==4||orders.getStatus()==5) {
+            LocalDate localDate = LocalDate.now();
+            LocalDate localDate1 = localDate.plusDays(1);
+            LocalTime localTime = LocalTime.of(9, 0);
+            LocalDateTime localDateTime = LocalDateTime.of(localDate1, localTime);
+            orders.setExpiredTime(localDateTime);
+            return orders;
+        }
+        if (orders.getStatus()==0||orders.getStatus()==1||orders.getStatus()==3){
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime firstExpiredTime = now.plusMinutes(30);
+            orders.setExpiredTime(firstExpiredTime);
+            return orders;
+        }
+        throw new CustomException("订单添加过期时间错误");
     }
 
     /**

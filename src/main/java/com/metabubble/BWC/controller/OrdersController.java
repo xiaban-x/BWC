@@ -136,6 +136,10 @@ public class OrdersController {
         if (orders.getOrderNumber()==null){
             return R.error("无订单编号");
         }
+
+        if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {
+            return R.error("订单已过期");
+        }
         Orders orders1 = ordersService.getById(orders);
         //添加订单金额
         orders1.setAmount(orders.getAmount());
@@ -267,6 +271,8 @@ public class OrdersController {
         if (status==1) {
             //添加一审成功状态
             orders.setStatus(2);
+            //更改过期时间
+            orders = ordersService.addExpiredTime(orders);
             //添加审核人id
             //orders.setReviewerIdA(BaseContext.getCurrentId());
             ordersService.updateById(orders);

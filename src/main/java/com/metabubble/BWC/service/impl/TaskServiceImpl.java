@@ -23,12 +23,16 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         if (task.getStatus()==1){
             if (task.getAmount()>0) {
                 return true;
+            }else {
+                task.setStatus(0);
+                this.updateById(task);
+                return false;
             }
         }
         if (task.getStatus()==0){
             return false;
         }
-        return null;
+        throw new CustomException("任务出错");
     }
 
     /**
@@ -40,6 +44,9 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         Task byId = this.getById(id);
         if (byId.getAmount()>0) {
             byId.setAmount(byId.getAmount() - 1);
+            if (byId.getAmount()==0){
+                byId.setStatus(0);
+            }
             this.updateById(byId);
         }
 
