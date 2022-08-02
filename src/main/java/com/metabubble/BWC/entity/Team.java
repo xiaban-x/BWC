@@ -17,7 +17,7 @@ public class Team implements Serializable {
     private static final long serialVersionUID = 1L;
 
     //用户ID
-    private Long id;
+    private Long userId;
 
     //上级一级成员ID
     private Long upUser01Id;

@@ -17,6 +17,9 @@ public class OrdersDto {
     //商家id
     private Long merchantId;
 
+    //任务id
+    private Long taskId;
+
     //订单状态，0为已下单(默认)；1为一审待审核；2为一审通过；3为一审未通过；4为二审待审核；5为二审未通过；6为已完成；7为订单取消；8为订单过期
     private Integer status;
 
@@ -38,12 +41,7 @@ public class OrdersDto {
     //评论截图
     private String picComment;
 
-    //创建时间
-    @TableField(fill = FieldFill.INSERT) //插入时填充字段
-    private LocalDateTime createTime;
-
-    //更新时间
-    @TableField(fill = FieldFill.INSERT_UPDATE) //插入和更新时填充字段
-    private LocalDateTime updateTime;
+    //过期时间
+    private LocalDateTime expiredTime;
 
 }

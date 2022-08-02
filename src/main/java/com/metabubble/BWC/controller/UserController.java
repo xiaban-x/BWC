@@ -168,15 +168,20 @@ public class UserController {
     public R<String> addTeam(String invitation ,int id){
         //查询用户对象
         User user = userService.getById(id);
+        if (user.getDownId().equals(invitation)){
+            return R.error("邀请码错误");
+        }
         if (user.getUpId()==null) {
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             //添加验证码对比
-            queryWrapper.eq(User::getUpId,invitation);
+            queryWrapper.eq(User::getDownId,invitation);
             //查询上级对象
             User userFirst = userService.getOne(queryWrapper);
+
             if (userFirst==null){
                 return R.error("查无此邀请码");
             }
+
             //团队添加上级
             teamService.addTeamTop(user,userFirst);
 
@@ -203,7 +208,7 @@ public class UserController {
             user.setDownId(uuid);
             userService.save(user);
             User serviceOne = userService.getOne(queryWrapper);
-            teamService.save(serviceOne.getId());
+            teamService.save(serviceOne);
             return R.success("添加成功");
         }
         return R.error("已有用户");

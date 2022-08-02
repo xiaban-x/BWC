@@ -25,6 +25,9 @@ public class Task{
     //商家id
     private Long merchantId;
 
+    //任务数量
+    private Long amount;
+
     //非会员最低消费
     private BigDecimal minConsumptionA;
 

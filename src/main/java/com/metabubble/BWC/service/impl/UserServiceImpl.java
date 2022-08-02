@@ -2,6 +2,7 @@ package com.metabubble.BWC.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.metabubble.BWC.common.CustomException;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.entity.Orders;
 import com.metabubble.BWC.entity.Task;
@@ -54,10 +55,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @author leitianyu999
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public Boolean checkGrade(Long id) {
         User byId = this.getById(id);
-        if (byId.getMembershipExpTime()==null) {
+        if (byId.getMembershipExpTime()!=null) {
             //判断是否过期
             boolean after = byId.getMembershipExpTime().isAfter(LocalDateTime.now());
             //更改会员等级为0
@@ -79,11 +80,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
             return after;
         }
-        if (byId.getGrade()==1){
-            byId.setGrade(0);
-            this.updateById(byId);
-        }
-        return false;
+        throw new CustomException("用户会员过期时间错误");
     }
 
     @Override

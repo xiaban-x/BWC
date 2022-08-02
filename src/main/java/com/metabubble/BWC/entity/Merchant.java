@@ -32,9 +32,6 @@ public class Merchant implements Serializable {
     //电话号码
     private String tel;
 
-    //平台类型，0为美团，1为饿了么
-    private String plaType;
-
     //地址
     private String address;
 

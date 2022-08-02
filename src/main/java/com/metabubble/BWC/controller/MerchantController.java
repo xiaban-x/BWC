@@ -54,7 +54,7 @@ public class MerchantController {
         mLqw.like(StringUtils.isNotEmpty(condition.getTel()),Merchant::getTel,condition.getTel());
 
         if (condition.getPlaType() != null){
-            mLqw.like(Merchant::getPlaType,condition.getPlaType());
+            //mLqw.like(Merchant::getPlaType,condition.getPlaType());
         }
         //添加排序条件
         mLqw.orderByDesc(Merchant::getCreateTime);

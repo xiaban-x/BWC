@@ -12,7 +12,7 @@ public interface TeamService extends IService<Team> {
     //向上二级返现
     public void cashbackForUserFromSecond(Long id);
     //创建团队表
-    public void save(Long id);
+    public void save(User user);
     //团队添加上一级和上二级
     public void addTeamTop(User user,User topUser);
 }

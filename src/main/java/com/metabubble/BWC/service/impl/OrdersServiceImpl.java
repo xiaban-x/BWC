@@ -108,7 +108,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
      * @author leitianyu999
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public Orders updateRebate(Orders orders) {
         //查询用户是否为会员
         Boolean aBoolean = userService.checkGrade(orders.getUserId());

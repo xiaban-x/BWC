@@ -84,6 +84,8 @@ public class OrdersController {
     public R<String> add(Long userId,Long taskId){
         //查询任务是否启用
         if (taskService.checkTaskStatus(taskId)) {
+            //更新任务数量
+            taskService.updateAmount(taskId);
             Orders orders = new Orders();
             //添加用户id
             orders.setUserId(userId);
@@ -111,7 +113,7 @@ public class OrdersController {
 
             return R.success("订单生成成功");
         }
-        return R.error("订单错误");
+        return R.error("订单生成错误");
     }
 
     /**
@@ -275,7 +277,9 @@ public class OrdersController {
             //查询用户会员等级并跟新订单金额
             orders = ordersService.updateRebate(orders);
             //获取团队资料
-            Team team = teamService.getById(orders.getUserId());
+            LambdaQueryWrapper<Team> queryWrapper123 = new LambdaQueryWrapper<>();
+            queryWrapper123.eq(Team::getUserId,orders.getUserId());
+            Team team = teamService.getOne(queryWrapper123);
             //订单状态改成完成
             orders.setStatus(6);
             //用户返现金额到账
