@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
+import com.metabubble.BWC.dto.Imp.OrdersConverter;
+import com.metabubble.BWC.dto.OrdersDto;
 import com.metabubble.BWC.entity.*;
 import com.metabubble.BWC.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -66,10 +68,10 @@ public class OrdersController {
      * @author leitianyu999
      */
     @GetMapping("/user")
-    public R<Orders> selectByOrdersId(int id){
+    public R<OrdersDto> selectByOrdersId(int id){
         Orders orders = ordersService.getById(id);
-
-        return R.success(orders);
+        OrdersDto ordersDto = OrdersConverter.INSTANCES.OrdersToMerOrdersDto(orders);
+        return R.success(ordersDto);
     }
 
     /**
@@ -93,7 +95,9 @@ public class OrdersController {
             orders.setTaskId(taskId);
             //添加订单状态0
             orders.setStatus(0);
+            //查找任务
             Task task = taskService.getById(taskId);
+            //查找商家
             Merchant merchant = merchantService.getById(task.getMerchantId());
             //添加商家id
             orders.setMerchantId(merchant.getId());
@@ -124,22 +128,23 @@ public class OrdersController {
      */
     @PutMapping("/firstaudit")
     public R<String> firstAudit(@RequestBody Orders orders){
-        //判断是否为空
+        //判断PicOrder是否为空
         if (orders.getPicOrder()==null){
             return R.error("无订单截图");
         }
-        //判断是否为空
+        //判断Amount是否为空
         if (orders.getAmount()==null){
             return R.error("无订单金额");
         }
-        //判断是否为空
+        //判断OrderNumber是否为空
         if (orders.getOrderNumber()==null){
             return R.error("无订单编号");
         }
-
+        //判断订单是否过期
         if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {
             return R.error("订单已过期");
         }
+
         Orders orders1 = ordersService.getById(orders);
         //添加订单金额
         orders1.setAmount(orders.getAmount());
@@ -156,12 +161,12 @@ public class OrdersController {
             ordersService.updateById(orders);
             return R.success("上传成功");
         }
-        return R.error("订单出错");
+        return R.error("订单状态出错");
     }
 
     /**
      * 用户提交二审资料
-     * @param orders
+     * @param orders 二审资料
      * @return
      * @author leitianyu999
      */
@@ -173,7 +178,7 @@ public class OrdersController {
         }
 
         Orders orders1 = ordersService.getById(orders);
-        //查询状态
+        //添加订单状态
         orders.setStatus(orders1.getStatus());
         if (orders.getStatus()==2||orders.getStatus()==5) {
             //跟新状态
@@ -205,10 +210,11 @@ public class OrdersController {
         LambdaQueryWrapper<Merchant> queryWrapper2 = new LambdaQueryWrapper();
 
         LambdaQueryWrapper<Orders> queryWrapper3 = new LambdaQueryWrapper<>();
+        //判断name是否为空
         if (name!=null){
             queryWrapper1.like(User::getName,name);
             List<User> list = userService.list(queryWrapper1);
-
+            //判断name在用户表查的数据是否存在
             if (list!=null&&list.size()!=0){
                 queryWrapper3.and(ordersLambdaQueryWrapper -> {
                     for (User user : list) {
@@ -219,9 +225,11 @@ public class OrdersController {
                 return R.error("查询无此用户");
             }
         }
+        //判断merchantName是否为空
         if (merchantName!=null){
             queryWrapper2.like(Merchant::getName,merchantName);
             List<Merchant> list1 = merchantService.list(queryWrapper2);
+            //判断merchantName在商家表查的数据是否存在
             if (list1!=null&&list1.size()!=0){
                 queryWrapper3.and(ordersLambdaQueryWrapper -> {
                     for (Merchant merchant : list1) {
@@ -274,7 +282,7 @@ public class OrdersController {
             //更改过期时间
             orders = ordersService.addExpiredTime(orders);
             //添加审核人id
-            //orders.setReviewerIdA(BaseContext.getCurrentId());
+            orders.setReviewerIdA(BaseContext.getCurrentId());
             ordersService.updateById(orders);
             return R.success("一审成功");
         }
