@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 @Data
 public class Logs {
 
+    //序列化
+    private static final long serialVersionUID = 1L;
+
     //日志id
     private Long id;
 
@@ -24,7 +27,7 @@ public class Logs {
     //内容
     private String content;
 
-    //创建时间
+    //操作时间
     @TableField(fill = FieldFill.INSERT) //插入时填充字段
     private LocalDateTime createTime;
 

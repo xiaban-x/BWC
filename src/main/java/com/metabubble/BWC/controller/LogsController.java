@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,20 +39,16 @@ public class LogsController {
         Page<Logs> pageInfo = new Page<>(offset, limit);
         //构造条件构造器
         LambdaQueryWrapper<Logs> queryWrapperLogs = new LambdaQueryWrapper<>();
-//        LambdaQueryWrapper<Logs> queryWrapper = new LambdaQueryWrapper<>();
         //添加排序条件 根据createTime进行逆向排序
         queryWrapperLogs.orderByDesc(Logs::getCreateTime);
         //添加条件查询
         //操作用户
         LambdaQueryWrapper<Admin> queryWrapperAdmin = new LambdaQueryWrapper<>();
-        String adminNameTrue = null;
         if (adminName.length() != 0) {
             queryWrapperAdmin.eq(Admin::getName, adminName);
             Admin one = adminService.getOne(queryWrapperAdmin);
-            //queryWrapperLogs.eq(one != null,Logs::getAdminId,one.getId());
             if (one != null){
                 queryWrapperLogs.eq(Logs::getAdminId, one.getId());
-                adminNameTrue = one.getName();
             }else {
                 //表示无此人，查询为无
                 queryWrapperLogs.eq(Logs::getId,0);
@@ -74,11 +71,15 @@ public class LogsController {
         BeanUtils.copyProperties(pageInfo,logsDtoPage,"records");
         //查询用户id-》通过用户id查询用户名字-》展示用户名字
         List<Logs> records = pageInfo.getRecords();
-        String finalAdminNameTrue = adminNameTrue;
         List<LogsDto> list = records.stream().map((item) -> { //stream流处理records
             LogsDto logsDto = new LogsDto();//存贮数据
             BeanUtils.copyProperties(item,logsDto);//对象拷贝
-            logsDto.setAdminName(finalAdminNameTrue);//赋值名字
+            Long adminId = item.getAdminId();//管理员id
+            Admin adminMsg = adminService.getById(adminId);//管理员信息
+            if (adminMsg != null){
+                String adminMsgName = adminMsg.getName();//管理员名字
+                logsDto.setAdminName(adminMsgName);//赋值名字
+            }
             return logsDto;
         }).collect(Collectors.toList());
         logsDtoPage.setRecords(list);
