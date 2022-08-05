@@ -38,7 +38,13 @@ public class Task{
     private Integer comment;
 
     //任务数量
-    private Long amount;
+    private Integer amount;
+
+    //已完成任务数量
+    private Integer completed;
+
+    //任务剩余量
+    private Integer taskLeft;
 
     //非会员最低消费
     private BigDecimal minConsumptionA;

@@ -1,29 +1,24 @@
 package com.metabubble.BWC.dto;
 
 import lombok.Data;
-
 import java.math.BigDecimal;
 
-/**
- * 商家任务
- */
 @Data
-public class TaskDto {
-
+public class HomeDto {
     //任务id
     private Long id;
 
     //商家id
     private Long merchantId;
 
+    //商家名字
+    private String merchantName;
+
     //任务名称
     private String name;
 
-    //任务数量
-    private Integer amount;
-
-    //已完成任务数量
-    private Integer completed;
+    //用户到商家的距离
+    private BigDecimal userToMerchantDistance;
 
     //任务剩余量
     private Integer taskLeft;
@@ -40,12 +35,4 @@ public class TaskDto {
     //会员满减额
     private BigDecimal rebateB;
 
-    //任务要求
-    private String requirement;
-
-    //任务备注
-    private String remark;
-
-    //是否启用，0为禁用(默认)，1为启用
-    private Integer status;
 }
