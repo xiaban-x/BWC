@@ -4,7 +4,7 @@ server:
 spring:
   application:
 #    应用的名称，可选
-    name: reggie_take_out
+    name: BWC
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
