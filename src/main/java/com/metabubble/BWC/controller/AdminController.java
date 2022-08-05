@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.AdminDto;
-import com.metabubble.BWC.dto.Imp.AdminConverter;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.service.AdminService;
 import lombok.extern.slf4j.Slf4j;
@@ -137,7 +136,6 @@ public class AdminController {
             AdminDto adminDto = new AdminDto();
             BeanUtils.copyProperties(item, adminDto);
 
-            // 根据 id 查询分类对象
             Long adminId = item.getId();
             String name = item.getName();
             String email = item.getEmail();
