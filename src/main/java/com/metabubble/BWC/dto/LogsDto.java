@@ -1,4 +1,4 @@
-package com.metabubble.BWC.entity;
+package com.metabubble.BWC.dto;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -7,19 +7,16 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 日志
+ * logs Dto
  */
 @Data
-public class Logs {
-
-    //序列化
-    private static final long serialVersionUID = 1L;
+public class LogsDto {
 
     //日志id
     private Long id;
 
-    //管理员id
-    private Long adminId;
+    //管理员名称
+    private String adminName;
 
     //标题
     private String name;
@@ -27,9 +24,6 @@ public class Logs {
     //内容
     private String content;
 
-    //操作时间
-    @TableField(fill = FieldFill.INSERT) //插入时填充字段
+    //创建时间
     private LocalDateTime createTime;
-
-
 }

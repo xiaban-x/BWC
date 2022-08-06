@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 /**
  * 商家类型
+ * 暂时废弃；等待更新
  */
 @Data
 public class MerchantType implements Serializable {

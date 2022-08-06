@@ -26,11 +26,11 @@ public class Merchant implements Serializable {
     //商家名称
     private String name;
 
+    //商家电话
+    private String tel;
+
     //商家图片
     private String pic;
-
-    //电话号码
-    private String tel;
 
     //地址
     private String address;
