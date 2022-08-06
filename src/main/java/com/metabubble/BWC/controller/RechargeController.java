@@ -3,6 +3,7 @@ package com.metabubble.BWC.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.RechargeDto;
 import com.metabubble.BWC.entity.Recharge;
@@ -13,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -33,7 +33,7 @@ public class RechargeController {
      * 充值统计
      * author Kenlihankun
      * beginTime 要查询的时间
-     * type 查询条件 1：按天查询 2：按月查询 3：按年查询
+     * type 查询条件
      * @return
      * @RequestBody map
      */
@@ -41,7 +41,7 @@ public class RechargeController {
     @GetMapping("/recharge_amount")
     public R<Map> recharge_amount(@RequestBody Map map) {
         String beginTime = (String) map.get("beginTime");
-        Integer type = (Integer) map.get("type");
+        String type = (String) map.get("type");
 
         Map<String, BigDecimal> map0 = new HashMap<>();
 
@@ -50,22 +50,20 @@ public class RechargeController {
         QueryWrapper<Recharge> queryAll = new QueryWrapper<>();
 
         //充值
-        if (type.equals(1) && beginTime != null) {
+        if (type.equals("按天查询") && beginTime != null) {
             String beginTime02 = beginTime.substring(0, 10);
             beginTime = beginTime02;
 
         }
-        if (type.equals(2) && beginTime != null) {
+        if (type.equals("按月查询") && beginTime != null) {
             String beginTime03 = beginTime.substring(0, 7);
             beginTime = beginTime03;
 
         }
-        if (type.equals(3) && beginTime != null) {
+        if (type.equals("按年查询") && beginTime != null) {
             String beginTime04 = beginTime.substring(0, 4);
             beginTime = beginTime04;
 
-        } else {
-            beginTime = "0000-00-00 00:00:00";
         }
         //统计微信充值条件
         queryAmount01.likeRight("update_time", beginTime).and(c2 -> c2.eq("recharge_type", 1))
@@ -114,8 +112,11 @@ public class RechargeController {
     //待充值
     //保存userId,outTradeNo,rechargeAmount,rechargeType(默认),status(默认),createTime,UpdateTime
     @PutMapping("/recharge_msg")
-    public R<Map> recharge_click(HttpServletRequest request, @RequestParam("rechargeAmount") BigDecimal rechargeAmount) {
-        Long userId = (Long) request.getSession().getAttribute("id");
+    public R<Map> recharge_click(@RequestParam("rechargeAmount") BigDecimal rechargeAmount) {
+        //BaseContext 获取session Id
+        Long userId = BaseContext.getCurrentId();
+
+        //Long userId = (Long) request.getSession().getAttribute("id");
         //Long userId = 1L;//测试
 
         Recharge recharge = new Recharge();
@@ -258,34 +259,6 @@ public class RechargeController {
         recharge.setStatus(3);
         rechargeService.update(recharge, wrapper);
         return R.success("success");
-    }
-
-
-    /**
-     * 用户端：显示会员到期时间
-     * 查询用户表会员到期时间，到期为显示为null
-     * author Kenlihankun
-     *
-     * @return
-     * @Param tradeNo 充值订单号
-     */
-    @PutMapping("/recharge_query")
-    public R<Map> recharge_query(HttpServletRequest request) {
-        Map<String, LocalDateTime> map = new HashMap<>();
-        Long userId = (Long) request.getSession().getAttribute("id");
-        //测试：Long userId = 1L;
-        User user = userService.getById(userId);
-        if (user.getGrade().equals(1)){
-            map.put("会员到期时间", user.getMembershipExpTime());
-            if (user.getMembershipExpTime().isBefore(LocalDateTime.now())) {
-                map.remove("会员到期时间");
-                map.put("会员到期时间", user.getMembershipExpTime());
-                user.setGrade(0);
-                userService.updateById(user);
-            }
-
-        }
-        return R.success(map);
     }
 
     /**

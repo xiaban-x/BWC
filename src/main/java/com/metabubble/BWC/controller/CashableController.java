@@ -2,7 +2,9 @@ package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.CashableDto;
 import com.metabubble.BWC.entity.Cashable;
@@ -13,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -33,34 +34,32 @@ public class CashableController {
      * author Kenlihankun
      * @RequestBody map
      * beginTime 选择的查询时间
-     * type 选择的查询类型 1:按天查询 2：按月查询 3：按年查询
+     * type 选择的查询类型
      * @return
      */
     @GetMapping("/cashableAmount")
     public R<Map> cashable_amount(@RequestBody Map map) {
         String beginTime = (String) map.get("beginTime");
-        Integer type = (Integer) map.get("type");
+        String type = (String) map.get("type");
 
         Map<String, BigDecimal> map0 = new HashMap<>();
         QueryWrapper<Cashable> queryWrapper = new QueryWrapper<>();
         QueryWrapper<Cashable> qw = new QueryWrapper<>();
 
-        if (type.equals(1) && beginTime!=null) {
+        if (type.equals("按天查询") && beginTime!=null) {
             String beginTime02 = beginTime.substring(0, 10);
             beginTime = beginTime02;
 
         }
-        if (type.equals(2) && beginTime!=null) {
+        if (type.equals("按月查询") && beginTime!=null) {
             String beginTime03 = beginTime.substring(0, 7);
             beginTime = beginTime03;
 
         }
-        if (type.equals(3)  && beginTime!=null) {
+        if (type.equals("按年查询")  && beginTime!=null) {
             String beginTime04 = beginTime.substring(0, 4);
             beginTime = beginTime04;
 
-        }else{
-            beginTime = "0000-00-00 00:00:00";
         }
         queryWrapper.likeRight("update_time", beginTime).and(c -> c.eq("status", 2));
 
@@ -106,499 +105,26 @@ public class CashableController {
      */
 //提现管理
     @GetMapping("/Page")
-    public R<Page> Page(int Page, int PageSize, Integer chooseType,String zfbId,String zfbName) {
+    public R<IPage> Page(Integer Page, Integer PageSize, Integer chooseType,String zfbId,String zfbName) {
         //分页构造器
-        Page<User> pageInfo = new Page(Page,PageSize);
-        Page<Cashable> page = new Page<>(Page,PageSize);
-        Page<CashableDto> cashableDtoPage = new Page<>();
-
-        QueryWrapper<User> qw0 = new QueryWrapper<>();
-        QueryWrapper<Cashable> qw1 = new QueryWrapper<>();
-
-        if (chooseType.equals(0)){
-            if(zfbId == null &&zfbName == null){
-                qw1.orderByDesc("create_time");
-                //执行分页查询
-                cashableService.page(page,qw1);
-                //联表查询
-                BeanUtils.copyProperties(page,cashableDtoPage,"records");
-
-                List<Cashable> records = page.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getUserId();//分类id
-                    //根据id查询分类对象
-                    User user = userService.getById(userId);
-
-                    if(user != null){
-                        String aliPayId = user.getAliPayId();
-                        cashableDto.setAliPayId(aliPayId);
-                        String aliPayName = user.getAliPayId();
-                        cashableDto.setAliPayName(aliPayName);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-            }
-
-            if(zfbId != null&&zfbName == null){
-                qw0.like("ali_pay_id",zfbId);
-                qw0.select("id","ali_pay_Id","ali_pay_name");
-                //执行分页查询
-                userService.page(pageInfo,qw0);
-                //联表查询
-                BeanUtils.copyProperties(pageInfo,cashableDtoPage,"records");
-
-                List<User> records = pageInfo.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getId();//分类id
-                    //根据id查询分类对象
-                    qw1.eq("user_id",userId);
-                    Cashable cashable = cashableService.getOne(qw1);
-
-                    if(cashable != null){
-                        Long id = cashable.getId();
-                        cashableDto.setId(id);
-                        //Long userId0 = cashable.getUserId();
-                        //cashableDto.setUserId(userId0);
-                        Long tradeNo = cashable.getTradeNo();
-                        cashableDto.setTradeNo(tradeNo);
-                        BigDecimal CA = cashable.getCashableAmount();
-                        cashableDto.setCashableAmount(CA);
-                        Integer payType = cashable.getPayType();
-                        cashableDto.setPayType(payType);
-                        Integer status = cashable.getStatus();
-                        cashableDto.setStatus(status);
-                        String withdrawReason = cashable.getWithdrawReason();
-                        cashableDto.setWithdrawReason(withdrawReason);
-                        LocalDateTime createTime = cashable.getCreateTime();
-                        cashableDto.setCreateTime(createTime);
-                        LocalDateTime updateTime = cashable.getUpdateTime();
-                        cashableDto.setUpdateTime(updateTime);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-
-            }
-            if(zfbId == null &&zfbName != null){
-                qw0.like("ali_pay_name",zfbName);
-                qw0.select("id","ali_pay_id","ali_pay_name");
-                //执行分页查询
-                userService.page(pageInfo,qw0);
-                //联表查询
-                BeanUtils.copyProperties(pageInfo,cashableDtoPage,"records");
-
-                List<User> records = pageInfo.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getId();//分类id
-                    //根据id查询分类对象
-                    qw1.eq("user_id",userId);
-                    Cashable cashable = cashableService.getOne(qw1);
-
-                    if(cashable != null){
-                        Long id = cashable.getId();
-                        cashableDto.setId(id);
-                        Long tradeNo = cashable.getTradeNo();
-                        cashableDto.setTradeNo(tradeNo);
-                        BigDecimal CA = cashable.getCashableAmount();
-                        cashableDto.setCashableAmount(CA);
-                        Integer payType = cashable.getPayType();
-                        cashableDto.setPayType(payType);
-                        Integer status = cashable.getStatus();
-                        cashableDto.setStatus(status);
-                        String withdrawReason = cashable.getWithdrawReason();
-                        cashableDto.setWithdrawReason(withdrawReason);
-                        LocalDateTime createTime = cashable.getCreateTime();
-                        cashableDto.setCreateTime(createTime);
-                        LocalDateTime updateTime = cashable.getUpdateTime();
-                        cashableDto.setUpdateTime(updateTime);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-            }
+        QueryWrapper<Object> wrapper = new QueryWrapper<>();
+        //if(chooseType.equals(0)){
+        //wrapper.and(c -> {c.eq("cashable.status",1);});
+        //}
+        if (chooseType.equals(1) || chooseType.equals(2) || chooseType.equals(3)) {
+            wrapper.and(c -> {c.eq("cashable.status",chooseType);});
 
         }
-        if (chooseType.equals(1)){
-            if(zfbId == null &&zfbName == null){
-                qw1.eq("status",1);
-                qw1.orderByDesc("create_time");
-                //执行分页查询
-                cashableService.page(page,qw1);
-                //联表查询
-                BeanUtils.copyProperties(page,cashableDtoPage,"records");
-
-                List<Cashable> records = page.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getUserId();//分类id
-                    //根据id查询分类对象
-                    User user = userService.getById(userId);
-
-                    if(user != null){
-                        String aliPayId = user.getAliPayId();
-                        cashableDto.setAliPayId(aliPayId);
-                        String aliPayName = user.getAliPayId();
-                        cashableDto.setAliPayName(aliPayName);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-            }
-            if(chooseType !=null&&zfbName == null){
-                qw0.like("ali_pay_id",zfbId);
-                qw0.select("id","ali_pay_id","ali_name_name");
-                //执行分页查询
-                userService.page(pageInfo,qw0);
-                //联表查询
-                BeanUtils.copyProperties(pageInfo,cashableDtoPage,"records");
-
-                List<User> records = pageInfo.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getId();//分类id
-                    //根据id查询分类对象
-                    qw1.eq("userId",userId).and(c -> c.eq("status",1));
-                    Cashable cashable = cashableService.getOne(qw1);
-
-                    if(cashable != null){
-                        Long id = cashable.getId();
-                        cashableDto.setId(id);
-                        Long tradeNo = cashable.getTradeNo();
-                        cashableDto.setTradeNo(tradeNo);
-                        BigDecimal CA = cashable.getCashableAmount();
-                        cashableDto.setCashableAmount(CA);
-                        Integer payType = cashable.getPayType();
-                        cashableDto.setPayType(payType);
-                        Integer status = cashable.getStatus();
-                        cashableDto.setStatus(status);
-                        String withdrawReason = cashable.getWithdrawReason();
-                        cashableDto.setWithdrawReason(withdrawReason);
-                        LocalDateTime createTime = cashable.getCreateTime();
-                        cashableDto.setCreateTime(createTime);
-                        LocalDateTime updateTime = cashable.getUpdateTime();
-                        cashableDto.setUpdateTime(updateTime);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-
-            }
-            if(zfbId == null &&zfbName != null){
-                qw0.like("ali_pay_name",zfbName);
-                qw0.select("id","ali_pay_id","ali_pay_name");
-                //执行分页查询
-                userService.page(pageInfo,qw0);
-                //联表查询
-                BeanUtils.copyProperties(pageInfo,cashableDtoPage,"records");
-
-                List<User> records = pageInfo.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getId();//分类id
-                    //根据id查询分类对象
-                    qw1.eq("user_id",userId).and(c -> c.eq("status",1));
-                    Cashable cashable = cashableService.getOne(qw1);
-
-                    if(cashable != null){
-                        Long id = cashable.getId();
-                        cashableDto.setId(id);
-                        Long tradeNo = cashable.getTradeNo();
-                        cashableDto.setTradeNo(tradeNo);
-                        BigDecimal CA = cashable.getCashableAmount();
-                        cashableDto.setCashableAmount(CA);
-                        Integer payType = cashable.getPayType();
-                        cashableDto.setPayType(payType);
-                        Integer status = cashable.getStatus();
-                        cashableDto.setStatus(status);
-                        String withdrawReason = cashable.getWithdrawReason();
-                        cashableDto.setWithdrawReason(withdrawReason);
-                        LocalDateTime createTime = cashable.getCreateTime();
-                        cashableDto.setCreateTime(createTime);
-                        LocalDateTime updateTime = cashable.getUpdateTime();
-                        cashableDto.setUpdateTime(updateTime);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-            }
-
+        if (zfbId != null) {
+            wrapper.and(c -> {c.like("user.ali_pay_id",zfbId);});
         }
-        if (chooseType.equals(2)){
-            if(zfbId == null &&zfbName == null){
-                qw1.eq("status",2);
-                qw1.orderByDesc("create_time");
-                //执行分页查询
-                cashableService.page(page,qw1);
-                //联表查询
-                BeanUtils.copyProperties(page,cashableDtoPage,"records");
-
-                List<Cashable> records = page.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getUserId();//分类id
-                    //根据id查询分类对象
-                    User user = userService.getById(userId);
-
-                    if(user != null){
-                        String aliPayId = user.getAliPayId();
-                        cashableDto.setAliPayId(aliPayId);
-                        String aliPayName = user.getAliPayId();
-                        cashableDto.setAliPayName(aliPayName);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-            }
-            if(zfbId != null&&zfbName == null){
-                qw0.like("ali_payId",zfbId);
-                qw0.select("id","ali_pay_id","ali_pay_name");
-                //执行分页查询
-                userService.page(pageInfo,qw0);
-                //联表查询
-                BeanUtils.copyProperties(pageInfo,cashableDtoPage,"records");
-
-                List<User> records = pageInfo.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getId();//分类id
-                    //根据id查询分类对象
-                    qw1.eq("user_id",userId).and(c -> c.eq("status",2));
-                    Cashable cashable = cashableService.getOne(qw1);
-
-                    if(cashable != null){
-                        Long id = cashable.getId();
-                        cashableDto.setId(id);
-                        Long tradeNo = cashable.getTradeNo();
-                        cashableDto.setTradeNo(tradeNo);
-                        BigDecimal CA = cashable.getCashableAmount();
-                        cashableDto.setCashableAmount(CA);
-                        Integer payType = cashable.getPayType();
-                        cashableDto.setPayType(payType);
-                        Integer status = cashable.getStatus();
-                        cashableDto.setStatus(status);
-                        String withdrawReason = cashable.getWithdrawReason();
-                        cashableDto.setWithdrawReason(withdrawReason);
-                        LocalDateTime createTime = cashable.getCreateTime();
-                        cashableDto.setCreateTime(createTime);
-                        LocalDateTime updateTime = cashable.getUpdateTime();
-                        cashableDto.setUpdateTime(updateTime);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-
-            }
-            if(zfbId == null &&zfbName !=null){
-                qw0.like("ali_pay_name",zfbName);
-                qw0.select("id","ali_pay_id","ali_pay_name");
-                //执行分页查询
-                userService.page(pageInfo,qw0);
-                //联表查询
-                BeanUtils.copyProperties(pageInfo,cashableDtoPage,"records");
-
-                List<User> records = pageInfo.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getId();//分类id
-                    //根据id查询分类对象
-                    qw1.eq("user_id",userId).and(c -> c.eq("status",2));
-                    Cashable cashable = cashableService.getOne(qw1);
-
-                    if(cashable != null){
-                        Long id = cashable.getId();
-                        cashableDto.setId(id);
-                        Long tradeNo = cashable.getTradeNo();
-                        cashableDto.setTradeNo(tradeNo);
-                        BigDecimal CA = cashable.getCashableAmount();
-                        cashableDto.setCashableAmount(CA);
-                        Integer payType = cashable.getPayType();
-                        cashableDto.setPayType(payType);
-                        Integer status = cashable.getStatus();
-                        cashableDto.setStatus(status);
-                        String withdrawReason = cashable.getWithdrawReason();
-                        cashableDto.setWithdrawReason(withdrawReason);
-                        LocalDateTime createTime = cashable.getCreateTime();
-                        cashableDto.setCreateTime(createTime);
-                        LocalDateTime updateTime = cashable.getUpdateTime();
-                        cashableDto.setUpdateTime(updateTime);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-
-            }
-
+        if (zfbName != null) {
+            wrapper.and(c -> {c.like("user.ali_pay_name",zfbName);});
         }
-        if (chooseType.equals(3)){
-            if(zfbId == null &&zfbName == null){
-                qw1.eq("status",3);
-                qw1.orderByDesc("create_time");
-                //执行分页查询
-                cashableService.page(page,qw1);
-                //联表查询
-                BeanUtils.copyProperties(page,cashableDtoPage,"records");
+        Page<CashableDto> cashableDtoPage = new Page<>(Page,PageSize);
+        IPage<CashableDto> userPage = cashableService.select(cashableDtoPage,wrapper);
+        return  R.success(userPage);
 
-                List<Cashable> records = page.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getUserId();//分类id
-                    //根据id查询分类对象
-                    User user = userService.getById(userId);
-
-                    if(user != null){
-                        String aliPayId = user.getAliPayId();
-                        cashableDto.setAliPayId(aliPayId);
-                        String aliPayName = user.getAliPayId();
-                        cashableDto.setAliPayName(aliPayName);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-            }
-            if(zfbId !=null&&zfbName == null){
-                qw0.like("ali_pay_id",zfbId);
-                qw0.select("id","ali_pay_id","ali_pay_name");
-                //执行分页查询
-                userService.page(pageInfo,qw0);
-                //联表查询
-                BeanUtils.copyProperties(pageInfo,cashableDtoPage,"records");
-
-                List<User> records = pageInfo.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getId();//分类id
-                    //根据id查询分类对象
-                    qw1.eq("user_id",userId).and(c -> c.eq("status",3));
-                    Cashable cashable = cashableService.getOne(qw1);
-
-                    if(cashable != null){
-                        Long id = cashable.getId();
-                        cashableDto.setId(id);
-                        Long tradeNo = cashable.getTradeNo();
-                        cashableDto.setTradeNo(tradeNo);
-                        BigDecimal CA = cashable.getCashableAmount();
-                        cashableDto.setCashableAmount(CA);
-                        Integer payType = cashable.getPayType();
-                        cashableDto.setPayType(payType);
-                        Integer status = cashable.getStatus();
-                        cashableDto.setStatus(status);
-                        String withdrawReason = cashable.getWithdrawReason();
-                        cashableDto.setWithdrawReason(withdrawReason);
-                        LocalDateTime createTime = cashable.getCreateTime();
-                        cashableDto.setCreateTime(createTime);
-                        LocalDateTime updateTime = cashable.getUpdateTime();
-                        cashableDto.setUpdateTime(updateTime);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-
-            }
-            if(zfbId == null &&zfbName != null){
-                qw0.like("ali_pay_name",zfbName);
-                qw0.select("id","ali_pay_id","ali_pay_name");
-                //执行分页查询
-                userService.page(pageInfo,qw0);
-                //联表查询
-                BeanUtils.copyProperties(pageInfo,cashableDtoPage,"records");
-
-                List<User> records = pageInfo.getRecords();
-
-                List<CashableDto> list = records.stream().map((item) -> {
-                    CashableDto cashableDto = new CashableDto();
-
-                    BeanUtils.copyProperties(item,cashableDto);
-
-                    Long userId = item.getId();//分类id
-                    //根据id查询分类对象
-                    qw1.eq("user_id",userId).and(c -> c.eq("status",3));
-                    Cashable cashable = cashableService.getOne(qw1);
-
-                    if(cashable != null){
-                        Long id = cashable.getId();
-                        cashableDto.setId(id);
-                        Long tradeNo = cashable.getTradeNo();
-                        cashableDto.setTradeNo(tradeNo);
-                        BigDecimal CA = cashable.getCashableAmount();
-                        cashableDto.setCashableAmount(CA);
-                        Integer payType = cashable.getPayType();
-                        cashableDto.setPayType(payType);
-                        Integer status = cashable.getStatus();
-                        cashableDto.setStatus(status);
-                        String withdrawReason = cashable.getWithdrawReason();
-                        cashableDto.setWithdrawReason(withdrawReason);
-                        LocalDateTime createTime = cashable.getCreateTime();
-                        cashableDto.setCreateTime(createTime);
-                        LocalDateTime updateTime = cashable.getUpdateTime();
-                        cashableDto.setUpdateTime(updateTime);
-                    }
-                    return cashableDto;
-                }).collect(Collectors.toList());
-
-                cashableDtoPage.setRecords(list);
-            }
-
-        }
-        return R.success(cashableDtoPage);
 
     }
 
@@ -610,14 +136,19 @@ public class CashableController {
      * @Param  payType 获取用户选择的提现方式 1:支付宝(默认) 2:微信
      * @return
      */
+
+
     //用户端提现
     @PostMapping("/Cashable")
-    public R<String > cashable(HttpServletRequest request,@RequestParam("amount")BigDecimal amount,
+    public R<String > cashable(@RequestParam("amount")BigDecimal amount,
                                @RequestParam("payType") Integer payType){
         UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
 
+        //BaseContext 获取session Id
+        Long userId = BaseContext.getCurrentId();
+
         //根据session获取用户id
-        Long userId = (Long) request.getSession().getAttribute("id");
+        //Long userId = (Long) request.getSession().getAttribute("id");
         //测试：Long userId = 1L;
 
         //申请提现金额和可提现金额对比
@@ -661,6 +192,7 @@ public class CashableController {
 
         return R.success("success");
     }
+
     /**
      * 管理端的提现退款
      * author Kenlihankun
@@ -668,6 +200,8 @@ public class CashableController {
      * cashableDto 接收必要参数
      * @return
      */
+
+
     @RequestMapping("/withdraw")
     public R<String> withdraw(CashableDto cashableDto,@RequestParam("withdrawReason") String withDrawReason){
         UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
