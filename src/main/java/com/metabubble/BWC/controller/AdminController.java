@@ -47,7 +47,7 @@ public class AdminController {
         HttpSession session = request.getSession();
         String checkCodeGen = (String)session.getAttribute("checkCodeGen");
         //比对验证码
-        if (!checkCodeGen.equals(checkCode)){
+        if (!checkCodeGen.equalsIgnoreCase(checkCode)){
             //不允许注册
             return R.error("验证码错误");
         }

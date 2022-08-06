@@ -1,8 +1,10 @@
 package com.metabubble.BWC.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.entity.Logs;
 import com.metabubble.BWC.mapper.LogsMapper;
+import com.metabubble.BWC.service.AdminService;
 import com.metabubble.BWC.service.LogsService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class LogsServiceImpl extends ServiceImpl<LogsMapper, Logs>
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private AdminService adminService;
+
     /**
      * 管理员日志
      * @param name 标题
@@ -32,6 +37,8 @@ public class LogsServiceImpl extends ServiceImpl<LogsMapper, Logs>
         Logs log = new Logs();
         Long adminId = (Long) request.getSession().getAttribute("admin");
         log.setAdminId(adminId);
+        Admin adminServiceById = adminService.getById(adminId);
+        log.setAdminName(adminServiceById.getName());
         log.setName(name);
         log.setContent(content);
         logsService.save(log);

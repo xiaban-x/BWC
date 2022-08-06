@@ -21,6 +21,9 @@ public class Logs {
     //管理员id
     private Long adminId;
 
+    //管理员名称
+    private String adminName;
+
     //标题
     private String name;
 

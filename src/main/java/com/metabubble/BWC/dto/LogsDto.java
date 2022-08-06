@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 /**
  * logs Dto
+ * 暂时废弃
  */
 @Data
 public class LogsDto {
