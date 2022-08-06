@@ -25,7 +25,7 @@ public class UserController {
     private TeamService teamService;
 
     /**
-     * 后台添加用户
+     * 管理端添加用户
      * @param user  用户对象
      * @return
      * @author leitianyu999
@@ -38,7 +38,7 @@ public class UserController {
 
 
     /**
-     * 分页查询
+     * 管理端分页查询
      * @param offset 页码
      * @param limit 条数
      * @param wxId 微信号
@@ -69,7 +69,7 @@ public class UserController {
     }
 
     /**
-     * 修改用户数据
+     * 管理端修改用户数据
      * @param user  修改的用户属性
      * @return
      * @author leitianyu999
@@ -101,7 +101,7 @@ public class UserController {
 
 
     /**
-     * 根据主键id删除用户
+     * 管理端根据主键id删除用户
      * @param id 用户id
      * @return
      * @author leitianyu999
@@ -123,34 +123,32 @@ public class UserController {
     public R<UserDto> getByIdForUser(@RequestParam Long id){
         //条件构造器
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
+        //添加用户id比对
         queryWrapper.eq(User::getId,id);
         User user = userService.getOne(queryWrapper);
 
         if (user!=null) {
 
             UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
-            System.out.println(user);
-            System.out.println(userDto);
-            UserDto userDto1 = userDto;
-            return R.success(userDto1);
+            return R.success(userDto);
         }
-        return R.error("没有查询到对应员工信息");
+        return R.error("没有查询到对应用户信息");
     }
 
 
     /**
      * 用户端修改用户数据
-     * @param userDto  修改的用户属性
+     * @param userDto1  修改的用户属性
      * @return
      * @author leitianyu999
      */
     @PutMapping("/getuser")
-    public R<String> updateForUser(@RequestBody UserDto userDto){
-        //条件构造器
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
+    public R<String> updateForUser(@RequestBody UserDto userDto1){
+        UserDto userDto = new UserDto();
+        userDto.setId(userDto1.getId());
+        userDto.setName(userDto1.getName());
         User user = UserConverter.INSTANCES.toUserDtoRoleUser(userDto);
-        queryWrapper.eq(User::getId,user.getId());
-        userService.update(user,queryWrapper);
+        userService.updateById(user);
         return R.success("修改成功");
 
     }
@@ -168,16 +166,18 @@ public class UserController {
     public R<String> addTeam(String invitation ,int id){
         //查询用户对象
         User user = userService.getById(id);
+        //判断邀请码是否为用户本身邀请码
         if (user.getDownId().equals(invitation)){
             return R.error("邀请码错误");
         }
+        //判断用户是否为有上级用户
         if (user.getUpId()==null) {
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             //添加验证码对比
             queryWrapper.eq(User::getDownId,invitation);
             //查询上级对象
             User userFirst = userService.getOne(queryWrapper);
-
+            //判断是否有上级对象
             if (userFirst==null){
                 return R.error("查无此邀请码");
             }
@@ -193,21 +193,30 @@ public class UserController {
         return R.error("已填写邀请码");
     }
 
-
+    /**
+     * 测试用添加用户
+     * @param user 用户资料
+     * @return
+     * @author leitianyu999
+     */
     @PutMapping("/creatuser")
     @Transactional
     public R<String> creatUser(@RequestBody User user){
 
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-
+        //添加id条件判断
         queryWrapper.eq(User::getTel,user.getTel());
-
+        //查询是否有该用户
         User one = userService.getOne(queryWrapper);
         if (one==null) {
+            //生成邀请码
             String uuid = userService.createUUID();
+            //添加邀请码
             user.setDownId(uuid);
+            //保存用户信息
             userService.save(user);
             User serviceOne = userService.getOne(queryWrapper);
+            //创建团队表
             teamService.save(serviceOne);
             return R.success("添加成功");
         }

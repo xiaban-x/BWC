@@ -79,8 +79,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 }
             }
             return after;
+        }else {
+            if (byId.getGrade()==1){
+                //更改会员等级为0
+                byId.setGrade(0);
+                this.updateById(byId);
+            }
+            return false;
         }
-        throw new CustomException("用户会员过期时间错误");
+
     }
 
     @Override
