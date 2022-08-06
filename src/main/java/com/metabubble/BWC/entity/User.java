@@ -49,12 +49,6 @@ public class User implements Serializable {
     //支付宝名称
     private String aliPayName;
 
-    //经度
-    private String lng;
-
-    //纬度
-    private String lat;
-
     //头像文件名
     private String avatar;
 
