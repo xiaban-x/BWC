@@ -6,10 +6,12 @@ import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.UserConverter;
 import com.metabubble.BWC.dto.UserDto;
 import com.metabubble.BWC.entity.User;
+import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +21,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private TeamService teamService;
 
     /**
      * 后台添加用户
@@ -150,4 +154,64 @@ public class UserController {
         return R.success("修改成功");
 
     }
+
+
+    /**
+     * 用户端根据邀请码添加上级
+     * @param invitation 邀请码
+     * @param id    用户id
+     * @return
+     * @author leitianyu999
+     */
+    @PutMapping("/user/invitation")
+    @Transactional
+    public R<String> addTeam(String invitation ,int id){
+        //查询用户对象
+        User user = userService.getById(id);
+        if (user.getDownId().equals(invitation)){
+            return R.error("邀请码错误");
+        }
+        if (user.getUpId()==null) {
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            //添加验证码对比
+            queryWrapper.eq(User::getDownId,invitation);
+            //查询上级对象
+            User userFirst = userService.getOne(queryWrapper);
+
+            if (userFirst==null){
+                return R.error("查无此邀请码");
+            }
+
+            //团队添加上级
+            teamService.addTeamTop(user,userFirst);
+
+            //用户添加上级邀请码
+            user.setUpId(invitation);
+            userService.updateById(user);
+            return R.success("添加成功");
+        }
+        return R.error("已填写邀请码");
+    }
+
+
+    @PutMapping("/creatuser")
+    @Transactional
+    public R<String> creatUser(@RequestBody User user){
+
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+
+        queryWrapper.eq(User::getTel,user.getTel());
+
+        User one = userService.getOne(queryWrapper);
+        if (one==null) {
+            String uuid = userService.createUUID();
+            user.setDownId(uuid);
+            userService.save(user);
+            User serviceOne = userService.getOne(queryWrapper);
+            teamService.save(serviceOne);
+            return R.success("添加成功");
+        }
+        return R.error("已有用户");
+    }
+
 }

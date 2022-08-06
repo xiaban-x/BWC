@@ -1,18 +1,22 @@
 package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.R;
+import com.metabubble.BWC.dto.AdminDto;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.service.AdminService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 管理员
@@ -93,20 +97,15 @@ public class AdminController {
      */
     @PostMapping
     public R<String> save(@RequestBody Admin admin) {
+        // 启用md5加密页面传来的密码
+        String password = admin.getPassword();
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
+        admin.setPassword(password);
+
         adminService.save(admin);
         return R.success("添加成功");
     }
 
-    // 不需要“查询所有”的功能
-//    /**
-//     * 查询所有
-//     * author cclucky
-//     * @return
-//     */
-//    @GetMapping
-//    public R<List<Admin>> getAll() {
-//        return R.success(adminService.list());
-//    }
 
     /**
      * 分页查询、根据管理员名字查询
@@ -117,9 +116,10 @@ public class AdminController {
      * @return
      */
     @GetMapping("/page")
-    public R<Page> page(int offset, int limit,String condition) {
+    public R<Page> page(int offset, int limit, String condition) {
         // 构建分页构造器
-        Page pageInfo = new Page(offset, limit);
+        Page<Admin> pageInfo = new Page(offset, limit);
+        Page<AdminDto> adminDtoPage = new Page();
 
         // 构建条件构造器
         LambdaQueryWrapper<Admin> adminLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -130,7 +130,32 @@ public class AdminController {
         // 执行查询
         adminService.page(pageInfo, adminLambdaQueryWrapper);
 
-        return  R.success(pageInfo);
+        // 查询不显示密码
+        List<Admin> records = pageInfo.getRecords();
+        List<AdminDto> list = records.stream().map((item) -> {
+            AdminDto adminDto = new AdminDto();
+            BeanUtils.copyProperties(item, adminDto);
+
+            Long adminId = item.getId();
+            String name = item.getName();
+            String email = item.getEmail();
+            Integer type = item.getType();
+            Integer status = item.getStatus();
+            LocalDateTime createTime = item.getCreateTime();
+
+            adminDto.setId(adminId);
+            adminDto.setName(name);
+            adminDto.setEmail(email);
+            adminDto.setType(type);
+            adminDto.setStatus(status);
+            adminDto.setCreateTime(createTime);
+
+            return adminDto;
+        }).collect(Collectors.toList());
+
+        adminDtoPage.setRecords(list);
+
+        return  R.success(adminDtoPage);
     }
 
     /**

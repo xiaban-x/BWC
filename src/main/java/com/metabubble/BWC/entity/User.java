@@ -20,10 +20,10 @@ public class User implements Serializable {
     private Long id;
 
     //上级邀请码
-    private Long upId;
+    private String upId;
 
     //下级邀请码
-    private Long downId;
+    private String downId;
 
     //用户名
     private String name;

@@ -31,6 +31,9 @@ public class Orders implements Serializable {
     //订单状态，0为已下单(默认)；1为一审待审核；2为一审通过；3为一审未通过；4为二审待审核；5为二审未通过；6为已完成；7为订单取消；8为订单过期
     private Integer status;
 
+    //审核理由
+    private String reason;
+
     //外卖平台的订单编号
     private String orderNumber;
 
@@ -39,9 +42,6 @@ public class Orders implements Serializable {
 
     //返现金额
     private BigDecimal rebate;
-
-    //审核理由
-    private String reason;
 
     //订单截图
     private String picOrder;

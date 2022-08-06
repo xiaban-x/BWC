@@ -7,5 +7,6 @@ public interface TaskService extends IService<Task> {
 
     //查询任务是否生效
     public Boolean checkTaskStatus(Long id);
-
+    //接取任务后任务数量减一
+    public void updateAmount(Long id);
 }

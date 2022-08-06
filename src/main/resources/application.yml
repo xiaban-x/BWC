@@ -4,11 +4,11 @@ server:
 spring:
   application:
 #    应用的名称，可选
-    name: reggie_take_out
+    name: BWC
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/bwc?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      url: jdbc:mysql://120.78.11.162:3306/bwc?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
       username: root
       password: 1234
   redis:
@@ -36,6 +36,10 @@ mybatis-plus:
 #      id-type: ASSIGN_ID
 #      图片存放位置
 BWC:
-  path: E:/IDEA/BWC/src/main/resources/photo/
+  path: /data/images/
+#  E:/IDEA/BWC/src/main/resources/photo/
+
+
+
 
 

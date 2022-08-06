@@ -25,6 +25,27 @@ public class Task{
     //商家id
     private Long merchantId;
 
+    //任务名称
+    private String name;
+
+    //任务类型：0为早餐(默认)，1为午餐，2为下午茶，3为宵夜
+    private Integer type;
+
+    //平台类型：0为美团(默认)，1为不需要
+    private Integer platform;
+
+    //任务是否需要评价：0为需要(默认)，1为不需要
+    private Integer comment;
+
+    //任务数量
+    private Integer amount;
+
+    //已完成任务数量
+    private Integer completed;
+
+    //任务剩余量
+    private Integer taskLeft;
+
     //非会员最低消费
     private BigDecimal minConsumptionA;
 

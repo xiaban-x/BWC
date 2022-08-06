@@ -26,14 +26,11 @@ public class Merchant implements Serializable {
     //商家名称
     private String name;
 
-    //商家图片
-    private String pic;
-
-    //电话号码
+    //商家电话
     private String tel;
 
-    //平台类型，0为美团，1为饿了么
-    private String plaType;
+    //商家图片
+    private String pic;
 
     //地址
     private String address;

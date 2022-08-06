@@ -84,6 +84,8 @@ public class OrdersController {
     public R<String> add(Long userId,Long taskId){
         //查询任务是否启用
         if (taskService.checkTaskStatus(taskId)) {
+            //更新任务数量
+            taskService.updateAmount(taskId);
             Orders orders = new Orders();
             //添加用户id
             orders.setUserId(userId);
@@ -111,7 +113,7 @@ public class OrdersController {
 
             return R.success("订单生成成功");
         }
-        return R.error("订单错误");
+        return R.error("订单生成错误");
     }
 
     /**
@@ -133,6 +135,10 @@ public class OrdersController {
         //判断是否为空
         if (orders.getOrderNumber()==null){
             return R.error("无订单编号");
+        }
+
+        if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {
+            return R.error("订单已过期");
         }
         Orders orders1 = ordersService.getById(orders);
         //添加订单金额
@@ -161,6 +167,11 @@ public class OrdersController {
      */
     @PutMapping("/secondaudit")
     public R<String> secondAudit(@RequestBody Orders orders){
+        //查询订单是否过期
+        if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {
+            return R.error("订单已过期");
+        }
+
         Orders orders1 = ordersService.getById(orders);
         //查询状态
         orders.setStatus(orders1.getStatus());
@@ -180,12 +191,13 @@ public class OrdersController {
      * @param offset    页码
      * @param limit 分页条数
      * @param merchantName  商家名称
+     * @param status 状态
      * @return
      * @author leitianyu999
      */
     @GetMapping("/page")
     @Transactional
-    public R<Page> page(String name,int offset,int limit,String merchantName){
+    public R<Page> page(String name,int offset,int limit,String merchantName,String status){
         Page<Orders> page = new Page(offset,limit);
 
         LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper();
@@ -196,6 +208,7 @@ public class OrdersController {
         if (name!=null){
             queryWrapper1.like(User::getName,name);
             List<User> list = userService.list(queryWrapper1);
+
             if (list!=null&&list.size()!=0){
                 queryWrapper3.and(ordersLambdaQueryWrapper -> {
                     for (User user : list) {
@@ -220,6 +233,9 @@ public class OrdersController {
             }
         }
 
+        //添加状态判断
+        queryWrapper3.eq(StringUtils.isNotEmpty(status),Orders::getStatus,status);
+        //根据创建时间排序
         queryWrapper3.orderByDesc(Orders::getUpdateTime);
 
 
@@ -253,20 +269,25 @@ public class OrdersController {
         Integer status = orders.getStatus();
         //待一审
         if (status==1) {
+            //添加一审成功状态
             orders.setStatus(2);
+            //更改过期时间
+            orders = ordersService.addExpiredTime(orders);
             //添加审核人id
-            orders.setReviewerIdA(BaseContext.getCurrentId());
+            //orders.setReviewerIdA(BaseContext.getCurrentId());
             ordersService.updateById(orders);
             return R.success("一审成功");
         }
         //待二审
         if (status==4){
-            //获取团队资料
-            Team team = teamService.getById(orders.getUserId());
-            //订单状态改成完成
-            orders.setStatus(6);
             //查询用户会员等级并跟新订单金额
             orders = ordersService.updateRebate(orders);
+            //获取团队资料
+            LambdaQueryWrapper<Team> queryWrapper123 = new LambdaQueryWrapper<>();
+            queryWrapper123.eq(Team::getUserId,orders.getUserId());
+            Team team = teamService.getOne(queryWrapper123);
+            //订单状态改成完成
+            orders.setStatus(6);
             //用户返现金额到账
             userService.cashback(orders);
             //给上一级返现
@@ -278,7 +299,7 @@ public class OrdersController {
                 teamService.cashbackForUserFromSecond(team.getUpUser02Id());
             }
             //添加审核人id
-            orders.setReviewerIdB(BaseContext.getCurrentId());
+            //orders.setReviewerIdB(BaseContext.getCurrentId());
             //更新订单状态
             ordersService.updateById(orders);
             return R.success("二审成功");
@@ -332,7 +353,7 @@ public class OrdersController {
         if (status==0||status==1||status==2||status==3||status==4||status==5) {
             orders.setStatus(7);
             ordersService.updateById(orders);
-            return R.success("取消成功");
+            return R.success("取消订单成功");
         }
         //判断订单是否已完成
         if (status==6) {
