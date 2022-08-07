@@ -32,6 +32,8 @@ public class OrdersController {
     private TaskService taskService;
     @Autowired
     private TeamService teamService;
+    @Autowired
+    private LogsService logsService;
 
     /**
      * 用户端查看全部订单（根据状态查询）
@@ -272,7 +274,7 @@ public class OrdersController {
      */
     @PostMapping("/commit")
     @Transactional
-    public R<String> firstAudit(Long id){
+    public R<String> Audit(Long id){
         Orders orders = ordersService.getById(id);
         Integer status = orders.getStatus();
         //待一审
@@ -284,6 +286,7 @@ public class OrdersController {
             //添加审核人id
             orders.setReviewerIdA(BaseContext.getCurrentId());
             ordersService.updateById(orders);
+            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”通过"+orders.getUserId()+"用户一审");
             return R.success("一审成功");
         }
         //待二审
@@ -310,10 +313,16 @@ public class OrdersController {
             //orders.setReviewerIdB(BaseContext.getCurrentId());
             //更新订单状态
             ordersService.updateById(orders);
+            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”通过"+orders.getUserId()+"用户二审");
             return R.success("二审成功");
         }
         return R.error("订单状态错误");
     }
+
+
+
+
+
 
     /**
      * 后台审核不通过
@@ -332,6 +341,7 @@ public class OrdersController {
             //添加审核人id
             orders.setReviewerIdA(BaseContext.getCurrentId());
             ordersService.updateById(orders1);
+            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”不通过"+orders.getUserId()+"用户一审");
             return R.success("更改成功");
         }
         //待二审
@@ -342,6 +352,7 @@ public class OrdersController {
             //添加审核人id
             orders.setReviewerIdB(BaseContext.getCurrentId());
             ordersService.updateById(orders1);
+            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”不通过"+orders.getUserId()+"用户一审");
             return R.success("更改成功");
         }
         return R.error("订单状态错误");

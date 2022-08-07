@@ -2,10 +2,12 @@ package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.UserConverter;
 import com.metabubble.BWC.dto.UserDto;
 import com.metabubble.BWC.entity.User;
+import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private TeamService teamService;
+    @Autowired
+    private LogsService logsService;
 
     /**
      * 管理端添加用户
@@ -78,6 +82,7 @@ public class UserController {
     public R<String> update(@RequestBody User user){
 
         userService.updateById(user);
+        logsService.saveLog("修改用户", "管理员“"+BaseContext.getCurrentId()+"”修改了"+user.getName()+"的基本信息");
         return R.success("修改成功");
 
     }
@@ -108,7 +113,9 @@ public class UserController {
      */
     @DeleteMapping
     public R<String> delete(@RequestParam Long id){
+        User byId = userService.getById(id);
         userService.removeById(id);
+        logsService.saveLog("删除用户","管理员”"+BaseContext.getCurrentId()+"“删除了"+byId.getName()+"用户");
         return R.success("删除成功");
     }
 
