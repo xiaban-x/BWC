@@ -37,7 +37,7 @@ public class AdminController {
      * @return 返回登陆的信息
      */
     @PostMapping("/login")
-    public R<Admin> login(HttpServletRequest request, @RequestBody Map map)
+    public R<AdminDto> login(HttpServletRequest request, @RequestBody Map map)
             throws Exception{
         //获取邮箱
         String email = map.get("email").toString();
@@ -47,7 +47,7 @@ public class AdminController {
         HttpSession session = request.getSession();
         String checkCodeGen = (String)session.getAttribute("checkCodeGen");
         //比对验证码
-        if (!checkCodeGen.equals(checkCode)){
+        if (!checkCodeGen.equalsIgnoreCase(checkCode)){
             //不允许注册
             return R.error("验证码错误");
         }
@@ -73,7 +73,11 @@ public class AdminController {
         //登陆成功，id存入session
         request.getSession().setAttribute("admin", adminMsg.getId());
 
-        return R.success(adminMsg);
+        //Dto对象拷贝
+        AdminDto adminDto = new AdminDto();
+        BeanUtils.copyProperties(adminMsg,adminDto,"adminMsg");
+
+        return R.success(adminDto);
     }
 
     /**

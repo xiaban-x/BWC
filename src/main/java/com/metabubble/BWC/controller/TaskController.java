@@ -38,12 +38,11 @@ public class TaskController {
     private static final double EARTH_RADIUS = 6371000;//赤道半径(单位m)
 
     /**
-     * 查询全部
-     *
+     * 查询所有任务
      * @param offset
      * @param limit
-     * @return
      * @Author 看客
+     * @return
      */
     @GetMapping(value = {"/{offset}/{limit}"})
     public R<List<TaskDto>> getAll(@PathVariable Integer offset, @PathVariable Integer limit) {
@@ -63,11 +62,10 @@ public class TaskController {
     }
 
     /**
-     * 修改
-     *
+     * 修改任务
      * @param task
-     * @return
      * @Author 看客
+     * @return
      */
     @PutMapping
     public R<String> update(@RequestBody Task task) {
@@ -91,11 +89,10 @@ public class TaskController {
     }
 
     /**
-     * 根据id删除
-     *
+     * 删除任务
      * @param id
-     * @return
      * @Author 看客
+     * @return
      */
     @DeleteMapping("/{id}")
     public R<String> delete(@PathVariable Long id) {
@@ -108,11 +105,10 @@ public class TaskController {
     }
 
     /**
-     * 新增
-     *
+     * 添加订单
      * @param task
-     * @return
      * @Author 看客
+     * @return
      */
     @PostMapping
     public R<String> save(@RequestBody Task task) {
@@ -126,6 +122,12 @@ public class TaskController {
         }
     }
 
+    /**
+     * 用户接任务后对任务数进行更新
+     * @param condition
+     * @Author 看客
+     * @return
+     */
     @PutMapping("/pickTask")
     public R<String> updateTask(@RequestBody(required = false) Condition condition){
         Task task = taskService.getById(condition.getId());
@@ -138,15 +140,20 @@ public class TaskController {
             return R.error("更新失败");
         }
     }
+
+    /**
+     * 任务信息详情
+     * @param condition
+     * @Author 看客
+     * @return
+     */
     @GetMapping("/detail")
     public R<TaskDetailDto> getTaskDetail(@RequestBody(required = false) Condition condition){
         //通过任务编号查找被点击的任务
         Task task = taskService.getById(condition.getId());
-        //通过id查询点击任务的用户
-        User user = userService.getById(condition.getUserId());
         //获取用户的经纬度
-        BigDecimal userLng = user.getLng();
-        BigDecimal userLat = user.getLat();
+        BigDecimal userLng = condition.getUserLng();
+        BigDecimal userLat = condition.getUserLat();
         //获取任务所属商家的经纬度
         Merchant merchant = merchantService.getById(task.getMerchantId());
         BigDecimal merchantLng = merchant.getLng();
@@ -166,7 +173,7 @@ public class TaskController {
     }
     /**
      * 首页展示任务
-     * 根据订单名字/商家名字 任务类型 任务要求 任务是否需要评价 平台类型脾虚
+     * 根据订单名字/商家名字 任务类型 任务要求 任务是否需要评价 平台类型排序
      * @param condition
      * @param limit
      * @param offset
@@ -177,12 +184,22 @@ public class TaskController {
     public R<List<HomeDto>> getByCondition(@RequestBody(required = false) Condition condition, @PathVariable Integer limit, @PathVariable Integer offset) {
         Page<Task> taskPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
-        //通过id获取用户
-        User user = userService.getById(condition.getId());
+        //获取用户经纬度
+        BigDecimal userLng = condition.getUserLng();
+        BigDecimal userLat = condition.getUserLat();
+        if (userLng == null || userLat == null){
+            //获取用户地址
+            String address = condition.getAddress();
+            //通过地址获得用户经纬度
+            Map<String, BigDecimal> coordinates = MerchantController.getGeocoderLatitude(address);
+            assert coordinates != null;
+            userLng = coordinates.get("lng");
+            userLat = coordinates.get("lat");
+        }
         //获取所有商家
         List<Merchant> merchants = merchantService.list();
         //得到每个商家与用户的距离
-        Map<Merchant, BigDecimal> merchantBigDecimalMap = distanceToMerchant(merchants, user.getLng(), user.getLat());
+        Map<Merchant, BigDecimal> merchantBigDecimalMap = distanceToMerchant(merchants, userLng, userLat);
 
         //任务要求排序：0为人气高，1为距离近，2为最省钱，3为新商家
         if (condition.getConstraint() != null) {
@@ -213,7 +230,7 @@ public class TaskController {
                 //查询所有符合条件的任务
                 List<Task> tasks = taskService.list(mLqw2);
                 //获取从近到远排序的商家
-                Set<Merchant> merchantsOrder = calculationOfConstraints(merchants, user);
+                Set<Merchant> merchantsOrder = calculationOfConstraints(merchants, userLng,userLat);
                 for (Merchant merchant : merchantsOrder) {
                     //获取商家id
                     Long id = merchant.getId();
@@ -310,13 +327,13 @@ public class TaskController {
 
     /**
      * 给商家按距离远近排序 从近到远
-     *
      * @param merchants
-     * @param user
-     * @return
+     * @param userLng
+     * @param userLat
      * @Author 看客
+     * @return
      */
-    public Set<Merchant> calculationOfConstraints(List<Merchant> merchants, User user) {
+    public Set<Merchant> calculationOfConstraints(List<Merchant> merchants, BigDecimal userLng, BigDecimal userLat) {
         //距离近
         Map<Merchant, BigDecimal> map = new HashMap<>();
         //商家与用户之间的距离
@@ -324,10 +341,6 @@ public class TaskController {
         //商家按距离排序结果  采用LinkedHashSet存储  有序不可重复  避免两个暑假与用户距离相同时产生错误
         Set<Merchant> merchantsOrder = new LinkedHashSet<>();
 //        ArrayList<Merchant> merchantsOrder = new ArrayList<>();
-        //获取用户的经纬度
-        BigDecimal userLng = user.getLng();
-        BigDecimal userLat = user.getLat();
-
         for (Merchant merchant : merchants) {
             //获取商家的经纬度
             BigDecimal merchantLat = merchant.getLat();

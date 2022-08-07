@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -43,28 +44,16 @@ public class LogsController {
         queryWrapperLogs.orderByDesc(Logs::getCreateTime);
         //添加条件查询
         //操作用户
-        LambdaQueryWrapper<Admin> queryWrapperAdmin = new LambdaQueryWrapper<>();
-        if (adminName.length() != 0) {
-            queryWrapperAdmin.eq(Admin::getName, adminName);
-            Admin one = adminService.getOne(queryWrapperAdmin);
-            if (one != null){
-                queryWrapperLogs.eq(Logs::getAdminId, one.getId());
-            }else {
-                //表示无此人，查询为无
-                queryWrapperLogs.eq(Logs::getId,0);
-            }
-        }
+        queryWrapperLogs.like(adminName != null,Logs::getAdminName,adminName);
         //标题
-        if (name.length() != 0){
-            queryWrapperLogs.like(Logs::getName, name);
-        }
+        queryWrapperLogs.like(name != null ,Logs::getName, name);
         //内容
-        if (content.length() != 0){
-            queryWrapperLogs.like(Logs::getContent, content);
-        }
+        queryWrapperLogs.like(content != null ,Logs::getContent, content);
 
         //执行查询 传入分页数据
-        logService.page(pageInfo, queryWrapperLogs);
+        Page<Logs> page = logService.page(pageInfo, queryWrapperLogs);
+
+/* 因为Dto废弃暂时注释
 
         //Dto对象拷贝
         Page<LogsDto> logsDtoPage = new Page<>();
@@ -83,8 +72,9 @@ public class LogsController {
             return logsDto;
         }).collect(Collectors.toList());
         logsDtoPage.setRecords(list);
+*/
 
-        return R.success(logsDtoPage);
+        return R.success(pageInfo);
     }
 
 

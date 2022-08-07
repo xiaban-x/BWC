@@ -20,10 +20,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/merchant")
@@ -36,7 +33,7 @@ public class MerchantController {
     public static final String KEY_1 = "XEABZ-GFERQ-GVY5M-GZCOR-EJGOT-OWBOP";
 
     /**
-     * 查询
+     * 查询商家信息
      * @param condition
      * @param limit
      * @param offset
@@ -74,7 +71,7 @@ public class MerchantController {
     }
 
     /**
-     * 新增
+     * 新增商家
      * @param merchant
      * @Author 看客
      * @return
@@ -82,8 +79,8 @@ public class MerchantController {
     @PostMapping
     public R<String> save(@RequestBody Merchant merchant) {
         //获取经纬度
-        merchant.setLng(BigDecimal.valueOf(Double.parseDouble(getGeocoderLatitude(merchant.getAddress()).get("lng"))));
-        merchant.setLat(BigDecimal.valueOf(Double.parseDouble(getGeocoderLatitude(merchant.getAddress()).get("lat"))));
+        merchant.setLng(Objects.requireNonNull(getGeocoderLatitude(merchant.getAddress())).get("lng"));
+        merchant.setLat(Objects.requireNonNull(getGeocoderLatitude(merchant.getAddress())).get("lat"));
         //保存
         boolean flag = merchantService.save(merchant);
         if (flag){
@@ -93,15 +90,15 @@ public class MerchantController {
     }
 
     /**
-     * 修改
+     * 修改商家信息
      * @param merchant
      * @Author 看客
      * @return
      */
     @PutMapping
     public R<String> update(@RequestBody Merchant merchant) {
-        merchant.setLng(BigDecimal.valueOf(Double.parseDouble(getGeocoderLatitude(merchant.getAddress()).get("lng"))));
-        merchant.setLat(BigDecimal.valueOf(Double.parseDouble(getGeocoderLatitude(merchant.getAddress()).get("lat"))));
+        merchant.setLng(Objects.requireNonNull(getGeocoderLatitude(merchant.getAddress())).get("lng"));
+        merchant.setLat(Objects.requireNonNull(getGeocoderLatitude(merchant.getAddress())).get("lat"));
         boolean flag = merchantService.updateById(merchant);
         if (flag){
             return R.success("修改成功");
@@ -111,7 +108,7 @@ public class MerchantController {
     }
 
     /**
-     * 根据id删除
+     * 删除商家
      * @param id
      * @Author 看客
      * @return
@@ -132,7 +129,7 @@ public class MerchantController {
      * @Author 看客
      * @return
      */
-    public static Map<String, String> getGeocoderLatitude(String address) {
+    public static Map<String, BigDecimal> getGeocoderLatitude(String address) {
         BufferedReader in = null;
         try {
             //将地址转换成utf-8的16进制
@@ -147,15 +144,17 @@ public class MerchantController {
                 sb.append(res.trim());
             }
             String str = sb.toString();
-            Map<String, String> map = null;
+            Map<String, BigDecimal> map = null;
             if (StringUtils.isNotEmpty(str)) {
                 int lngStart = str.indexOf("lng\":");
                 int lngEnd = str.indexOf(",\"lat");
                 int latEnd = str.indexOf("}", lngEnd + 8);
                 if (lngStart > 0 && lngEnd > 0 && latEnd > 0) {
-                    String lng = str.substring(lngStart + 5, lngEnd);
-                    String lat = str.substring(lngEnd + 7, latEnd);
-                    map = new HashMap<String, String>();
+                    String lngStr = str.substring(lngStart + 5, lngEnd);
+                    String latStr = str.substring(lngEnd + 7, latEnd);
+                    BigDecimal lng = BigDecimal.valueOf(Double.parseDouble(lngStr));
+                    BigDecimal lat = BigDecimal.valueOf(Double.parseDouble(latStr));
+                    map = new HashMap<>();
                     map.put("lng", lng);
                     map.put("lat", lat);
                     return map;
@@ -165,7 +164,9 @@ public class MerchantController {
             e.printStackTrace();
         } finally {
             try {
-                in.close();
+                if (in != null) {
+                    in.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

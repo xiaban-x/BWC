@@ -5,6 +5,7 @@ import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.entity.Config;
 import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.ConfigService;
+import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
 import com.metabubble.BWC.service.MerchantTypeService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,9 @@ public class DecorationController {
 
     @Autowired
     private ConfigService configService;
+
+    @Autowired
+    private LogsService logsService;
 
     /**
      * 用户端首页轮播图展示
@@ -45,7 +49,9 @@ public class DecorationController {
      */
     @DeleteMapping("/{id}")
     public R<String> delete(@PathVariable("id") Long id){
+        Config CBI = configService.getById(id);
         configService.removeById(id);
+        logsService.saveLog("删除装修","删除了"+CBI.getName()+"信息");
         return R.success("删除成功");
     }
 
@@ -58,6 +64,7 @@ public class DecorationController {
     @PostMapping
     public R<String> save(@RequestBody Config config){
         configService.save(config);
+        logsService.saveLog("添加装修","添加了"+config.getName()+"信息");
         return R.success("添加成功");
     }
 
@@ -82,6 +89,7 @@ public class DecorationController {
     @PutMapping
     public R<String> update(@RequestBody Config config){
         configService.updateById(config);
+        logsService.saveLog("修改装修","修改了"+config.getName()+"基本信息");
         return R.success("修改成功");
     }
 

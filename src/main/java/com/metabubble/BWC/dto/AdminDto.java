@@ -29,7 +29,7 @@ public class AdminDto {
     // 管理员状态 status
     private Integer status;
 
-    // 管理员添加时间 createTime
+    // 管理员创建时间 createTime
     private LocalDateTime createTime;
 
 
