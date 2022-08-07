@@ -178,11 +178,10 @@ public class AdminController {
      */
     @PutMapping
     public R<String> update(@RequestBody Admin admin) {
+        // 管理员更改日志
+        logsService.saveLog("修改管理员", "修改 “ " + admin.getName() + " ”管理员的基本信息");
 
         adminService.updateById(admin);
-
-        // 管理员更改日志
-        logsService.saveLog("修改管理员", "修改了 “ " + admin.getName() + " ”管理员的基本信息");
 
         return R.success("数据修改成功");
     }
@@ -198,7 +197,7 @@ public class AdminController {
         Admin admin = adminService.getById(id);
 
         // 管理员删除日志
-        logsService.saveLog("删除管理员", "删除了 “ " + admin.getName() + " ” 管理员");
+        logsService.saveLog("删除管理员", "删除 “ " + admin.getName() + " ” 管理员");
 
         adminService.removeById(id);
 
