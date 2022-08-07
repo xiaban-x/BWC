@@ -7,6 +7,7 @@ import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.MerchantConverter;
 import com.metabubble.BWC.dto.MerchantDto;
 import com.metabubble.BWC.entity.Merchant;
+import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +30,8 @@ public class MerchantController {
 
     @Autowired
     MerchantService merchantService;
+    @Autowired
+    LogsService logsService;
 
     public static final String KEY_1 = "XEABZ-GFERQ-GVY5M-GZCOR-EJGOT-OWBOP";
 
@@ -79,14 +82,18 @@ public class MerchantController {
     @PostMapping
     public R<String> save(@RequestBody Merchant merchant) {
         //获取经纬度
-        merchant.setLng(Objects.requireNonNull(getGeocoderLatitude(merchant.getAddress())).get("lng"));
-        merchant.setLat(Objects.requireNonNull(getGeocoderLatitude(merchant.getAddress())).get("lat"));
+        BigDecimal lng = getGeocoderLatitude(merchant.getAddress()).get("lng");
+        BigDecimal lat = getGeocoderLatitude(merchant.getAddress()).get("lat");
+//        merchant.setLng(lng);
+//        merchant.setLat(lat);
         //保存
         boolean flag = merchantService.save(merchant);
         if (flag){
-            return R.success("保存成功");
+            logsService.saveLog("新增商家","新增了\""+merchant.getName()+"\"商家");
+            return R.success("新增成功");
         }
-       return R.error("保存失败");
+
+       return R.error("新增失败");
     }
 
     /**
@@ -97,10 +104,13 @@ public class MerchantController {
      */
     @PutMapping
     public R<String> update(@RequestBody Merchant merchant) {
-        merchant.setLng(Objects.requireNonNull(getGeocoderLatitude(merchant.getAddress())).get("lng"));
-        merchant.setLat(Objects.requireNonNull(getGeocoderLatitude(merchant.getAddress())).get("lat"));
+        BigDecimal lng = getGeocoderLatitude(merchant.getAddress()).get("lng");
+        BigDecimal lat = getGeocoderLatitude(merchant.getAddress()).get("lat");
+        //获取修改前的商家名字
+        String merchantName = merchantService.getById(merchant.getId()).getName();
         boolean flag = merchantService.updateById(merchant);
         if (flag){
+            logsService.saveLog("修改商家","修改了\""+merchantName+"\"商家的基本信息");
             return R.success("修改成功");
         }
         return R.error("修改失败");
@@ -115,8 +125,10 @@ public class MerchantController {
      */
     @DeleteMapping("/{id}")
     public R<String> delete(@PathVariable("id") Long id){
+        String name = merchantService.getById(id).getName();
         boolean flag = merchantService.removeById(id);
         if(flag){
+            logsService.saveLog("删除商家","删除了\""+name+"\"商家");
             return R.success("删除成功");
         }
         return R.error("删除失败");
