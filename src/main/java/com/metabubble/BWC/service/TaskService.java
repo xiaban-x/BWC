@@ -9,4 +9,6 @@ public interface TaskService extends IService<Task> {
     public Boolean checkTaskStatus(Long id);
     //接取任务后任务数量减一
     public void updateAmount(Long id);
+    //查询用户当天是否接取过同一任务
+    public Boolean checkOrders(Long userId,Long taskId);
 }
