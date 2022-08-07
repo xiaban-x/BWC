@@ -37,7 +37,7 @@ public class AdminController {
      * @return 返回登陆的信息
      */
     @PostMapping("/login")
-    public R<Admin> login(HttpServletRequest request, @RequestBody Map map)
+    public R<AdminDto> login(HttpServletRequest request, @RequestBody Map map)
             throws Exception{
         //获取邮箱
         String email = map.get("email").toString();
@@ -73,7 +73,11 @@ public class AdminController {
         //登陆成功，id存入session
         request.getSession().setAttribute("admin", adminMsg.getId());
 
-        return R.success(adminMsg);
+        //Dto对象拷贝
+        AdminDto adminDto = new AdminDto();
+        BeanUtils.copyProperties(adminMsg,adminDto,"adminMsg");
+
+        return R.success(adminDto);
     }
 
     /**
