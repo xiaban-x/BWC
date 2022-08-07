@@ -88,6 +88,9 @@ public class OrdersController {
     public R<String> add(Long userId,Long taskId){
         //查询任务是否启用
         if (taskService.checkTaskStatus(taskId)) {
+            if (!taskService.checkOrders(userId,taskId)){
+                return R.error("用户今日已接过此任务");
+            }
             //更新任务数量
             taskService.updateAmount(taskId);
             Orders orders = new Orders();
