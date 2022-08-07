@@ -13,6 +13,7 @@ import com.metabubble.BWC.dto.TaskDto;
 import com.metabubble.BWC.entity.Merchant;
 import com.metabubble.BWC.entity.Task;
 import com.metabubble.BWC.entity.User;
+import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
 import com.metabubble.BWC.service.TaskService;
 import com.metabubble.BWC.service.UserService;
@@ -32,6 +33,8 @@ public class TaskController {
     MerchantService merchantService;
     @Autowired
     UserService userService;
+    @Autowired
+    LogsService logsService;
     /**
      * 默认地球半径
      */
@@ -75,13 +78,19 @@ public class TaskController {
             task.setCompleted(0);
             task.setTaskLeft(task.getAmount());
         }else{
+            //获取任务总数
             Integer amount = taskService.getById(task.getId()).getAmount();
             task.setAmount(amount);
             task.setCompleted(0);
             task.setTaskLeft(amount);
         }
+        //商家名称
+        String name = merchantService.getById(task.getMerchantId()).getName();
+        //获取修改任务前的信息
+        String taskName = taskService.getById(task.getId()).getName();
         boolean flag = taskService.updateById(task);
         if (flag) {
+            logsService.saveLog("修改任务","修改了\""+name+"\"的\""+taskName+"\"的任务");
             return R.success("修改成功");
         } else {
             return R.error("修改失败");
@@ -96,8 +105,15 @@ public class TaskController {
      */
     @DeleteMapping("/{id}")
     public R<String> delete(@PathVariable Long id) {
+        //获取任务
+        Task task = taskService.getById(id);
+        //获取任务名字
+        String taskName = task.getName();
+        //获取商家名字
+        String merchantName = merchantService.getById(task.getMerchantId()).getName();
         boolean flag = taskService.removeById(id);
         if (flag) {
+            logsService.saveLog("删除任务","删除了\""+merchantName+"\"的\""+taskName+"\"的任务");
             return R.success("删除成功");
         } else {
             return R.error("删除失败");
@@ -112,13 +128,18 @@ public class TaskController {
      */
     @PostMapping
     public R<String> save(@RequestBody Task task) {
+        //设置剩余量和总数一致
         task.setTaskLeft(task.getAmount());
+        //设置任务完成量为0
         task.setCompleted(0);
+        //商家名字
+        String name = merchantService.getById(task.getMerchantId()).getName();
         boolean flag = taskService.save(task);
         if (flag) {
-            return R.success("保存成功");
+            logsService.saveLog("添加任务","添加了\""+name+"\"的\""+task.getName()+"\"的任务");
+            return R.success("添加成功");
         } else {
-            return R.error("保存失败");
+            return R.error("添加失败");
         }
     }
 
