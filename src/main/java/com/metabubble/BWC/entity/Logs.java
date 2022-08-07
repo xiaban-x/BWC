@@ -4,13 +4,14 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * 日志
  */
 @Data
-public class Logs {
+public class Logs implements Serializable {
 
     //序列化
     private static final long serialVersionUID = 1L;

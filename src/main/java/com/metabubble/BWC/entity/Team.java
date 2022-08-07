@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
  */
 @Data
 public class Team implements Serializable {
+
     //序列化
     private static final long serialVersionUID = 1L;
 

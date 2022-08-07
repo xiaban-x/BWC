@@ -4,6 +4,8 @@ package com.metabubble.BWC.entity;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -11,7 +13,7 @@ import java.time.LocalDateTime;
  * 提现管理
  */
 @Data
-public class Cashable {
+public class Cashable implements Serializable {
     //序列化
     private static final long serialVersionUID = 1L;
 
