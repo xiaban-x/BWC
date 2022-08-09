@@ -6,6 +6,7 @@ import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.AdminDto;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.service.AdminService;
+import com.metabubble.BWC.service.LogsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private LogsService logsService;
 
     /**
      * 管理员登录
@@ -107,6 +111,10 @@ public class AdminController {
         admin.setPassword(password);
 
         adminService.save(admin);
+
+        // 管理员新增日志
+        logsService.saveLog("增加管理员", "增加了 “ " + admin.getName() + " ” 管理员");
+
         return R.success("添加成功");
     }
 
@@ -170,7 +178,8 @@ public class AdminController {
      */
     @PutMapping
     public R<String> update(@RequestBody Admin admin) {
-
+        // 管理员更改日志
+        logsService.saveLog("修改管理员", "修改 “ " + admin.getName() + " ”管理员的基本信息");
 
         adminService.updateById(admin);
 
@@ -184,6 +193,11 @@ public class AdminController {
 
     @DeleteMapping
     public R<String> delete(Long id) {
+
+        Admin admin = adminService.getById(id);
+
+        // 管理员删除日志
+        logsService.saveLog("删除管理员", "删除 “ " + admin.getName() + " ” 管理员");
 
         adminService.removeById(id);
 
