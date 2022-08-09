@@ -23,7 +23,7 @@ public class Recharge implements Serializable {
     //用户id
     private Long userId;
 
-    //充值方式 0零钱（默认） 1微信 2支付宝
+    //充值方式 0个人零钱（默认） 1微信 2支付宝 3团队零钱
     private Integer rechargeType;
 
     //订单号

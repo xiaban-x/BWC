@@ -4,8 +4,6 @@ package com.metabubble.BWC.entity;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
-
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,7 +11,7 @@ import java.time.LocalDateTime;
  * 提现管理
  */
 @Data
-public class Cashable implements Serializable {
+public class Cashable {
     //序列化
     private static final long serialVersionUID = 1L;
 
@@ -28,6 +26,9 @@ public class Cashable implements Serializable {
 
     //提现金额
     private BigDecimal cashableAmount;
+
+    //提现方式 0，个人余额（默认） 1，团队余额
+    private Integer chooseType;
 
     //提现类型 1,支付宝(默认) 2，微信
     private Integer payType;

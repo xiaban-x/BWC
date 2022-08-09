@@ -21,7 +21,7 @@ public class Config implements Serializable {
     //配置内容
     private String content;
 
-    //配置类型，1为用户端首页轮播图(默认)，2为首页品类，3为活动，4为背景图，5为公告信息
+    //配置类型，0为系统配置(默认)，1为用户端首页轮播图，2为首页品类，3为活动，4为背景图，5为公告信息
     private Integer type;
 
     //是否启用,0为禁用，1为启用(默认)

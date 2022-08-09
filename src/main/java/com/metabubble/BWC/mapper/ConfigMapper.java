@@ -1,6 +1,7 @@
 package com.metabubble.BWC.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.entity.Config;
 import org.apache.ibatis.annotations.Mapper;
 
