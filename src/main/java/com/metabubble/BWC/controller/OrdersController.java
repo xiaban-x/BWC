@@ -45,18 +45,22 @@ public class OrdersController {
      * @author leitianyu999
      */
     @GetMapping("/user/page")
-    public R<Page> userPage(int id,int offset, int limit,String status){
+    public R<Page> userPage(int id,int offset, int limit,@RequestParam List<String> status){
 
         //分页构造器
         Page<Orders> pageSearch = new Page(offset,limit);
         //条件构造器
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper();
-
-        if (StringUtils.isNotEmpty(status)) {
-            int i = Integer.parseInt(status);
-            queryWrapper.eq(Orders::getStatus,i);
-        }
         queryWrapper.eq(!String.valueOf(id).equals(""),Orders::getUserId,id);
+        if (status.size()!=0&&status!=null) {
+            queryWrapper.and(ordersLambdaQueryWrapper -> {
+                for (String o : status) {
+                    int i = Integer.parseInt(o);
+                    ordersLambdaQueryWrapper.or().eq(Orders::getStatus,i);
+                }
+            });
+        }
+
         //添加排序条件
         queryWrapper.orderByDesc(Orders::getUpdateTime);
         ordersService.page(pageSearch,queryWrapper);

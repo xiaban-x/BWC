@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -94,6 +95,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public String createUUID() {
         String s = UUID.randomUUID().toString();
         return s;
+    }
+
+    @Override
+    public Boolean findUser(String mobile) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getTel,mobile);
+        List<User> list = this.list(queryWrapper);
+        if (list!=null&&list.size()==1){
+            return true;
+        }else if (list.size()>1){
+            throw new CustomException("手机号注册多名用户");
+        }else {
+            return false;
+        }
     }
 
 
