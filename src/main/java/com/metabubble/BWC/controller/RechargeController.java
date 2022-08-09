@@ -5,14 +5,19 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
+import com.metabubble.BWC.dto.CDto;
+import com.metabubble.BWC.dto.RDto;
 import com.metabubble.BWC.dto.RechargeDto;
 import com.metabubble.BWC.entity.Recharge;
+import com.metabubble.BWC.entity.Team;
 import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.RechargeService;
+import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -28,6 +33,8 @@ public class RechargeController {
     RechargeService rechargeService;
     @Autowired
     UserService userService;
+    @Autowired
+    TeamService teamService;
 
     /**
      * 充值统计
@@ -39,28 +46,25 @@ public class RechargeController {
      */
     //充值统计
     @GetMapping("/recharge_amount")
-    public R<Map> recharge_amount(@RequestBody Map map) {
-        String beginTime = (String) map.get("beginTime");
-        String type = (String) map.get("type");
+    public R<RDto> recharge_amount(@RequestParam("Type") Integer type, @RequestParam("BeginTime") String beginTime) {
 
-        Map<String, BigDecimal> map0 = new HashMap<>();
 
         QueryWrapper<Recharge> queryAmount01 = new QueryWrapper<>();
         QueryWrapper<Recharge> queryAmount02 = new QueryWrapper<>();
         QueryWrapper<Recharge> queryAll = new QueryWrapper<>();
 
         //充值
-        if (type.equals("按天查询") && beginTime != null) {
+        if (type.equals(1) && beginTime != null) {
             String beginTime02 = beginTime.substring(0, 10);
             beginTime = beginTime02;
 
         }
-        if (type.equals("按月查询") && beginTime != null) {
+        if (type.equals(2) && beginTime != null) {
             String beginTime03 = beginTime.substring(0, 7);
             beginTime = beginTime03;
 
         }
-        if (type.equals("按年查询") && beginTime != null) {
+        if (type.equals(3) && beginTime != null) {
             String beginTime04 = beginTime.substring(0, 4);
             beginTime = beginTime04;
 
@@ -92,11 +96,12 @@ public class RechargeController {
         Map<String, Object> map13 = rechargeService.getMap(queryAll);
         BigDecimal sumAll0 = (BigDecimal) map13.get("all0");
 
-        map0.put("wx", sumCount1);
-        map0.put("zfb", sumCount2);
-        map0.put("All", sumAll0);
+        RDto rDto = new RDto();
+        rDto.setWxAmount(sumCount1);
+        rDto.setZfbAmount(sumCount2);
+        rDto.setAllAmount(sumAll0);
 
-        return R.success(map0);
+        return R.success(rDto);
     }
 
 
@@ -111,6 +116,7 @@ public class RechargeController {
 
     //待充值
     //保存userId,outTradeNo,rechargeAmount,rechargeType(默认),status(默认),createTime,UpdateTime
+    @Transactional
     @PutMapping("/recharge_msg")
     public R<Map> recharge_click(@RequestParam("rechargeAmount") BigDecimal rechargeAmount) {
         //BaseContext 获取session Id
@@ -156,24 +162,26 @@ public class RechargeController {
      * 更新充值表和用户表信息，插入选择充值会员时间
      * author Kenlihankun
      * @return
-     * @Param rechargeType 选择的充值类型 0：零钱 1：微信 2：支付宝
+     * @Param rechargeType 选择的充值类型 0：个人零钱 1：微信 2：支付宝 3:团队零钱
      * @Param tradeNo 订单号
      * @Param membershipTime 选择充值的会员时间 1：月卡 2：季卡 3：年卡
      */
     //充值成功
     //
+    @Transactional
     @PutMapping("/recharge_success")
-    public R<Map> recharge_confirm(@RequestParam("tradeNo") Long tradeNo,
+    public R<String> recharge_confirm(@RequestParam("tradeNo") Long tradeNo,
                                    @RequestParam("membershipTime") Integer membershipTime ,
                                    @RequestParam("rechargeType") Integer rechargeType) {
-        //返回会员到期时间
-        Map<String, LocalDateTime> map = new HashMap<>();
 
         //充值成功，根据订单号更新冲值表数据
         UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
         UpdateWrapper<Recharge> wrapper = new UpdateWrapper<>();
+        UpdateWrapper<Team> update = new UpdateWrapper<>();
+
         QueryWrapper<Recharge> queryWrapper = new QueryWrapper();
         queryWrapper.eq("out_trade_no", tradeNo);
+
         Recharge recharge = rechargeService.getOne(queryWrapper);
         wrapper.eq("out_trade_no", tradeNo);
         recharge.setStatus(2);
@@ -189,8 +197,12 @@ public class RechargeController {
         User user = userService.getById(id);
         BigDecimal cashableAmount0 = user.getCashableAmount();
 
+        //充值成功，修改团队表数据
+        Team team = teamService.getById(id);
+        BigDecimal totalWithdrawnAmount= team.getTotalWithdrawnAmount();
 
-        if (recharge.getRechargeType().equals(0)) {//判断是否为零钱充值
+
+        if (recharge.getRechargeType().equals(0)) {//判断是否为个人零钱充值
             updateWrapper.eq("id", id);
             if (rechargeAmount.compareTo(cashableAmount0) < 1) {
                 if (membershipTime.equals(1)) {
@@ -231,17 +243,63 @@ public class RechargeController {
                 // 修改用户等级为会员
                 user.setGrade(1);
                 userService.update(user, updateWrapper);
-
             }
         }
 
-        map.put("会员到期时间", user.getMembershipExpTime());
+        if (recharge.getRechargeType().equals(3)) {//判断是否为团队零钱充值
+            update.eq("id", id);
+            if (rechargeAmount.compareTo(totalWithdrawnAmount) < 1) {
+                if (membershipTime.equals(1)) {
+                    //充值会员
+                    if (user.getGrade().equals(0)){
+                        user.setMembershipExpTime(localDateTime.plusMonths(1L));
+                    }
+                    if (user.getGrade().equals(1)){
+                        //续费会员
+                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(1L));
 
-        return R.success(map);
+                    }
+                }
+                if (membershipTime.equals(2)) {
+                    //充值会员
+                    if (user.getGrade().equals(0)){
+                        user.setMembershipExpTime(localDateTime.plusMonths(3L));
+                    }
+                    if (user.getGrade().equals(1)){
+                        //续费会员
+                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(3L));
+
+                    }
+                }
+                if (membershipTime.equals(3)) {
+                    //充值会员
+                    if (user.getGrade().equals(0)){
+                        user.setMembershipExpTime(localDateTime.plusYears(1L));
+                    }
+                    if (user.getGrade().equals(1)){
+                        //续费会员
+                        user.setMembershipExpTime(user.getMembershipExpTime().plusYears(1L));
+
+                    }
+                }
+                BigDecimal total = team.getTotalWithdrawnAmount().subtract(rechargeAmount);
+                team.setTotalWithdrawnAmount(total);
+                teamService.update(team,update);
+                // 修改用户等级为会员
+                user.setGrade(1);
+                userService.update(user, updateWrapper);
+            }
+
+        }{
+            log.info("充值金额不足");
+        }
+
+
+        return R.success("success");
     }
 
     /**
-     * 用户端：充值失败
+     * 用户端：充值失败（用户取消充值）
      * 更新冲值表
      * author Kenlihankun
      *
@@ -249,6 +307,7 @@ public class RechargeController {
      * @Param tradeNo 充值订单号
      */
     //充值失败
+    @Transactional
     @PutMapping("/recharge_fail")
     public R<String> recharge_cancel(@RequestParam("tradeNo") Long tradeNo) {
         UpdateWrapper<Recharge> wrapper = new UpdateWrapper<>();
@@ -271,7 +330,7 @@ public class RechargeController {
      * @Param endTime 选择截至时间
      * @return
      */
-    @GetMapping("/page")
+    @GetMapping("/recharge_page")
     public R<Page> Page(int Page, int PageSize, Integer chooseType, String beginTime, String endTime) {
         Page<Recharge> pageInfo = new Page(Page, PageSize);
         Page<RechargeDto> rechargeDtoPage = new Page<>();
