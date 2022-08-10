@@ -28,6 +28,9 @@ public class User implements Serializable {
     //用户名
     private String name;
 
+    //密码
+    private String password;
+
     //可提现金额
     private BigDecimal cashableAmount;
 

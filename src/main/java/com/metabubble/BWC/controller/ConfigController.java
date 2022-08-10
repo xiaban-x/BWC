@@ -36,17 +36,16 @@ public class ConfigController {
         return R.success(configList);
     }
 
-//    /**
-//     * 增加配置
-//     * author cclucky
-//     * @param config
-//     * @return
-//     */
-//    @PostMapping
-//    public R<String> save(@RequestBody Config config) {
-//        configService.save(config);
-//        return R.success("添加成功");
-//    }
+    /**
+     * 一个根据id获取内容的静态类，不设置接口，可调用
+     * author cclucky
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public R<String> getContentById(@PathVariable Long id) {
+        return configService.getContentById(id);
+    }
 
     /**
      * 更新配置

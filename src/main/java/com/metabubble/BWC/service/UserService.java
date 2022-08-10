@@ -13,6 +13,8 @@ public interface UserService extends IService<User> {
     public Boolean checkGrade(Long id);
     //邀请码生成
     public String createUUID();
+    //检查手机号是否注册
+    public Boolean findUser(String mobile);
 
 
 
