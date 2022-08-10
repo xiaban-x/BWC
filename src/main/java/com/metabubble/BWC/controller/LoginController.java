@@ -7,6 +7,7 @@ import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.UserConverter;
 import com.metabubble.BWC.dto.UserDto;
 import com.metabubble.BWC.entity.User;
+import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
 import com.metabubble.BWC.utils.MobileUtils;
 import com.metabubble.BWC.utils.SMSUtils;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +35,8 @@ public class LoginController {
     private UserService userService;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private TeamService teamService;
 
 
     /**
@@ -315,6 +319,7 @@ public class LoginController {
      * @return
      */
     @PostMapping("/register")
+    @Transactional
     public R<String> register(String mobile, String contents,String name, String password,HttpServletRequest request){
 
         if (StringUtils.isBlank(mobile) || StringUtils.isBlank(contents) || StringUtils.isBlank(password)) {
@@ -349,6 +354,7 @@ public class LoginController {
         user.setName(name);
         user.setDownId(userService.createUUID());
         userService.save(user);
+        teamService.save(user);
         return R.success("创建用户成功");
     }
 }
