@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -115,7 +116,7 @@ public class LoginController {
 
         Long times = redisTemplate.getExpire(mobileKey);
         if (times!=null) {
-            if (times>=4){
+            if (times>=240){
                 return R.error("距离您上次发送验证码不足一分钟，请一分钟后再尝试获取");
             } else if (times==-1){
                 throw new CustomException("redis储存有误");
@@ -244,7 +245,7 @@ public class LoginController {
                     queryWrapper1.eq(User::getTel,mobile);
                     User user1 = userService.getOne(queryWrapper1);
                     //6.登陆成功，将员工id存入session
-                    request.getSession().setAttribute("employee",user1.getId());
+                    request.getSession().setAttribute("user",user1.getId());
                     redisTemplate.delete(mobileKey);
                     redisTemplate.delete(limitKey);
                     UserDto userDto1 = UserConverter.INSTANCES.toUserRoleDto(user1);
@@ -358,5 +359,19 @@ public class LoginController {
         userService.save(user);
         teamService.save(user);
         return R.success("创建用户成功");
+    }
+
+
+    /**
+     * 管理员退出登录
+     * author leitianyu999
+     * @param request session中的管理员信息
+     * @return 返回退出信息
+     */
+    @DeleteMapping("/logout")
+    public R<String> logout(HttpServletRequest request){
+        //删除session中的账户信息
+        request.getSession().removeAttribute("user");
+        return R.success("退出成功");
     }
 }
