@@ -335,8 +335,8 @@ public class RechargeController {
         Page<Recharge> pageInfo = new Page(Page, PageSize);
         Page<RechargeDto> rechargeDtoPage = new Page<>();
         QueryWrapper<Recharge> wrapper = new QueryWrapper<>();
-        beginTime = beginTime + " 00:00:00";
-        endTime = endTime + " 00:00:00";
+        //beginTime = beginTime + " 00:00:00";
+        //endTime = endTime + " 00:00:00";
         String finalEndTime = endTime;
 
         if (chooseType.equals(0)) {
