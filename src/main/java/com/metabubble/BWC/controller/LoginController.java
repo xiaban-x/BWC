@@ -315,7 +315,7 @@ public class LoginController {
      * @return
      */
     @PostMapping("/register")
-    public R<String> register(String mobile, String contents, String password,HttpServletRequest request){
+    public R<String> register(String mobile, String contents,String name, String password,HttpServletRequest request){
 
         if (StringUtils.isBlank(mobile) || StringUtils.isBlank(contents) || StringUtils.isBlank(password)) {
             return R.error("缺少必要的参数");
@@ -346,6 +346,7 @@ public class LoginController {
         User user = new User();
         user.setPassword(password);
         user.setTel(mobile);
+        user.setName(name);
         user.setDownId(userService.createUUID());
         userService.save(user);
         return R.success("创建用户成功");
