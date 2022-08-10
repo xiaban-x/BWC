@@ -345,6 +345,8 @@ public class LoginController {
             return R.error("您输入的验证码不正确，请重新输入（不用重新获取）");
         }
 
+        redisTemplate.delete(mobileKey);
+
         //1.密码进行md5加密处理
         password = DigestUtils.md5DigestAsHex(password.getBytes());
 
