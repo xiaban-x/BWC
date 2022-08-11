@@ -7,6 +7,7 @@ import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.UserConverter;
 import com.metabubble.BWC.dto.UserDto;
 import com.metabubble.BWC.entity.User;
+import com.metabubble.BWC.service.ConfigService;
 import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
 import com.metabubble.BWC.utils.MobileUtils;
@@ -38,7 +39,11 @@ public class LoginController {
     private RedisTemplate redisTemplate;
     @Autowired
     private TeamService teamService;
+    @Autowired
+    private ConfigService configService;
 
+
+    String userKey = "userKey";
 
     /**
      * 发送验证码
@@ -219,9 +224,10 @@ public class LoginController {
                 User user = userService.getOne(queryWrapper);
                 if (user.getPassword().equals(password)){
                     //6.登陆成功，将员工id存入session
-                    request.getSession().setAttribute("employee",user.getId());
+                    request.getSession().setAttribute("user",user.getId());
                     redisTemplate.delete(limitKey);
                     UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
+                    redisTemplate.opsForValue().set(userKey+user.getId(),user,24,TimeUnit.HOURS);
                     return R.success(userDto);
                 }else {
                     // 记录密码输入错误数
@@ -249,6 +255,7 @@ public class LoginController {
                     redisTemplate.delete(mobileKey);
                     redisTemplate.delete(limitKey);
                     UserDto userDto1 = UserConverter.INSTANCES.toUserRoleDto(user1);
+                    redisTemplate.opsForValue().set(userKey+user1.getId(),user1,24,TimeUnit.HOURS);
                     return R.success(userDto1);
                 }
 
@@ -308,6 +315,8 @@ public class LoginController {
         User user = list.get(0);
         user.setPassword(password);
         userService.updateById(user);
+        redisTemplate.delete(userKey+user.getId());
+        request.getSession().removeAttribute("user");
         return R.success("修改成功");
     }
 
@@ -363,7 +372,7 @@ public class LoginController {
 
 
     /**
-     * 管理员退出登录
+     * 用户退出登录
      * author leitianyu999
      * @param request session中的管理员信息
      * @return 返回退出信息

@@ -37,7 +37,6 @@ public class OrdersController {
 
     /**
      * 用户端查看全部订单（根据状态查询）
-     * @param id 用户id
      * @param offset 页码
      * @param limit 分页条数
      * @param status 订单状态
@@ -45,8 +44,8 @@ public class OrdersController {
      * @author leitianyu999
      */
     @GetMapping("/user/page")
-    public R<Page> userPage(int id,int offset, int limit,@RequestParam List<String> status){
-
+    public R<Page> userPage(int offset, int limit,@RequestParam List<String> status){
+        Long id = BaseContext.getCurrentId();
         //分页构造器
         Page<Orders> pageSearch = new Page(offset,limit);
         //条件构造器
@@ -82,16 +81,16 @@ public class OrdersController {
 
     /**
      * 用户端接取任务创建订单
-     * @param userId 用户id
      * @param taskId 任务id
      * @return
      * @author leitianyu999
      */
     @PostMapping("add")
     @Transactional
-    public R<String> add(Long userId,Long taskId){
+    public R<String> add(Long taskId){
         //查询任务是否启用
         if (taskService.checkTaskStatus(taskId)) {
+            Long userId = BaseContext.getCurrentId();
             if (!taskService.checkOrders(userId,taskId)){
                 return R.error("用户今日已接过此任务");
             }
@@ -149,6 +148,7 @@ public class OrdersController {
         if (orders.getOrderNumber()==null){
             return R.error("无订单编号");
         }
+        orders.setUserId(BaseContext.getCurrentId());
         //判断订单是否过期
         if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {
             return R.error("订单已过期");
@@ -185,7 +185,7 @@ public class OrdersController {
         if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {
             return R.error("订单已过期");
         }
-
+        orders.setUserId(BaseContext.getCurrentId());
         Orders orders1 = ordersService.getById(orders);
         //添加订单状态
         orders.setStatus(orders1.getStatus());
