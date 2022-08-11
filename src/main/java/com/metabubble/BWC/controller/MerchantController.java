@@ -53,9 +53,6 @@ public class MerchantController {
 
         mLqw.like(StringUtils.isNotEmpty(condition.getTel()),Merchant::getTel,condition.getTel());
 
-        if (condition.getPlaType() != null){
-            //mLqw.like(Merchant::getPlaType,condition.getPlaType());
-        }
         //添加排序条件
         mLqw.orderByDesc(Merchant::getCreateTime);
 
@@ -82,10 +79,15 @@ public class MerchantController {
     @PostMapping
     public R<String> save(@RequestBody Merchant merchant) {
         //获取经纬度
-        BigDecimal lng = getGeocoderLatitude(merchant.getAddress()).get("lng");
-        BigDecimal lat = getGeocoderLatitude(merchant.getAddress()).get("lat");
-//        merchant.setLng(lng);
-//        merchant.setLat(lat);
+        BigDecimal lng = merchant.getLng();
+        BigDecimal lat = merchant.getLat();
+        if (lng == null  || lat == null){
+            lng = getGeocoderLatitude(merchant.getAddress()).get("lng");
+            lat = getGeocoderLatitude(merchant.getAddress()).get("lat");
+        }
+
+        merchant.setLng(lng);
+        merchant.setLat(lat);
         //保存
         boolean flag = merchantService.save(merchant);
         if (flag){
