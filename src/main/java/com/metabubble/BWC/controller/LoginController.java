@@ -7,17 +7,18 @@ import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.UserConverter;
 import com.metabubble.BWC.dto.UserDto;
 import com.metabubble.BWC.entity.User;
+import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
 import com.metabubble.BWC.utils.MobileUtils;
-import com.metabubble.BWC.utils.RedisUtils;
 import com.metabubble.BWC.utils.SMSUtils;
 import com.metabubble.BWC.utils.ValidateCodeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/login")
@@ -34,6 +36,8 @@ public class LoginController {
     private UserService userService;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private TeamService teamService;
 
 
     /**
@@ -66,7 +70,8 @@ public class LoginController {
 
         //生成验证码
 
-        String mobileCode = ValidateCodeUtils.generateValidateCode(4).toString();
+        //String mobileCode = ValidateCodeUtils.generateValidateCode(4).toString();
+        String mobileCode = "123456";
         log.info("验证码是："+mobileCode);
 
         String modelCode = null;
@@ -109,13 +114,17 @@ public class LoginController {
         //
         String todayKey = "today_mobile_code_times_" + mobile;
 
-        Long times = RedisUtils.ttl(mobileKey);
-        if (times>=4){
-            return R.error("距离您上次发送验证码不足一分钟，请两分钟后再尝试获取");
+        Long times = redisTemplate.getExpire(mobileKey);
+        if (times!=null) {
+            if (times>=240){
+                return R.error("距离您上次发送验证码不足一分钟，请一分钟后再尝试获取");
+            } else if (times==-1){
+                throw new CustomException("redis储存有误");
+            }
         }
 
         // 判断当前手机号今天发送密码次数是否已达上线,每天15条（具体条数根据自己的需求调用）
-        String todayTimes = RedisUtils.get(todayKey);
+        String todayTimes = (String) redisTemplate.opsForValue().get(todayKey);
         int todayCount = 1;
         if (todayTimes != null) {
             todayCount = new Integer(todayTimes);
@@ -128,7 +137,7 @@ public class LoginController {
 
         Boolean msg = null;//发送短信验证码是否成功与失败
 
-        try {
+//        try {
 
             //发送短信验证码，请求成功后返回指定标识，请求失败，可以返回失败的信息，
             //方便开发人员排查bug。此处使用的是阿里云的短信服务，
@@ -138,24 +147,24 @@ public class LoginController {
 
             log.info("手机号:" + mobile + " 的验证码是：" + mobileCode);
 
-            if (msg) {
+//            if (msg) {
 
                 // 保存验证码到redis
-                RedisUtils.set(mobileKey, mobileCode, 60 * 5 + 5);//redis中的code比实际要多5秒
+                redisTemplate.opsForValue().set(mobileKey, mobileCode, 60 * 5 + 5, TimeUnit.SECONDS);//redis中的code比实际要多5秒
 
                 // 记录本号码发送验证码次数
-                RedisUtils.set(todayKey, todayCount + "", MobileUtils.getSurplusTime());
+                redisTemplate.opsForValue().set(todayKey, todayCount + "", MobileUtils.getSurplusTime(),TimeUnit.SECONDS);
 
 
 
-            } else {
-                return R.error("短信验证码发送失败");
-            }
+//            } else {
+//                return R.error("短信验证码发送失败");
+//            }
 
-        } catch (Exception e) {
-            log.info("获取手机验证码异常：" + e.getMessage());
-            return R.error("获取短信验证码异常");
-        }
+//        } catch (Exception e) {
+//            log.info("获取手机验证码异常：" + e.getMessage());
+//            return R.error("获取短信验证码异常");
+//        }
 
         return R.success("发送成功");
     }
@@ -169,7 +178,7 @@ public class LoginController {
      * @param request
      * @return
      */
-    @PostMapping("/login")
+    @PostMapping()
     public R<UserDto> login(String mobile,String password,String contents,String type, HttpServletRequest request){
         // 判断请求参数是否正确
         if (StringUtils.isBlank(mobile)) {
@@ -188,7 +197,7 @@ public class LoginController {
 
         // 判断当前手机号的登录失败次数，防止有人暴力破解用户的密码
         String limitKey =  mobile + "_login_error_times";
-        String limitTimes = RedisUtils.get(limitKey);
+        String limitTimes = (String) redisTemplate.opsForValue().get(limitKey);
         Integer times = 1;
         if (limitTimes != null) {
             if (new Integer(limitTimes).intValue() >= 6) {
@@ -211,12 +220,12 @@ public class LoginController {
                 if (user.getPassword().equals(password)){
                     //6.登陆成功，将员工id存入session
                     request.getSession().setAttribute("employee",user.getId());
-                    RedisUtils.del(limitKey);
+                    redisTemplate.delete(limitKey);
                     UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
                     return R.success(userDto);
                 }else {
                     // 记录密码输入错误数
-                    RedisUtils.set(limitKey, times + "", MobileUtils.getSurplusTime());
+                    redisTemplate.opsForValue().set(limitKey, times + "", MobileUtils.getSurplusTime(),TimeUnit.SECONDS);
 
                     return R.error("密码错误");
                 }
@@ -226,7 +235,7 @@ public class LoginController {
                     return R.error("缺少必要的参数");
                 }
                 String mobileKey = "login_mobile_" + mobile;
-                String code = RedisUtils.get(mobileKey);
+                String code = (String) redisTemplate.opsForValue().get(mobileKey);
                 if (code == null) {
                     return R.error("当前验证码已失效，请获取最新验证码后再进行此操作");
                 } else if (!code.equals(contents)) {
@@ -236,9 +245,9 @@ public class LoginController {
                     queryWrapper1.eq(User::getTel,mobile);
                     User user1 = userService.getOne(queryWrapper1);
                     //6.登陆成功，将员工id存入session
-                    request.getSession().setAttribute("employee",user1.getId());
-                    RedisUtils.del(mobileKey);
-                    RedisUtils.del(limitKey);
+                    request.getSession().setAttribute("user",user1.getId());
+                    redisTemplate.delete(mobileKey);
+                    redisTemplate.delete(limitKey);
                     UserDto userDto1 = UserConverter.INSTANCES.toUserRoleDto(user1);
                     return R.success(userDto1);
                 }
@@ -282,7 +291,7 @@ public class LoginController {
         String mobileKey = "reset_mobile_"+mobile;// 存储到redis中的验证码的key
 
         // 校验短信验证码
-        String code = RedisUtils.get(mobileKey);
+        String code = (String) redisTemplate.opsForValue().get(mobileKey);
         if (code == null) {
             return R.error("当前验证码已失效，请获取最新验证码后再进行此操作");
         } else if (!code.equals(contents)) {
@@ -290,9 +299,9 @@ public class LoginController {
         }
 
         // 删除缓存的key
-        RedisUtils.del(mobileKey);
+        redisTemplate.delete(mobileKey);
         // 删除用户今日登录失败次数的标识，如果有
-        RedisUtils.del( mobile + "_login_error_times");
+        redisTemplate.delete( mobile + "_login_error_times");
 
         //1.密码进行md5加密处理
         password = DigestUtils.md5DigestAsHex(password.getBytes());
@@ -311,7 +320,8 @@ public class LoginController {
      * @return
      */
     @PostMapping("/register")
-    public R<String> register(String mobile, String contents, String password,HttpServletRequest request){
+    @Transactional
+    public R<String> register(String mobile, String contents,String name, String password,HttpServletRequest request){
 
         if (StringUtils.isBlank(mobile) || StringUtils.isBlank(contents) || StringUtils.isBlank(password)) {
             return R.error("缺少必要的参数");
@@ -323,18 +333,20 @@ public class LoginController {
             return R.error("传入的手机号格式不正确");
         }
 
-        if (!userService.findUser(mobile)){
-            return R.error("该用户未注册");
+        if (userService.findUser(mobile)){
+            return R.error("该用户已注册");
         }
 
 
         String mobileKey = "register_mobile_" + mobile;
-        String code = RedisUtils.get(mobileKey);
+        String code = (String) redisTemplate.opsForValue().get(mobileKey);
         if (code == null) {
             return R.error("当前验证码已失效，请获取最新验证码后再进行此操作");
         } else if (!code.equals(contents)) {
             return R.error("您输入的验证码不正确，请重新输入（不用重新获取）");
         }
+
+        redisTemplate.delete(mobileKey);
 
         //1.密码进行md5加密处理
         password = DigestUtils.md5DigestAsHex(password.getBytes());
@@ -342,8 +354,24 @@ public class LoginController {
         User user = new User();
         user.setPassword(password);
         user.setTel(mobile);
+        user.setName(name);
         user.setDownId(userService.createUUID());
         userService.save(user);
+        teamService.save(user);
         return R.success("创建用户成功");
+    }
+
+
+    /**
+     * 管理员退出登录
+     * author leitianyu999
+     * @param request session中的管理员信息
+     * @return 返回退出信息
+     */
+    @DeleteMapping("/logout")
+    public R<String> logout(HttpServletRequest request){
+        //删除session中的账户信息
+        request.getSession().removeAttribute("user");
+        return R.success("退出成功");
     }
 }
