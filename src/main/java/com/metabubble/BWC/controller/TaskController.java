@@ -361,7 +361,6 @@ public class TaskController {
         ArrayList<BigDecimal> distanceList = new ArrayList<>();
         //商家按距离排序结果  采用LinkedHashSet存储  有序不可重复  避免两个暑假与用户距离相同时产生错误
         Set<Merchant> merchantsOrder = new LinkedHashSet<>();
-//        ArrayList<Merchant> merchantsOrder = new ArrayList<>();
         for (Merchant merchant : merchants) {
             //获取商家的经纬度
             BigDecimal merchantLat = merchant.getLat();
@@ -420,7 +419,9 @@ public class TaskController {
             //得到商家与用户之间的距离
             BigDecimal distance = getDistance(userLng, userLat, merchantLng, merchantLat);
             //将商家和 商家与用户之间的距离 作为一对键值对存储起来
-            map.put(merchant, distance);
+            if (!distance.equals(BigDecimal.valueOf(-1))){
+                map.put(merchant, distance);
+            }
         }
         return map;
     }
@@ -444,6 +445,9 @@ public class TaskController {
      * @Author 看客
      */
     public static BigDecimal getDistance(BigDecimal lng1, BigDecimal lat1, BigDecimal lng2, BigDecimal lat2) {
+        if (lng2 == null || lat2 == null){
+            return BigDecimal.valueOf(-1);
+        }
         BigDecimal radLat1 = rad(Double.parseDouble(String.valueOf(lat1)));
         BigDecimal radLat2 = rad(Double.parseDouble(String.valueOf(lat2)));
         BigDecimal a = radLat1.subtract(radLat2);
