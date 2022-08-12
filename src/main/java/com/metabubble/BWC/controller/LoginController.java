@@ -2,6 +2,7 @@ package com.metabubble.BWC.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.CustomException;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.UserConverter;
@@ -379,8 +380,12 @@ public class LoginController {
      */
     @DeleteMapping("/logout")
     public R<String> logout(HttpServletRequest request){
+        redisTemplate.delete(userKey+BaseContext.getCurrentId());
+
         //删除session中的账户信息
         request.getSession().removeAttribute("user");
+
+        BaseContext.remove();
         return R.success("退出成功");
     }
 }

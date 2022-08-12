@@ -21,4 +21,12 @@ public class BaseContext {
     public static Long getCurrentId(){
         return threadLocal.get();
     }
+
+
+    /**
+     * 清理
+     */
+    public static void remove(){
+        threadLocal.remove();
+    }
 }
