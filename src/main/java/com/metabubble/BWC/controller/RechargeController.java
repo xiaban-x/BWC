@@ -8,6 +8,7 @@ import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.CDto;
 import com.metabubble.BWC.dto.RDto;
 import com.metabubble.BWC.dto.RechargeDto;
+import com.metabubble.BWC.dto.TDto;
 import com.metabubble.BWC.entity.Recharge;
 import com.metabubble.BWC.entity.Team;
 import com.metabubble.BWC.entity.User;
@@ -118,7 +119,7 @@ public class RechargeController {
     //保存userId,outTradeNo,rechargeAmount,rechargeType(默认),status(默认),createTime,UpdateTime
     @Transactional
     @PutMapping("/recharge_msg")
-    public R<Map> recharge_click(@RequestParam("rechargeAmount") BigDecimal rechargeAmount) {
+    public R<TDto> recharge_click(@RequestParam("rechargeAmount") BigDecimal rechargeAmount) {
         //BaseContext 获取session Id
         Long userId = BaseContext.getCurrentId();
 
@@ -152,9 +153,10 @@ public class RechargeController {
         rechargeService.update(recharge, wrapper);
 
         //返回订单号
-        Map<String, Long> map = new HashMap();
-        map.put("out_trade_no", outTradeNo0);
-        return R.success(map);
+        TDto tDto = new TDto();
+        tDto.setOutTradeNo(outTradeNo0);
+        //map.put("out_trade_no", outTradeNo0);
+        return R.success(tDto);
     }
 
     /**
@@ -336,7 +338,7 @@ public class RechargeController {
         Page<RechargeDto> rechargeDtoPage = new Page<>();
         QueryWrapper<Recharge> wrapper = new QueryWrapper<>();
         //beginTime = beginTime + " 00:00:00";
-        //endTime = endTime + " 00:00:00";
+        //2endTime = endTime + " 00:00:00";
         String finalEndTime = endTime;
 
         if (chooseType.equals(0)) {

@@ -153,13 +153,18 @@ public class CashableController {
 
   /**     最低和最高提现额度
         Integer i;
+        BigDecimal b;
         Config config = configService.getById();
         String content = config.getContent();
+   //判断是否为整数
         Pattern pattern2 = Pattern.compile("[0-9]*");
 
+   //判断是否为double
         Pattern pattern1 = Pattern.compile("[0-9]+[.]{0,1}[0-9]*[dD]{0,1}");
         if (pattern2.matcher(content).matches() == false && pattern1.matcher(content).matches() == false){
             content = "0";
+            BigDecimal CT = new BigDecimal(content);
+            b = CT;
         }
         if (pattern2.matcher(content).matches() == true && pattern1.matcher(content).matches() == false){
             i = Integer.valueOf(content);
@@ -167,11 +172,16 @@ public class CashableController {
                 i = 0;
             }
             BigDecimal CT = new BigDecimal(i);
+            b = CT;
         }
         if (pattern2.matcher(content).matches() == false && pattern1.matcher(content).matches() == true){
             Double c = new Double(content);
             content = String.format("%.2f", c);
+            if(content<0){
+                content=0;
+            }
             BigDecimal Ct = new BigDecimal(content);
+            b = CT;
         }
         */
 
@@ -182,6 +192,7 @@ public class CashableController {
             //申请提现金额和可提现金额对比
             User user = userService.getById(userId);
             BigDecimal cashableAmount = user.getCashableAmount();
+            //大于等于最低提现金额和小于等于最高提现金额，输入的提现金额大于0
             if (amount.compareTo(cashableAmount)<1 && amount.compareTo(zero)==1){
                 //更新用户表提现金额
                 BigDecimal cashableAmount1 = cashableAmount.subtract(amount);
@@ -223,6 +234,7 @@ public class CashableController {
             //申请提现金额和可提现金额对比
             Team team = teamService.getById(userId);
             BigDecimal cashableAmount = team.getTotalWithdrawnAmount();
+            //大于等于最低提现金额和小于等于最高提现金额，输入的提现金额大于0
             if (amount.compareTo(cashableAmount)<1 && amount.compareTo(zero)==1){
                 //更新团队表提现金额
                 BigDecimal cashableAmount1 = cashableAmount.subtract(amount);
