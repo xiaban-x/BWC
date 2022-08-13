@@ -4,6 +4,7 @@ package com.metabubble.BWC.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.CustomException;
+import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.UserConverter;
 import com.metabubble.BWC.dto.UserDto;
@@ -42,7 +43,8 @@ public class LoginController {
     private TeamService teamService;
     @Autowired
     private ConfigService configService;
-
+    @Autowired
+    private ManageSession manageSession;
 
     String userKey = "userKey";
 
@@ -224,8 +226,21 @@ public class LoginController {
                 queryWrapper.eq(User::getTel,mobile);
                 User user = userService.getOne(queryWrapper);
                 if (user.getPassword().equals(password)){
+                    try {
+                        HttpSession httpSession = manageSession.getManageSession().get(user.getId().toString());
+                        if (httpSession!=null){
+                            //当前session有值，说明1.此帐号处于已登录状态有人正在使用，2.session还在有效期未被销毁
+                            log.info("用户:"+user.getId()+"再次登录！");
+                            httpSession.invalidate();
+                        }
+                    } catch (Exception e) {
+                        log.info(e.toString()+"：无用报错");
+                    }
                     //6.登陆成功，将员工id存入session
-                    request.getSession().setAttribute("user",user.getId());
+                    HttpSession session = request.getSession();
+                    session.setAttribute("user",user.getId());
+                    session.setMaxInactiveInterval(1296000);
+                    manageSession.getManageSession().put(user.getId().toString(),session);
                     redisTemplate.delete(limitKey);
                     UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
                     redisTemplate.opsForValue().set(userKey+user.getId(),user,24,TimeUnit.HOURS);
@@ -251,8 +266,21 @@ public class LoginController {
                     LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper<>();
                     queryWrapper1.eq(User::getTel,mobile);
                     User user1 = userService.getOne(queryWrapper1);
+                    try {
+                        HttpSession httpSession = manageSession.getManageSession().get(user1.getId().toString());
+                        if (httpSession!=null){
+                            //当前session有值，说明1.此帐号处于已登录状态有人正在使用，2.session还在有效期未被销毁
+                            log.info("用户:"+user1.getId()+"再次登录！");
+                            httpSession.invalidate();
+                        }
+                    } catch (Exception e) {
+                        log.info(e.toString()+"：无用报错");
+                    }
                     //6.登陆成功，将员工id存入session
-                    request.getSession().setAttribute("user",user1.getId());
+                    HttpSession session = request.getSession();
+                    session.setAttribute("user",user1.getId());
+                    session.setMaxInactiveInterval(1296000);
+                    manageSession.getManageSession().put(user1.getId().toString(),session);
                     redisTemplate.delete(mobileKey);
                     redisTemplate.delete(limitKey);
                     UserDto userDto1 = UserConverter.INSTANCES.toUserRoleDto(user1);
@@ -318,6 +346,21 @@ public class LoginController {
         userService.updateById(user);
         redisTemplate.delete(userKey+user.getId());
         request.getSession().removeAttribute("user");
+
+        try {
+            HttpSession httpSession = manageSession.getManageSession().get(BaseContext.getCurrentId().toString());
+            if (httpSession!=null){
+                httpSession.invalidate();
+            }
+        } catch (Exception e) {
+            log.info(e.toString()+"：无用报错");
+        }finally {
+            redisTemplate.delete(userKey+BaseContext.getCurrentId());
+
+            //删除session中的账户信息
+            request.getSession().removeAttribute("user");
+        }
+
         return R.success("修改成功");
     }
 
@@ -380,12 +423,22 @@ public class LoginController {
      */
     @DeleteMapping("/logout")
     public R<String> logout(HttpServletRequest request){
-        redisTemplate.delete(userKey+BaseContext.getCurrentId());
+        try {
+            HttpSession httpSession = manageSession.getManageSession().get(BaseContext.getCurrentId().toString());
+            if (httpSession!=null){
+                httpSession.invalidate();
 
-        //删除session中的账户信息
-        request.getSession().removeAttribute("user");
 
-        BaseContext.remove();
+            }
+        } catch (Exception e) {
+            log.info(e.toString()+"：无用报错");
+        }finally {
+            redisTemplate.delete(userKey+BaseContext.getCurrentId());
+
+            //删除session中的账户信息
+            request.getSession().removeAttribute("user");
+        }
+
         return R.success("退出成功");
     }
 }

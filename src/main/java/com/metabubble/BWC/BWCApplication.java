@@ -1,5 +1,6 @@
 package com.metabubble.BWC;
 
+import com.metabubble.BWC.common.ManageSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,4 +18,6 @@ public class BWCApplication {
         SpringApplication.run(BWCApplication.class,args);
         log.info("项目启动成功");
     }
+    /* 全局session变量 */
+     public static ManageSession manageSession;
 }

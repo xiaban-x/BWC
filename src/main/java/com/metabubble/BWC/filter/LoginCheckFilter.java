@@ -34,6 +34,9 @@ public class LoginCheckFilter implements Filter {
         //如果未登录则返回未登录结果
         //获取本次请求的URI
         String requestURI = request.getRequestURI(); // /backend/login.html
+
+        BaseContext.remove();
+
         //定义不需要处理的请求路径
         if(request.getSession().getAttribute("user") != null){
             log.info("用户已登录，用户id为：{}",request.getSession().getAttribute("user"));
@@ -42,6 +45,7 @@ public class LoginCheckFilter implements Filter {
             BaseContext.setCurrentId(userId);
 
             filterChain.doFilter(request,response);
+            BaseContext.remove();
             return;
         }
         String[] urls = new String[]{
@@ -65,6 +69,7 @@ public class LoginCheckFilter implements Filter {
         //如果不需要处理，直接放行
         if (check){
             filterChain.doFilter(request,response);
+            BaseContext.remove();
             return;
         }
         //4-1判断登录状态，如果已经登录直接放行
@@ -74,6 +79,7 @@ public class LoginCheckFilter implements Filter {
             BaseContext.setCurrentId(empId);
 
             filterChain.doFilter(request,response);
+            BaseContext.remove();
             return;
         }
 
@@ -85,12 +91,14 @@ public class LoginCheckFilter implements Filter {
             BaseContext.setCurrentId(userId);
 
             filterChain.doFilter(request,response);
+            BaseContext.remove();
             return;
         }
 
         log.info("用户未登录");
         //5、如果未登录则返回未登录结果，通过输出流方式向客户端页面响应数据
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
+        BaseContext.remove();
         return;
     }
 
