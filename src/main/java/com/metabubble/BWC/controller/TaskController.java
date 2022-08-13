@@ -47,8 +47,8 @@ public class TaskController {
      * @Author 看客
      * @return
      */
-    @GetMapping(value = {"/{offset}/{limit}"})
-    public R<List<TaskDto>> getAll(@PathVariable Integer offset, @PathVariable Integer limit) {
+    @GetMapping
+    public R<List<TaskDto>> getAll(Integer offset, Integer limit) {
 
         Page<Task> page = new Page<>(offset, limit);
         List<Task> records = taskService.page(page).getRecords();
@@ -192,59 +192,54 @@ public class TaskController {
         taskDetailDto.setUserToMerchantDistance(userToMerchantDistance);
         return R.success(taskDetailDto);
     }
+
     /**
      * 首页展示任务
      * 根据订单名字/商家名字 任务类型 任务要求 任务是否需要评价 平台类型排序
-     * @param condition
      * @param limit
      * @param offset
+     * @param name
+     * @param type
+     * @param constraint
+     * @param comment
+     * @param platform
+     * @param userLng
+     * @param userLat
      * @Author 看客
      * @return
      */
-    @GetMapping("/home/{offset}/{limit}")
-    public R<List<HomeDto>> getByCondition(@RequestBody(required = false) Condition condition, @PathVariable Integer limit, @PathVariable Integer offset) {
+    @GetMapping("/home")
+    public R<List<HomeDto>> getByCondition(Integer limit, Integer offset,String name,Integer type,Integer constraint,Integer comment,Integer platform,BigDecimal userLng,BigDecimal userLat) {
         Page<Task> taskPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
-        //获取用户经纬度
-        BigDecimal userLng = condition.getUserLng();
-        BigDecimal userLat = condition.getUserLat();
-        if (userLng == null || userLat == null){
-            //获取用户地址
-            String address = condition.getAddress();
-            //通过地址获得用户经纬度
-            Map<String, BigDecimal> coordinates = MerchantController.getGeocoderLatitude(address);
-            assert coordinates != null;
-            userLng = coordinates.get("lng");
-            userLat = coordinates.get("lat");
-        }
         //获取所有商家
         List<Merchant> merchants = merchantService.list();
         //得到每个商家与用户的距离
         Map<Merchant, BigDecimal> merchantBigDecimalMap = distanceToMerchant(merchants, userLng, userLat);
 
         //任务要求排序：0为人气高，1为距离近，2为最省钱，3为新商家
-        if (condition.getConstraint() != null) {
-            if (condition.getConstraint() == 0) {
+        if (constraint != null) {
+            if (constraint == 0) {
                 mLqw.orderByDesc(Task::getCompleted);
-            } else if (condition.getConstraint() == 1) {
+            } else if (constraint == 1) {
                 //任务的条件构造器
                 LambdaQueryWrapper<Task> mLqw2 = new LambdaQueryWrapper<>();
                 ArrayList<Task> taskList = new ArrayList<>();
                 //获取所有订单
                 //添加过滤条件
                 //通过名字搜索
-                mLqw2.like(StringUtils.isNotEmpty(condition.getName()), Task::getName, condition.getName());
+                mLqw2.like(StringUtils.isNotEmpty(name), Task::getName,name);
 
                 //任务类型筛选：0为早餐(默认)，1为午餐，2为下午茶，3为宵夜
-                if (condition.getType() != null) {
-                    mLqw2.eq(Task::getType, condition.getType());
+                if (type != null) {
+                    mLqw2.eq(Task::getType, type);
                 }
                 //此处进行筛选评价和平台类型
-                if (condition.getComment() != null){
-                    mLqw2.eq(Task::getComment,condition.getComment());
+                if (comment != null){
+                    mLqw2.eq(Task::getComment,comment);
                 }
-                if (condition.getPlatform() != null){
-                    mLqw2.eq(Task::getPlatform,condition.getPlatform());
+                if (platform != null){
+                    mLqw2.eq(Task::getPlatform,platform);
                 }
                 //筛选出被启用的订单，即status == 1
                 mLqw2.eq(Task::getStatus,1);
@@ -297,26 +292,26 @@ public class TaskController {
                     }
                 }
                 return R.success(homeDtos);
-            }else if (condition.getConstraint() == 2){
+            }else if (constraint == 2){
                 mLqw.orderByAsc(Task::getRebateA);
-            }else if (condition.getConstraint() == 3){
+            }else if (constraint == 3){
                 mLqw.orderByDesc(Task::getCreateTime);
             }
         }
         //添加过滤条件
         //通过名字搜索
-        mLqw.like(StringUtils.isNotEmpty(condition.getName()), Task::getName, condition.getName());
+        mLqw.like(StringUtils.isNotEmpty(name), Task::getName, name);
         //任务类型筛选：0为早餐(默认)，1为午餐，2为下午茶，3为宵夜
-        if (condition.getType() != null) {
-            mLqw.eq(Task::getType, condition.getType());
+        if (type != null) {
+            mLqw.eq(Task::getType, type);
         }
         //任务评价筛选 0
-        if (condition.getComment() != null) {
-            mLqw.eq(Task::getComment, condition.getComment());
+        if (comment != null) {
+            mLqw.eq(Task::getComment, comment);
         }
         //平台类型筛选
-        if (condition.getPlatform() != null) {
-            mLqw.eq(Task::getPlatform, condition.getPlatform());
+        if (platform != null) {
+            mLqw.eq(Task::getPlatform, platform);
         }
         //筛选出被启用的订单，即status == 1
         mLqw.eq(Task::getStatus,1);
@@ -361,7 +356,6 @@ public class TaskController {
         ArrayList<BigDecimal> distanceList = new ArrayList<>();
         //商家按距离排序结果  采用LinkedHashSet存储  有序不可重复  避免两个暑假与用户距离相同时产生错误
         Set<Merchant> merchantsOrder = new LinkedHashSet<>();
-//        ArrayList<Merchant> merchantsOrder = new ArrayList<>();
         for (Merchant merchant : merchants) {
             //获取商家的经纬度
             BigDecimal merchantLat = merchant.getLat();
@@ -420,7 +414,9 @@ public class TaskController {
             //得到商家与用户之间的距离
             BigDecimal distance = getDistance(userLng, userLat, merchantLng, merchantLat);
             //将商家和 商家与用户之间的距离 作为一对键值对存储起来
-            map.put(merchant, distance);
+            if (!distance.equals(BigDecimal.valueOf(-1))){
+                map.put(merchant, distance);
+            }
         }
         return map;
     }
@@ -444,6 +440,9 @@ public class TaskController {
      * @Author 看客
      */
     public static BigDecimal getDistance(BigDecimal lng1, BigDecimal lat1, BigDecimal lng2, BigDecimal lat2) {
+        if (lng2 == null || lat2 == null){
+            return BigDecimal.valueOf(-1);
+        }
         BigDecimal radLat1 = rad(Double.parseDouble(String.valueOf(lat1)));
         BigDecimal radLat2 = rad(Double.parseDouble(String.valueOf(lat2)));
         BigDecimal a = radLat1.subtract(radLat2);

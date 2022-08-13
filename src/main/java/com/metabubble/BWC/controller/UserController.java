@@ -13,8 +13,11 @@ import com.metabubble.BWC.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user")
@@ -27,6 +30,10 @@ public class UserController {
     private TeamService teamService;
     @Autowired
     private LogsService logsService;
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    String userKey = "userKey";
 
     /**
      * 管理端添加用户
@@ -88,7 +95,7 @@ public class UserController {
     }
 
     /**
-     * 根据主键id查询用户
+     * 管理端根据主键id查询用户
      * @param id 用户id
      * @return
      * @author leitianyu999
@@ -121,13 +128,18 @@ public class UserController {
 
 
     /**
-     * 用户端根据用户id查询用户信息
-     * @param id 用户id
+     * 用户端查询用户信息
      * @return
      * @author leitianyu999
      */
     @GetMapping("/getuser")
-    public R<UserDto> getByIdForUser(@RequestParam Long id){
+    public R<UserDto> getByIdForUser(){
+        Long id = BaseContext.getCurrentId();
+        User o = (User) redisTemplate.opsForValue().get(userKey+id);
+        if (o!=null){
+            UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(o);
+            return R.success(userDto);
+        }
         //条件构造器
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
         //添加用户id比对
@@ -137,6 +149,7 @@ public class UserController {
         if (user!=null) {
 
             UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
+            redisTemplate.opsForValue().set(userKey+id,user,24, TimeUnit.HOURS);
             return R.success(userDto);
         }
         return R.error("没有查询到对应用户信息");
@@ -151,11 +164,13 @@ public class UserController {
      */
     @PutMapping("/getuser")
     public R<String> updateForUser(@RequestBody UserDto userDto1){
+        Long id = BaseContext.getCurrentId();
         UserDto userDto = new UserDto();
-        userDto.setId(userDto1.getId());
+        userDto.setId(id);
         userDto.setName(userDto1.getName());
         User user = UserConverter.INSTANCES.toUserDtoRoleUser(userDto);
         userService.updateById(user);
+        redisTemplate.delete(userKey+id);
         return R.success("修改成功");
 
     }
@@ -164,15 +179,18 @@ public class UserController {
     /**
      * 用户端根据邀请码添加上级
      * @param invitation 邀请码
-     * @param id    用户id
      * @return
      * @author leitianyu999
      */
     @PutMapping("/user/invitation")
     @Transactional
-    public R<String> addTeam(String invitation ,int id){
-        //查询用户对象
-        User user = userService.getById(id);
+    public R<String> addTeam(String invitation){
+        Long id = BaseContext.getCurrentId();
+        User user = (User) redisTemplate.opsForValue().get(userKey+id);
+        if (user==null){
+            //查询用户对象
+            user = userService.getById(id);
+        }
         //判断邀请码是否为用户本身邀请码
         if (user.getDownId().equals(invitation)){
             return R.error("邀请码错误");
@@ -195,6 +213,7 @@ public class UserController {
             //用户添加上级邀请码
             user.setUpId(invitation);
             userService.updateById(user);
+            redisTemplate.delete(userKey+id);
             return R.success("添加成功");
         }
         return R.error("已填写邀请码");

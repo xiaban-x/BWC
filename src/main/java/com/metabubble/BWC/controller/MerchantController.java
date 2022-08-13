@@ -37,25 +37,23 @@ public class MerchantController {
 
     /**
      * 查询商家信息
-     * @param condition
      * @param limit
      * @param offset
+     * @param name
+     * @param tel
      * @Author 看客
      * @return
      */
-    @GetMapping(value={"/{offset}/{limit}"})
-    public R<List<MerchantDto>> getMerchantByPage(@RequestBody(required = false) Condition condition, @PathVariable Integer limit,@PathVariable Integer offset) {
+    @GetMapping
+    public R<List<MerchantDto>> getMerchantByPage(Integer limit,Integer offset,String name,String tel) {
 
         Page<Merchant> merchantPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Merchant> mLqw = new LambdaQueryWrapper<>();
         //添加过滤条件
-        mLqw.like(StringUtils.isNotEmpty(condition.getName()), Merchant::getName,condition.getName());
+        mLqw.like(StringUtils.isNotEmpty(name), Merchant::getName, name);
 
-        mLqw.like(StringUtils.isNotEmpty(condition.getTel()),Merchant::getTel,condition.getTel());
+        mLqw.like(StringUtils.isNotEmpty(tel),Merchant::getTel,tel);
 
-        if (condition.getPlaType() != null){
-            //mLqw.like(Merchant::getPlaType,condition.getPlaType());
-        }
         //添加排序条件
         mLqw.orderByDesc(Merchant::getCreateTime);
 
@@ -82,10 +80,15 @@ public class MerchantController {
     @PostMapping
     public R<String> save(@RequestBody Merchant merchant) {
         //获取经纬度
-        BigDecimal lng = getGeocoderLatitude(merchant.getAddress()).get("lng");
-        BigDecimal lat = getGeocoderLatitude(merchant.getAddress()).get("lat");
-//        merchant.setLng(lng);
-//        merchant.setLat(lat);
+        BigDecimal lng = merchant.getLng();
+        BigDecimal lat = merchant.getLat();
+        if (lng == null  || lat == null){
+            lng = getGeocoderLatitude(merchant.getAddress()).get("lng");
+            lat = getGeocoderLatitude(merchant.getAddress()).get("lat");
+        }
+
+        merchant.setLng(lng);
+        merchant.setLat(lat);
         //保存
         boolean flag = merchantService.save(merchant);
         if (flag){

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
@@ -79,6 +80,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     @Override
     public void save(User user) {
         Team team = new Team();
+        team.setDownUser01Amount(0);
+        team.setDownUser02Amount(0);
         team.setUserId(user.getId());
         this.save(team);
     }
@@ -92,20 +95,40 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
         LambdaQueryWrapper<Team> queryWrapper1 = new LambdaQueryWrapper<>();
         queryWrapper1.eq(Team::getUserId,user.getId());
-
+        //本机用户
         Team team = this.getOne(queryWrapper1);
 
         LambdaQueryWrapper<Team> queryWrapper2 = new LambdaQueryWrapper<>();
         queryWrapper2.eq(Team::getUserId,topUser.getId());
-
+        //上级用户
         Team teamTop = this.getOne(queryWrapper2);
 
-
+        //添加团队上一级id
         team.setUpUser01Id(topUser.getId());
+
+        int downUser01Amount = teamTop.getDownUser01Amount();
+        AtomicInteger atomicInteger1 = new AtomicInteger(downUser01Amount);
+        int top = atomicInteger1.incrementAndGet();
+        //修改下级一级成员数量
+        teamTop.setDownUser01Amount(top);
+        //判断是否有上二级成员
         if (teamTop.getUpUser01Id()!=null){
             team.setUpUser02Id(teamTop.getUpUser01Id());
+
+            LambdaQueryWrapper<Team> queryWrapper3 = new LambdaQueryWrapper<>();
+            queryWrapper3.eq(Team::getUserId,teamTop.getUpUser01Id());
+            //上二级用户
+            Team teamTopTop = this.getOne(queryWrapper3);
+
+            int downUser02Amount = teamTopTop.getDownUser02Amount();
+            AtomicInteger atomicInteger2 = new AtomicInteger(downUser02Amount);
+            int topTop = atomicInteger2.incrementAndGet();
+            //修改下级二级成员数量
+            teamTopTop.setDownUser02Amount(topTop);
+
+            this.update(teamTopTop,queryWrapper3);
         }
         this.update(team,queryWrapper1);
-
+        this.update(teamTop,queryWrapper2);
     }
 }
