@@ -1,7 +1,10 @@
 package com.metabubble.BWC.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.metabubble.BWC.common.R;
+import com.metabubble.BWC.entity.Config;
 import com.metabubble.BWC.entity.Cusservice;
+import com.metabubble.BWC.service.ConfigService;
 import com.metabubble.BWC.service.CusserviceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,21 +24,19 @@ import java.util.List;
 public class CusserviceController {
 
     @Autowired
-    private CusserviceService cusserviceService;
+    private ConfigService configService;
 
     /**
      * 客服信息展示
-     * cacheable: 缓存注释
-     * value: 缓存名称
-     * unless: 条件满足时不缓存数据
+     * type 配置类型，6为微信客服，7为QQ客服，8为客服邮箱，9为客服电话
      * author 晴天小杰
      * @return
      */
     @GetMapping
-    //注释原因：可能不用缓存，暂时注释
-//    @Cacheable(value = "cusserviceMsg",unless = "#result == null")
-    public R<List<Cusservice>> getCusservice(){
-        List<Cusservice> cusserviceMsg = cusserviceService.list();
+    public R<List<Config>> getCusservice(Integer type){
+        LambdaQueryWrapper<Config> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Config::getType,type);
+        List<Config> cusserviceMsg = configService.list(queryWrapper);
         return R.success(cusserviceMsg);
     }
 
