@@ -38,6 +38,9 @@ public class UserDto {
     //支付宝名称
     private String aliPayName;
 
+    //头像文件名
+    private String avatar;
+
     //用户等级，0为普通用户；1为会员
     private Integer grade;
 
