@@ -51,7 +51,7 @@ public class OrdersController {
         //条件构造器
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper();
         queryWrapper.eq(!String.valueOf(id).equals(""),Orders::getUserId,id);
-        if (!(status.size()==1&&status.get(1).equals("9"))) {
+        if (!(status.size()==1&&status.get(0).equals("9"))) {
             if (status.size()!=0&&status!=null) {
                 queryWrapper.and(ordersLambdaQueryWrapper -> {
                     for (String o : status) {
