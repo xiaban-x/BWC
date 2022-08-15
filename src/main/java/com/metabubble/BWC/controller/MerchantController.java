@@ -211,10 +211,10 @@ public class MerchantController {
         } catch (Exception e) {
             System.out.println("error in wapaction,and e is " + e.getMessage());
         }
-        int addressIndex = res.indexOf("address");
-        int i = res.indexOf(" ", addressIndex);
-        int j = res.indexOf(",", addressIndex);
-        res = res.substring(i+1, j);
+//        int addressIndex = res.indexOf("address");
+//        int i = res.indexOf(" ", addressIndex);
+//        int j = res.indexOf(",", addressIndex);
+//        res = res.substring(i+1, j);
         System.out.println(res);
         return res;
     }
