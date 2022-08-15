@@ -20,6 +20,12 @@ public class HomeDto {
     //用户到商家的距离
     private BigDecimal userToMerchantDistance;
 
+    //平台类型：0为美团(默认)，1为饿了么
+    private Integer platform;
+
+    //商家图片
+    private String merchantPic;
+
     //任务剩余量
     private Integer taskLeft;
 

@@ -188,5 +188,35 @@ public class MerchantController {
         }
         return null;
     }
+
+    /**
+     * 输入经纬度获取地址
+     * @param lng
+     * @param lat
+     * @return
+     */
+    @GetMapping("/getAddress")
+    public String getAdd(String lng, String lat ){
+        String urlString = "https://apis.map.qq.com/ws/geocoder/v1/?location="+lat+","+lng+"&output=json&key="+KEY_1;
+        String res = "";
+        try {
+            URL url = new URL(urlString);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection)url.openConnection();
+            java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(),"UTF-8"));
+            String line;
+            while ((line = in.readLine()) != null) {
+                res += line+"\n";
+            }
+            in.close();
+        } catch (Exception e) {
+            System.out.println("error in wapaction,and e is " + e.getMessage());
+        }
+        int addressIndex = res.indexOf("address");
+        int i = res.indexOf(" ", addressIndex);
+        int j = res.indexOf(",", addressIndex);
+        res = res.substring(i+1, j);
+        System.out.println(res);
+        return res;
+    }
 }
 

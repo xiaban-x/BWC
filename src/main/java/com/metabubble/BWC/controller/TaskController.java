@@ -164,17 +164,16 @@ public class TaskController {
 
     /**
      * 任务信息详情
-     * @param condition
+     * @param id
+     * @param userLng
+     * @param userLat
      * @Author 看客
      * @return
      */
     @GetMapping("/detail")
-    public R<TaskDetailDto> getTaskDetail(@RequestBody(required = false) Condition condition){
+    public R<TaskDetailDto> getTaskDetail(Integer id,BigDecimal userLng,BigDecimal userLat){
         //通过任务编号查找被点击的任务
-        Task task = taskService.getById(condition.getId());
-        //获取用户的经纬度
-        BigDecimal userLng = condition.getUserLng();
-        BigDecimal userLat = condition.getUserLat();
+        Task task = taskService.getById(id);
         //获取任务所属商家的经纬度
         Merchant merchant = merchantService.getById(task.getMerchantId());
         BigDecimal merchantLng = merchant.getLng();
@@ -185,11 +184,15 @@ public class TaskController {
         String merchantAddress = merchant.getAddress();
         //获取商家名字
         String merchantName = merchant.getName();
+        //获取商家照片
+        String merchantPic = merchant.getPic();
         TaskDetailDto taskDetailDto = TaskDetailConverter.INSTANCES.TaskToTaskDetailDto(task);
         //设置进TaskDetailDto
         taskDetailDto.setMerchantName(merchantName);
         taskDetailDto.setMerchantAddress(merchantAddress);
         taskDetailDto.setUserToMerchantDistance(userToMerchantDistance);
+        taskDetailDto.setMerchantPic(merchantPic);
+
         return R.success(taskDetailDto);
     }
 
@@ -266,11 +269,15 @@ public class TaskController {
                         Merchant merchant = merchantService.getById(record.getMerchantId());
                         //获取商家名字
                         String merchantName = merchant.getName();
+                        //获取商家照片
+                        String merchantPic = merchant.getPic();
                         //获取商家与用户之间的距离
                         BigDecimal distance = merchantBigDecimalMap.get(merchant);
                         //设置进homeDto
                         homeDto.setMerchantName(merchantName);
                         homeDto.setUserToMerchantDistance(distance);
+                        homeDto.setMerchantPic(merchantPic);
+                        //保存进集合
                         homeDtoList.add(homeDto);
                     }
                 }
@@ -329,11 +336,15 @@ public class TaskController {
                     Merchant merchant = merchantService.getById(record.getMerchantId());
                     //获取商家名字
                     String merchantName = merchant.getName();
+                    //获取商家图片
+                    String merchantPic = merchant.getPic();
                     //获取商家与用户之间的距离
                     BigDecimal distance = merchantBigDecimalMap.get(merchant);
                     //设置进homeDto
                     homeDto.setMerchantName(merchantName);
                     homeDto.setUserToMerchantDistance(distance);
+                    homeDto.setMerchantPic(merchantPic);
+                    //添加进集合
                     homes.add(homeDto);
                 }
             }
@@ -456,4 +467,6 @@ public class TaskController {
         double s2 = Math.round(Double.parseDouble(String.valueOf(s1.multiply(BigDecimal.valueOf(10000))))) / 10000;
         return BigDecimal.valueOf(s2);
     }
+
+
 }

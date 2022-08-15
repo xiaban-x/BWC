@@ -18,6 +18,12 @@ public class TaskDetailDto {
     //商家地址
     private String merchantAddress;
 
+    //平台类型：0为美团(默认)，1为饿了么
+    private Integer platform;
+
+    //商家照片
+    private String merchantPic;
+
     //用户与商家距离
     private BigDecimal userToMerchantDistance;
 
