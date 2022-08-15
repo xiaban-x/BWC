@@ -19,6 +19,16 @@ public class MobileUtils {
     private static final String REGEX_MOBILE = "^((13[0-9])|(15[^4,\\D])|(18[0-3,5-9])|(17[0-9]))\\d{8}$";
 
     /**
+     * 手机号脱敏筛选正则
+     */
+    public static final String PHONE_BLUR_REGEX = "(\\d{3})\\d{4}(\\d{4})";
+
+    /**
+     * 手机号脱敏替换正则
+     */
+    public static final String PHONE_BLUR_REPLACE_REGEX = "$1****$2";
+
+    /**
      * 判断是否是手机号格式,如果传入的是空串，返回false
      * @param mobile
      * @return 校验通过返回true，否则返回false
@@ -46,6 +56,15 @@ public class MobileUtils {
         long millis = c.getTimeInMillis() - now+2000;
 
         return (int)(millis/1000);
+    }
+
+    /**
+     * 手机号脱敏处理
+     * @param phone
+     * @return
+     */
+    public static final String blurPhone(String phone) {
+        return phone.replaceAll(PHONE_BLUR_REGEX, PHONE_BLUR_REPLACE_REGEX);
     }
 
 }

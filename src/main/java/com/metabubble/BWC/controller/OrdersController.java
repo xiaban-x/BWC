@@ -310,16 +310,18 @@ public class OrdersController {
             orders.setStatus(6);
             //用户返现金额到账
             userService.cashback(orders);
+            //获取用户对象
+            User user = userService.getById(orders.getUserId());
             //给上一级返现
             if (team.getUpUser01Id()!=null) {
-                teamService.cashbackForUserFromFirst(team.getUpUser01Id());
+                teamService.cashbackForUserFromFirst(team.getUpUser01Id(),user.getTel());
             }
             //给上二级返现
             if (team.getUpUser02Id()!=null){
-                teamService.cashbackForUserFromSecond(team.getUpUser02Id());
+                teamService.cashbackForUserFromSecond(team.getUpUser02Id(),user.getTel());
             }
             //添加审核人id
-            //orders.setReviewerIdB(BaseContext.getCurrentId());
+            orders.setReviewerIdB(BaseContext.getCurrentId());
             //更新订单状态
             ordersService.updateById(orders);
             logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”通过"+orders.getUserId()+"用户二审");

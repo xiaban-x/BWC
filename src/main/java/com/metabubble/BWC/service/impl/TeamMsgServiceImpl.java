@@ -14,5 +14,16 @@ import org.springframework.stereotype.Service;
 public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
         implements TeamMsgService {
 
-
+    /**
+     * 添加团队详细信息
+     * @param id
+     * @param msg
+     */
+    @Override
+    public void add(Long id, String msg) {
+        TeamMsg teamMsg = new TeamMsg();
+        teamMsg.setUserId(id);
+        teamMsg.setInformation(msg);
+        this.save(teamMsg);
+    }
 }
