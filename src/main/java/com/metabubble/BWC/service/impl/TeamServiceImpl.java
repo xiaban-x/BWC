@@ -9,8 +9,10 @@ import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.mapper.AdminMapper;
 import com.metabubble.BWC.mapper.TeamMapper;
 import com.metabubble.BWC.service.AdminService;
+import com.metabubble.BWC.service.TeamMsgService;
 import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
+import com.metabubble.BWC.utils.MobileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private TeamMsgService teamMsgService;
 
     /**
      * 团队向上一级返现
@@ -36,18 +40,29 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * @author leitianyu999
      */
     @Override
-    public void cashbackForUserFromFirst(Long id) {
+    public void cashbackForUserFromFirst(Long id,String tel) {
         LambdaQueryWrapper<Team> queryWrapper123 = new LambdaQueryWrapper<>();
         queryWrapper123.eq(Team::getUserId,id);
         Team team = this.getOne(queryWrapper123);
+
+        //手机号脱敏处理
+        String phone = MobileUtils.blurPhone(tel);
         //查询是否为会员
         if (userService.checkGrade(id)) {
-            //会员返现
-            team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithVip));
+            if (!bigDecimalForFirstWithVip.equals(0)) {
+                //会员返现
+                team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithVip));
+                //团队信息计入
+                teamMsgService.add(id,"用户:"+phone+"返现"+bigDecimalForFirstWithVip+"元");
+            }
         }else {
-            //非会员返现
-            BigDecimal add = team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip);
-            team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip));
+            if (!bigDecimalForFirstWithNtoVip.equals(0)) {
+                //非会员返现
+                BigDecimal add = team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip);
+                team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip));
+                //团队信息计入
+                teamMsgService.add(id,"用户:"+phone+"返现"+bigDecimalForFirstWithNtoVip+"元");
+            }
         }
         this.update(team,queryWrapper123);
     }
@@ -58,17 +73,28 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * @author leitianyu999
      */
     @Override
-    public void cashbackForUserFromSecond(Long id) {
+    public void cashbackForUserFromSecond(Long id,String tel) {
         LambdaQueryWrapper<Team> queryWrapper123 = new LambdaQueryWrapper<>();
         queryWrapper123.eq(Team::getUserId,id);
         Team team = this.getOne(queryWrapper123);
+
+        //手机号脱敏处理
+        String phone = MobileUtils.blurPhone(tel);
         //查询是否为会员
         if (userService.checkGrade(id)) {
-            //会员返现
-            team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithVip));
+            if (!bigDecimalForSecondWithVip.equals(0)) {
+                //会员返现
+                team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithVip));
+                //团队信息计入
+                teamMsgService.add(id,"用户:"+phone+"返现"+bigDecimalForSecondWithVip+"元");
+            }
         }else {
-            //非会员返现
-            team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithNtoVip));
+            if (!bigDecimalForSecondWithNtoVip.equals(0)) {
+                //非会员返现
+                team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithNtoVip));
+                //团队信息计入
+                teamMsgService.add(id,"用户:"+phone+"返现"+bigDecimalForSecondWithNtoVip+"元");
+            }
         }
         this.update(team,queryWrapper123);
     }
@@ -92,6 +118,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      */
     @Override
     public void addTeamTop(User user,User topUser) {
+        //手机号脱敏处理
+        String phone = MobileUtils.blurPhone(user.getTel());
 
         LambdaQueryWrapper<Team> queryWrapper1 = new LambdaQueryWrapper<>();
         queryWrapper1.eq(Team::getUserId,user.getId());
@@ -111,6 +139,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         int top = atomicInteger1.incrementAndGet();
         //修改下级一级成员数量
         teamTop.setDownUser01Amount(top);
+        //团队信息添加
+        teamMsgService.add(teamTop.getUserId(),"用户"+phone+"成为您的下级一级成员");
         //判断是否有上二级成员
         if (teamTop.getUpUser01Id()!=null){
             team.setUpUser02Id(teamTop.getUpUser01Id());
@@ -125,6 +155,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             int topTop = atomicInteger2.incrementAndGet();
             //修改下级二级成员数量
             teamTopTop.setDownUser02Amount(topTop);
+            //团队信息添加
+            teamMsgService.add(teamTopTop.getUserId(),"用户"+phone+"成为您的下级二级成员");
 
             this.update(teamTopTop,queryWrapper3);
         }
