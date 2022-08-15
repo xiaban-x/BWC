@@ -16,8 +16,8 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
 
     /**
      * 添加团队详细信息
-     * @param id
-     * @param msg
+     * @param id    用户id
+     * @param msg   信息
      */
     @Override
     public void add(Long id, String msg) {
