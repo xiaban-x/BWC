@@ -10,6 +10,8 @@ public interface TeamMsgService extends IService<TeamMsg> {
     public void add(Long id,String tel,String msg);
     //添加提现信息
     public void addWithdrawals(Long id,String amount);
+    //添加充值信息
+    public void addRecharge(Long id,String amount);
     //添加返现信息
     public void addCashback(Long id,String tel,String amount);
 

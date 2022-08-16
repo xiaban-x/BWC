@@ -29,7 +29,16 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
     @Override
     public void addWithdrawals(Long id, String amount) {
         TeamMsg teamMsg = new TeamMsg();
-        teamMsg.setType(1);
+        teamMsg.setType(2);
+        teamMsg.setUserId(id);
+        teamMsg.setMsg(amount);
+        this.save(teamMsg);
+    }
+
+    @Override
+    public void addRecharge(Long id, String amount) {
+        TeamMsg teamMsg = new TeamMsg();
+        teamMsg.setType(3);
         teamMsg.setUserId(id);
         teamMsg.setMsg(amount);
         this.save(teamMsg);
@@ -39,7 +48,7 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
     public void addCashback(Long id, String tel, String amount) {
         String phone = MobileUtils.blurPhone(tel);
         TeamMsg teamMsg = new TeamMsg();
-        teamMsg.setType(2);
+        teamMsg.setType(0);
         teamMsg.setUserId(id);
         teamMsg.setDownPhone(phone);
         teamMsg.setMsg(amount);
