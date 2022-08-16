@@ -243,7 +243,7 @@ public class LoginController {
                     manageSession.getManageSession().put(user.getId().toString(),session);
                     redisTemplate.delete(limitKey);
                     UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
-                    redisTemplate.opsForValue().set(userKey+user.getId(),user,24,TimeUnit.HOURS);
+                    //redisTemplate.opsForValue().set(userKey+user.getId(),user,24,TimeUnit.HOURS);
                     return R.success(userDto);
                 }else {
                     // 记录密码输入错误数
@@ -284,7 +284,7 @@ public class LoginController {
                     redisTemplate.delete(mobileKey);
                     redisTemplate.delete(limitKey);
                     UserDto userDto1 = UserConverter.INSTANCES.toUserRoleDto(user1);
-                    redisTemplate.opsForValue().set(userKey+user1.getId(),user1,24,TimeUnit.HOURS);
+                    //redisTemplate.opsForValue().set(userKey+user1.getId(),user1,24,TimeUnit.HOURS);
                     return R.success(userDto1);
                 }
 

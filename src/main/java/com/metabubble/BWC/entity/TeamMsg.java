@@ -21,8 +21,14 @@ public class TeamMsg {
     //用户/团队id
     private Long userId;
 
+    //状态：0是团队返现类(默认)，1是添加上下级类,2是用户提现类
+    private int type;
+
+    //电话号
+    private String downPhone;
+
     //团队信息
-    private String information;
+    private String msg;
 
     //创建时间
     @TableField(fill = FieldFill.INSERT) //插入时填充字段

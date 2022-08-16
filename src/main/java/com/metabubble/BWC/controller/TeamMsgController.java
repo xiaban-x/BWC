@@ -29,7 +29,7 @@ public class TeamMsgController {
      * @return
      */
     @GetMapping
-    public R<Page> page(int offset, int limit){
+    public R<Page> page(int offset, int limit ,int type){
         Long id = BaseContext.getCurrentId();
 
         Page<TeamMsg> page =new Page<>(offset,limit);
@@ -37,6 +37,9 @@ public class TeamMsgController {
         LambdaQueryWrapper<TeamMsg> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TeamMsg::getUserId,id);
         queryWrapper.orderByDesc(TeamMsg::getCreateTime);
+        if (!(type==3)){
+            queryWrapper.eq(TeamMsg::getType,type);
+        }
 
         teamMsgService.page(page,queryWrapper);
 

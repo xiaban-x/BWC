@@ -149,7 +149,7 @@ public class UserController {
         if (user!=null) {
 
             UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
-            redisTemplate.opsForValue().set(userKey+id,user,24, TimeUnit.HOURS);
+            //redisTemplate.opsForValue().set(userKey+id,user,24, TimeUnit.HOURS);
             return R.success(userDto);
         }
         return R.error("没有查询到对应用户信息");
