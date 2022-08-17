@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
  * 充值管理
  */
 @Data
-public class Recharge implements Serializable {
+public class Recharge {
 
     //序列化
     private static final long serialVersionUID = 1L;
@@ -23,11 +22,14 @@ public class Recharge implements Serializable {
     //用户id
     private Long userId;
 
-    //充值方式 0个人零钱（默认） 1微信 2支付宝 3团队零钱
+    //充值方式 0零钱（默认） 1微信 2支付宝 3个人零钱
     private Integer rechargeType;
 
     //订单号
     private Long outTradeNo;
+
+    //选择充值的会员时间 1：月卡 2：季卡 3：年卡
+    private Long membershipTime;
 
     //充值金额
     private BigDecimal rechargeAmount;

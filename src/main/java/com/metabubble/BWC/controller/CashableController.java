@@ -8,10 +8,7 @@ import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.CDto;
 import com.metabubble.BWC.dto.CashableDto;
-import com.metabubble.BWC.entity.Cashable;
-import com.metabubble.BWC.entity.Config;
-import com.metabubble.BWC.entity.Team;
-import com.metabubble.BWC.entity.User;
+import com.metabubble.BWC.entity.*;
 import com.metabubble.BWC.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -32,6 +31,7 @@ public class CashableController {
     @Autowired LogsService logsService;
     @Autowired TeamService teamService;
     @Autowired ConfigService configService;
+    @Autowired TeamMsgService teamMsgService;
 
     /**
      * 提现统计查询
@@ -41,7 +41,7 @@ public class CashableController {
      * type 选择的查询类型
      * @return
      */
-    @GetMapping("/cashableAmount")
+    @GetMapping("/getCashableCount")
     public R<CDto> cashable_amount(@RequestParam("Type") Integer type, @RequestParam("BeginTime") String beginTime) {
 
         QueryWrapper<Cashable> queryWrapper = new QueryWrapper<>();
@@ -104,7 +104,7 @@ public class CashableController {
      * @return
      */
 //提现管理
-    @GetMapping("/Page")
+    @GetMapping("/getCashablePageInfo")
     public R<IPage> Page(Integer Page, Integer PageSize, Integer chooseType,String zfbId,String zfbName) {
         //分页构造器
         QueryWrapper<Object> wrapper = new QueryWrapper<>();
@@ -133,67 +133,80 @@ public class CashableController {
      * author Kenlihankun
      * @Param amount 获取用户填写的可提现金额
      * @Param  payType 获取用户选择的提现方式 1:支付宝(默认) 2:微信
-     * @Param chooseType 0为用户个人零钱提现 1为团队零钱提现
      * @return
      */
 
 
     @Transactional
     //用户端提现
-    @PostMapping("/Cashable")
+    @PostMapping("/insertCashableInfo")
     public R<String > cashable(@RequestParam("amount")BigDecimal amount,
-                               @RequestParam("payType") Integer payType,
-                               @RequestParam("chooseType") Integer chooseType){
+                               @RequestParam("payType") Integer payType){
         UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
         UpdateWrapper<Team> teamWrapper = new UpdateWrapper<>();
+        QueryWrapper<Cashable> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<Team> teamQueryWrapper = new QueryWrapper<>();
+        String result = "success";
 
         //BaseContext 获取session Id
         Long userId = BaseContext.getCurrentId();
-        //Long userId = 1L;//测试
+        //Long userId = 2L;//测试
 
-  /**     最低和最高提现额度
-        Integer i;
-        BigDecimal b;
-        Config config = configService.getById();
+        BigDecimal minA = new BigDecimal(0);
+        BigDecimal maxA = new BigDecimal(1000);
+        BigDecimal maxTimes = new BigDecimal(20);
+
+        //最大提现次数
+        Config config = configService.getById(16);
         String content = config.getContent();
-   //判断是否为整数
-        Pattern pattern2 = Pattern.compile("[0-9]*");
+        //最低提现金额
+        Config config1 = configService.getById(11);
+        String content1 = config1.getContent();
+        //最大提现金额
+        Config config2 = configService.getById(12);
+        String content2 = config2.getContent();
 
-   //判断是否为double
-        Pattern pattern1 = Pattern.compile("[0-9]+[.]{0,1}[0-9]*[dD]{0,1}");
-        if (pattern2.matcher(content).matches() == false && pattern1.matcher(content).matches() == false){
-            content = "0";
-            BigDecimal CT = new BigDecimal(content);
-            b = CT;
+        //判断是否为正整数或者正小数
+        Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+");
+        boolean isTrue1 = pattern.matcher(content1).matches();
+        boolean isTrue2 = pattern.matcher(content2).matches();
+        boolean isTrue = pattern.matcher(content).matches();
+        if (isTrue1){
+            minA = new BigDecimal(content1);
         }
-        if (pattern2.matcher(content).matches() == true && pattern1.matcher(content).matches() == false){
-            i = Integer.valueOf(content);
-            if (i<0){
-                i = 0;
-            }
-            BigDecimal CT = new BigDecimal(i);
-            b = CT;
+        if (isTrue2){
+            maxA = new BigDecimal(content2);
         }
-        if (pattern2.matcher(content).matches() == false && pattern1.matcher(content).matches() == true){
-            Double c = new Double(content);
-            content = String.format("%.2f", c);
-            if(content<0){
-                content=0;
-            }
-            BigDecimal Ct = new BigDecimal(content);
-            b = CT;
+        if (isTrue){
+            maxTimes = new BigDecimal(content);
         }
-        */
 
         //提现金额大于0
         BigDecimal zero = new BigDecimal(0);
 
-        if (chooseType.equals(0)){
-            //申请提现金额和可提现金额对比
-            User user = userService.getById(userId);
-            BigDecimal cashableAmount = user.getCashableAmount();
-            //大于等于最低提现金额和小于等于最高提现金额，输入的提现金额大于0
-            if (amount.compareTo(cashableAmount)<1 && amount.compareTo(zero)==1){
+        //获取user主钱包金额
+        User user = userService.getById(userId);
+        BigDecimal cashableAmount = user.getCashableAmount();
+
+        //获取用户当天的提现次数
+        LocalDateTime dateTime = LocalDateTime.now();
+        String timeNow = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(dateTime);
+        queryWrapper.eq("user_id",userId).and(c -> c.like("create_time",timeNow));
+        Integer count1 = cashableService.count(queryWrapper);
+        BigDecimal count_1 = new BigDecimal( Integer.parseInt ( count1.toString() ) );
+
+        //获取team钱包金额
+        teamQueryWrapper.eq("user_id",userId);
+        Team team = teamService.getOne(teamQueryWrapper);
+        BigDecimal totalWithdrawAmount = team.getTotalWithdrawnAmount();
+
+        //计算总金额
+        BigDecimal total = cashableAmount.add(totalWithdrawAmount);
+
+        //判断是否超过当天最大提现次数
+        if (count_1.compareTo(maxTimes)<1){
+            if (amount.compareTo(cashableAmount)<1 && amount.compareTo(zero)==1 && minA.compareTo(total)<1
+                    &&amount.compareTo(maxA)<1 && maxA.compareTo(minA)==1){
                 //更新用户表提现金额
                 BigDecimal cashableAmount1 = cashableAmount.subtract(amount);
                 updateWrapper.eq("id",userId);
@@ -202,6 +215,7 @@ public class CashableController {
 
                 //将数据插入提现表
                 Cashable cashable = new Cashable();
+                cashable.setMainWallet(amount);
                 cashable.setUserId(userId);
                 cashable.setCashableAmount(amount);
                 cashable.setPayType(payType);
@@ -225,29 +239,34 @@ public class CashableController {
                 cashable.setTradeNo(TradeNo);
                 cashableService.update(cashable,wrapper);
 
-            }else {
-                log.info("提现金额不足");
             }
-        }
+            //主钱包不够提现金额
+            else if (amount.compareTo(cashableAmount)==1 && minA.compareTo(total)<1 && amount.compareTo(maxA)<1
+                    && amount.compareTo(total)<1 && maxA.compareTo(minA)==1){
+                BigDecimal cashableAmount1 = amount.subtract(cashableAmount);
 
-        if (chooseType.equals(1)){
-            //申请提现金额和可提现金额对比
-            Team team = teamService.getById(userId);
-            BigDecimal cashableAmount = team.getTotalWithdrawnAmount();
-            //大于等于最低提现金额和小于等于最高提现金额，输入的提现金额大于0
-            if (amount.compareTo(cashableAmount)<1 && amount.compareTo(zero)==1){
-                //更新团队表提现金额
-                BigDecimal cashableAmount1 = cashableAmount.subtract(amount);
-                teamWrapper.eq("id",userId);
-                team.setTotalWithdrawnAmount(cashableAmount1);
-                teamService.update(team, teamWrapper);
+                //更新用户表提现金额
+                updateWrapper.eq("id",userId);
+                user.setCashableAmount(zero);
+                userService.update(user, updateWrapper);
+
+                //更新团队表
+                BigDecimal totalWithdrawAmount1 = totalWithdrawAmount.subtract(cashableAmount1);
+                teamWrapper.eq("user_id",userId);
+                team.setTotalWithdrawnAmount(totalWithdrawAmount1);
+                teamService.update(team,teamWrapper);
+
+                //插入数据到team_msg
+                String teamMsg = user.getName()+"申请了提现，并且从团队钱包扣除了"+cashableAmount1+"元";
+                teamMsgService.addWithdrawals(userId,teamMsg);
 
                 //将数据插入提现表
                 Cashable cashable = new Cashable();
+                cashable.setMainWallet(cashableAmount);
+                cashable.setViceWallet(cashableAmount1);
                 cashable.setUserId(userId);
                 cashable.setCashableAmount(amount);
                 cashable.setPayType(payType);
-                cashable.setChooseType(chooseType);
                 UUID uuid = UUID.randomUUID();
                 Integer uuidNo = uuid.toString().hashCode();
 
@@ -267,29 +286,35 @@ public class CashableController {
                 Long TradeNo = time0*10000000000L+tradeNo;
                 cashable.setTradeNo(TradeNo);
                 cashableService.update(cashable,wrapper);
-
             }else {
-                log.info("提现金额不足");
+                result = "提现金额不满足条件";
             }
+
+        }else {
+            result = "超过当天最大提现次数";
         }
-        return R.success("success");
+
+
+
+        return R.success(result);
     }
 
     /**
      * 管理端的提现退款
      * author Kenlihankun
      * @Param withdrawReason 获取退款原因
-     * cashableDto 接收提现订单的id：id，提现金额：amount
+     * cashableDto 接收提现订单的id：id
      * @return
      */
 
 
     @Transactional
-    @RequestMapping("/withdraw")
+    @PostMapping("/updateWithdrawInfo")
     public R<String> withdraw(CashableDto cashableDto,@RequestParam("withdrawReason") String withDrawReason){
         UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
         UpdateWrapper<User> userUpdateWrapper = new UpdateWrapper<>();
         UpdateWrapper<Team> teamUpdateWrapper = new UpdateWrapper<>();
+        String result = "success";
 
         //更新提现表
         wrapper.eq("id",cashableDto.getId());
@@ -303,22 +328,22 @@ public class CashableController {
             cashableService.update(cashable,wrapper);
 
             User user = userService.getById(cashable.getUserId());
-            Team team = teamService.getById(cashable.getUserId());
 
-            if (cashable.getChooseType().equals(0)){
-                //更新用户表
-                userUpdateWrapper.eq("id",cashable.getUserId());
-                BigDecimal beforeAmount = user.getCashableAmount();
-                BigDecimal afterAmount = beforeAmount.add(cashableDto.getCashableAmount());
-                user.setCashableAmount(afterAmount);
-                userService.update(user,userUpdateWrapper);
-            }
-            if (cashable.getChooseType().equals(1)){
-                //更新团队表
-                teamUpdateWrapper.eq("id",cashable.getUserId());
-                BigDecimal beforeAmount = team.getTotalWithdrawnAmount();
-                BigDecimal afterAmount = beforeAmount.add(cashableDto.getCashableAmount());
-                team.setTotalWithdrawnAmount(afterAmount);
+            //更新用户表
+            //将申请的金额退回主钱包
+            userUpdateWrapper.eq("id",cashable.getUserId());
+            BigDecimal beforeAmount = user.getCashableAmount();
+            BigDecimal afterAmount = beforeAmount.add(cashable.getMainWallet());
+            user.setCashableAmount(afterAmount);
+            userService.update(user,userUpdateWrapper);
+
+            //更新团队表
+            //将金额退回副钱包
+            BigDecimal zero = new BigDecimal(0);
+            if (cashable.getViceWallet().compareTo(zero)==1){
+                teamUpdateWrapper.eq("user_id",cashable.getUserId());
+                Team team = teamService.getOne(teamUpdateWrapper);
+                team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(cashable.getViceWallet()));
                 teamService.update(team,teamUpdateWrapper);
             }
 
@@ -328,10 +353,16 @@ public class CashableController {
             String content = user.getName()+"订单审核不通过";
             logsService.saveLog(title,content);
 
+            //插入数据到team_msg
+            String teamMsg = user.getName()+"提现申请被取消，并且返还团队钱包"+cashable.getViceWallet()+"元";
+            teamMsgService.addWithdrawals(cashable.getUserId(),teamMsg);
+
+        }else {
+            result = "不是待转账状态";
         }
 
 
-        return R.success("success");
+        return R.success(result);
     }
     /**
      * 管理端的提现转账
@@ -342,13 +373,14 @@ public class CashableController {
 
 
     @Transactional
-    @PutMapping("/cashable_success")
+    @PutMapping("/updateAgreeInfo")
     public R<String> cashable_success(CashableDto cashableDto){
         UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
 
         //更新提现表
         wrapper.eq("id",cashableDto.getId());
         Cashable cashable = cashableService.getById(cashableDto.getId());
+        String result = "success";
 
         //判断是否为待转账状态
         if (cashable.getStatus().equals(1)){
@@ -362,11 +394,13 @@ public class CashableController {
             String content = user.getName()+"订单审核通过";
             logsService.saveLog(title,content);
 
+        }else {
+            result = "不是待转账状态";
         }
 
 
 
-        return R.success("success");
+        return R.success(result);
     }
 
 }
