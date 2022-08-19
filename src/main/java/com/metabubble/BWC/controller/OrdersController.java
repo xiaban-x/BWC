@@ -308,6 +308,8 @@ public class OrdersController {
             Team team = teamService.getOne(queryWrapper123);
             //订单状态改成完成
             orders.setStatus(6);
+            //任务完成数量加一
+            taskService.addCompleted(orders);
             //用户返现金额到账
             userService.cashback(orders);
             //获取用户对象
