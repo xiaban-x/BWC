@@ -203,98 +203,101 @@ public class CashableController {
         //计算总金额
         BigDecimal total = cashableAmount.add(totalWithdrawAmount);
 
-        //判断是否超过当天最大提现次数
-        if (count_1.compareTo(maxTimes)<1){
-            if (amount.compareTo(cashableAmount)<1 && amount.compareTo(zero)==1 && minA.compareTo(total)<1
-                    &&amount.compareTo(maxA)<1 && maxA.compareTo(minA)==1){
-                //更新用户表提现金额
-                BigDecimal cashableAmount1 = cashableAmount.subtract(amount);
-                updateWrapper.eq("id",userId);
-                user.setCashableAmount(cashableAmount1);
-                userService.update(user, updateWrapper);
+        //判断传入参数是否正确
+        if (payType.equals(1) || payType.equals(2)){
+            //判断是否超过当天最大提现次数
+            if (count_1.compareTo(maxTimes)<1){
+                if (amount.compareTo(cashableAmount)<1 && amount.compareTo(zero)==1 && minA.compareTo(total)<1
+                        &&amount.compareTo(maxA)<1 && maxA.compareTo(minA)==1){
+                    //更新用户表提现金额
+                    BigDecimal cashableAmount1 = cashableAmount.subtract(amount);
+                    updateWrapper.eq("id",userId);
+                    user.setCashableAmount(cashableAmount1);
+                    userService.update(user, updateWrapper);
 
-                //将数据插入提现表
-                Cashable cashable = new Cashable();
-                cashable.setMainWallet(amount);
-                cashable.setUserId(userId);
-                cashable.setCashableAmount(amount);
-                cashable.setPayType(payType);
-                UUID uuid = UUID.randomUUID();
-                Integer uuidNo = uuid.toString().hashCode();
+                    //将数据插入提现表
+                    Cashable cashable = new Cashable();
+                    cashable.setMainWallet(amount);
+                    cashable.setUserId(userId);
+                    cashable.setCashableAmount(amount);
+                    cashable.setPayType(payType);
+                    UUID uuid = UUID.randomUUID();
+                    Integer uuidNo = uuid.toString().hashCode();
 
-                // String.hashCode()可能会是负数，如果为负数需要转换为正数
-                uuidNo = uuidNo < 0 ? -uuidNo : uuidNo;
-                Long tradeNo = Long.valueOf(String.valueOf(uuidNo));
-                cashable.setTradeNo(tradeNo);
-                cashableService.save(cashable);
+                    // String.hashCode()可能会是负数，如果为负数需要转换为正数
+                    uuidNo = uuidNo < 0 ? -uuidNo : uuidNo;
+                    Long tradeNo = Long.valueOf(String.valueOf(uuidNo));
+                    cashable.setTradeNo(tradeNo);
+                    cashableService.save(cashable);
 
-                //给订单号加上日期
-                UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
-                wrapper.eq("id",cashable.getId());
-                SimpleDateFormat dmDate = new SimpleDateFormat("yyyyMMdd");
-                Date time1 =new Date();
-                String time = dmDate.format(time1);
-                Long time0 = Long.valueOf(time);
-                Long TradeNo = time0*10000000000L+tradeNo;
-                cashable.setTradeNo(TradeNo);
-                cashableService.update(cashable,wrapper);
+                    //给订单号加上日期
+                    UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
+                    wrapper.eq("id",cashable.getId());
+                    SimpleDateFormat dmDate = new SimpleDateFormat("yyyyMMdd");
+                    Date time1 =new Date();
+                    String time = dmDate.format(time1);
+                    Long time0 = Long.valueOf(time);
+                    Long TradeNo = time0*10000000000L+tradeNo;
+                    cashable.setTradeNo(TradeNo);
+                    cashableService.update(cashable,wrapper);
 
-            }
-            //主钱包不够提现金额
-            else if (amount.compareTo(cashableAmount)==1 && minA.compareTo(total)<1 && amount.compareTo(maxA)<1
-                    && amount.compareTo(total)<1 && maxA.compareTo(minA)==1){
-                BigDecimal cashableAmount1 = amount.subtract(cashableAmount);
+                }
+                //主钱包不够提现金额
+                else if (amount.compareTo(cashableAmount)==1 && minA.compareTo(total)<1 && amount.compareTo(maxA)<1
+                        && amount.compareTo(total)<1 && maxA.compareTo(minA)==1){
+                    BigDecimal cashableAmount1 = amount.subtract(cashableAmount);
 
-                //更新用户表提现金额
-                updateWrapper.eq("id",userId);
-                user.setCashableAmount(zero);
-                userService.update(user, updateWrapper);
+                    //更新用户表提现金额
+                    updateWrapper.eq("id",userId);
+                    user.setCashableAmount(zero);
+                    userService.update(user, updateWrapper);
 
-                //更新团队表
-                BigDecimal totalWithdrawAmount1 = totalWithdrawAmount.subtract(cashableAmount1);
-                teamWrapper.eq("user_id",userId);
-                team.setTotalWithdrawnAmount(totalWithdrawAmount1);
-                teamService.update(team,teamWrapper);
+                    //更新团队表
+                    BigDecimal totalWithdrawAmount1 = totalWithdrawAmount.subtract(cashableAmount1);
+                    teamWrapper.eq("user_id",userId);
+                    team.setTotalWithdrawnAmount(totalWithdrawAmount1);
+                    teamService.update(team,teamWrapper);
 
-                //插入数据到team_msg
-                String teamMsg = user.getName()+"申请了提现，并且从团队钱包扣除了"+cashableAmount1+"元";
-                teamMsgService.addWithdrawals(userId,teamMsg);
+                    //插入数据到team_msg
+                    String teamMsg = user.getName()+"申请了提现，并且从团队钱包扣除了"+cashableAmount1+"元";
+                    teamMsgService.addWithdrawals(userId,teamMsg);
 
-                //将数据插入提现表
-                Cashable cashable = new Cashable();
-                cashable.setMainWallet(cashableAmount);
-                cashable.setViceWallet(cashableAmount1);
-                cashable.setUserId(userId);
-                cashable.setCashableAmount(amount);
-                cashable.setPayType(payType);
-                UUID uuid = UUID.randomUUID();
-                Integer uuidNo = uuid.toString().hashCode();
+                    //将数据插入提现表
+                    Cashable cashable = new Cashable();
+                    cashable.setMainWallet(cashableAmount);
+                    cashable.setViceWallet(cashableAmount1);
+                    cashable.setUserId(userId);
+                    cashable.setCashableAmount(amount);
+                    cashable.setPayType(payType);
+                    UUID uuid = UUID.randomUUID();
+                    Integer uuidNo = uuid.toString().hashCode();
 
-                // String.hashCode()可能会是负数，如果为负数需要转换为正数
-                uuidNo = uuidNo < 0 ? -uuidNo : uuidNo;
-                Long tradeNo = Long.valueOf(String.valueOf(uuidNo));
-                cashable.setTradeNo(tradeNo);
-                cashableService.save(cashable);
+                    // String.hashCode()可能会是负数，如果为负数需要转换为正数
+                    uuidNo = uuidNo < 0 ? -uuidNo : uuidNo;
+                    Long tradeNo = Long.valueOf(String.valueOf(uuidNo));
+                    cashable.setTradeNo(tradeNo);
+                    cashableService.save(cashable);
 
-                //给订单号加上日期
-                UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
-                wrapper.eq("id",cashable.getId());
-                SimpleDateFormat dmDate = new SimpleDateFormat("yyyyMMdd");
-                Date time1 =new Date();
-                String time = dmDate.format(time1);
-                Long time0 = Long.valueOf(time);
-                Long TradeNo = time0*10000000000L+tradeNo;
-                cashable.setTradeNo(TradeNo);
-                cashableService.update(cashable,wrapper);
+                    //给订单号加上日期
+                    UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
+                    wrapper.eq("id",cashable.getId());
+                    SimpleDateFormat dmDate = new SimpleDateFormat("yyyyMMdd");
+                    Date time1 =new Date();
+                    String time = dmDate.format(time1);
+                    Long time0 = Long.valueOf(time);
+                    Long TradeNo = time0*10000000000L+tradeNo;
+                    cashable.setTradeNo(TradeNo);
+                    cashableService.update(cashable,wrapper);
+                }else {
+                    result = "提现金额不满足条件";
+                }
+
             }else {
-                result = "提现金额不满足条件";
+                result = "超过当天最大提现次数";
             }
-
         }else {
-            result = "超过当天最大提现次数";
+            result = "参数不符合条件";
         }
-
-
 
         return R.success(result);
     }

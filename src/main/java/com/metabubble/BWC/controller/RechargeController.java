@@ -111,7 +111,6 @@ public class RechargeController {
      * 用户端：待充值
      * author Kenlihankun
      * @return
-     * @Param rechargeAmount 充值金额
      * @Param membershipTime 选择充值的会员时间 1：月卡 2：季卡 3：年卡
      */
 
@@ -119,63 +118,98 @@ public class RechargeController {
     //保存userId,outTradeNo,rechargeAmount,rechargeType(默认),status(默认),createTime,UpdateTime
     @Transactional
     @PostMapping("/insertRechargeInfo")
-    public R<TDto> recharge_click(@RequestParam("rechargeAmount") BigDecimal rechargeAmount,
+    public R<TDto> recharge_click(
                                   @RequestParam("membershipTime") Long membershipTime) {
         //BaseContext 获取session Id
         Long userId = BaseContext.getCurrentId();
         QueryWrapper<Recharge> queryWrapper = new QueryWrapper<>();
         TDto tDto = new TDto();
 
-        BigDecimal maxTimes = new BigDecimal(30);
-        //当日充值最大次数
-        Config config = configService.getById(17);
-        String content = config.getContent();
-        Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+");
-        boolean isTrue = pattern.matcher(content).matches();
-        if (isTrue){
-            maxTimes = new BigDecimal(content);
+        if (membershipTime.equals(1L) || membershipTime.equals(2L) || membershipTime.equals(3L) ){
+            //获取充值金额
+            String RA = "";
+            BigDecimal rechargeAmount = new BigDecimal(10000);
+            if (membershipTime.equals(1L)){
+                Config config1 = configService.getById(13);
+                RA =  config1.getContent();
+                Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+");
+                boolean isTrue = pattern.matcher(RA).matches();
+                if (isTrue){
+                    rechargeAmount = new BigDecimal(RA);
+                }
+            }
+            if (membershipTime.equals(2L)){
+                Config config1 = configService.getById(14);
+                RA =  config1.getContent();
+                Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+");
+                boolean isTrue = pattern.matcher(RA).matches();
+                if (isTrue){
+                    rechargeAmount = new BigDecimal(RA);
+                }
+            }
+            if (membershipTime.equals(3L)){
+                Config config1 = configService.getById(15);
+                RA =  config1.getContent();
+                Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+");
+                boolean isTrue = pattern.matcher(RA).matches();
+                if (isTrue){
+                    rechargeAmount = new BigDecimal(RA);
+                }
+            }
+
+
+            BigDecimal maxTimes = new BigDecimal(30);
+            //当日充值最大次数
+            Config config = configService.getById(17);
+            String content = config.getContent();
+            Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+");
+            boolean isTrue = pattern.matcher(content).matches();
+            if (isTrue){
+                maxTimes = new BigDecimal(content);
+            }
+
+            //查询当日充值次数
+            LocalDateTime dateTime = LocalDateTime.now();
+            String timeNow = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(dateTime);
+            queryWrapper.eq("user_id",userId).and(c -> c.like("create_time",timeNow));
+            Integer count1 = rechargeService.count(queryWrapper);
+            BigDecimal count_1 = new BigDecimal( Integer.parseInt ( count1.toString() ) );
+
+
+            Recharge recharge = new Recharge();
+            UpdateWrapper<Recharge> wrapper = new UpdateWrapper<>();
+
+            //uuid转hashcode
+            UUID uuid = UUID.randomUUID();
+            Integer uuidNo = uuid.toString().hashCode();
+            // String.hashCode()可能会是负数，如果为负数需要转换为正数
+            uuidNo = uuidNo < 0 ? -uuidNo : uuidNo;
+            Long outTradeNo = Long.valueOf(String.valueOf(uuidNo));
+
+            if (count_1.compareTo(maxTimes)<1){
+                //插入冲值表
+                recharge.setOutTradeNo(outTradeNo);
+                recharge.setRechargeAmount(rechargeAmount);
+                recharge.setUserId(userId);
+                recharge.setMembershipTime(membershipTime);
+                rechargeService.save(recharge);
+
+                //给订单编号加上日期
+                SimpleDateFormat dmDate = new SimpleDateFormat("yyyyMMdd");
+                Date time1 = new Date();
+                String time = dmDate.format(time1);
+                Long time0 = Long.valueOf(time);
+                Long outTradeNo0 = time0 * 10000000000L + outTradeNo;
+                recharge.setOutTradeNo(outTradeNo0);
+                wrapper.eq("out_trade_no", outTradeNo);
+                rechargeService.update(recharge, wrapper);
+
+                //返回订单号码
+                tDto.setOutTradeNo(outTradeNo0);
+            }
+
         }
 
-        //查询当日充值次数
-        LocalDateTime dateTime = LocalDateTime.now();
-        String timeNow = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(dateTime);
-        queryWrapper.eq("user_id",userId).and(c -> c.like("create_time",timeNow));
-        Integer count1 = rechargeService.count(queryWrapper);
-        BigDecimal count_1 = new BigDecimal( Integer.parseInt ( count1.toString() ) );
-
-
-        Recharge recharge = new Recharge();
-        UpdateWrapper<Recharge> wrapper = new UpdateWrapper<>();
-
-        //uuid转hashcode
-        UUID uuid = UUID.randomUUID();
-        Integer uuidNo = uuid.toString().hashCode();
-        // String.hashCode()可能会是负数，如果为负数需要转换为正数
-        uuidNo = uuidNo < 0 ? -uuidNo : uuidNo;
-        Long outTradeNo = Long.valueOf(String.valueOf(uuidNo));
-
-        if (count_1.compareTo(maxTimes)<1){
-            //插入冲值表
-            recharge.setOutTradeNo(outTradeNo);
-            recharge.setRechargeAmount(rechargeAmount);
-            recharge.setUserId(userId);
-            recharge.setMembershipTime(membershipTime);
-            rechargeService.save(recharge);
-
-            //给订单编号加上日期
-            SimpleDateFormat dmDate = new SimpleDateFormat("yyyyMMdd");
-            Date time1 = new Date();
-            String time = dmDate.format(time1);
-            Long time0 = Long.valueOf(time);
-            Long outTradeNo0 = time0 * 10000000000L + outTradeNo;
-            recharge.setOutTradeNo(outTradeNo0);
-            wrapper.eq("out_trade_no", outTradeNo);
-            rechargeService.update(recharge, wrapper);
-
-            //返回订单号
-            tDto.setOutTradeNo(outTradeNo0);
-
-        }
 
         //map.put("out_trade_no", outTradeNo0);
         return R.success(tDto);
@@ -187,13 +221,13 @@ public class RechargeController {
      * author Kenlihankun
      * @return
      * @Param rechargeType 选择的充值类型 0：零钱 1：微信 2：支付宝
-     * @Param tradeNo 订单号
+     * @Param outTradeNo 充值订单号
      */
     //充值成功
     //
     @Transactional
     @PutMapping("/updateSuccessInfo")
-    public R<String> recharge_confirm(@RequestParam("tradeNo") Long tradeNo,
+    public R<String> recharge_confirm(@RequestParam("outTradeNo") Long outTradeNo,
                                       @RequestParam("rechargeType") Integer rechargeType) {
 
         //充值成功，根据订单号更新冲值表数据
@@ -202,139 +236,154 @@ public class RechargeController {
         UpdateWrapper<Team> update = new UpdateWrapper<>();
         QueryWrapper<Team> teamQueryWrapper = new QueryWrapper<>();
         String result = "success";
-        QueryWrapper<Recharge> queryWrapper = new QueryWrapper();
-        queryWrapper.eq("out_trade_no", tradeNo);
 
+
+        QueryWrapper<Recharge> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("out_trade_no",outTradeNo);
         Recharge recharge = rechargeService.getOne(queryWrapper);
-        wrapper.eq("out_trade_no", tradeNo);
-        recharge.setRechargeType(rechargeType);
-        rechargeService.update(recharge, wrapper);
+        //如果参数正确
+        if (recharge != null) {
+            if (rechargeType.equals(0) || rechargeType.equals(1) ||rechargeType.equals(2)){
 
-
-        //根据冲值表数据更新用户表数据
-        BigDecimal rechargeAmount = recharge.getRechargeAmount();
-        Long id = recharge.getUserId();
-        LocalDateTime localDateTime = recharge.getUpdateTime();
-
-        //获取用户表数据
-        User user = userService.getById(id);
-        BigDecimal cashableAmount0 = user.getCashableAmount();
-
-        //获取团队表数据
-        teamQueryWrapper.eq("user_id",id);
-        Team team = teamService.getOne(teamQueryWrapper);
-        BigDecimal totalWithdrawnAmount= team.getTotalWithdrawnAmount();
-
-        //总金额
-        BigDecimal total = totalWithdrawnAmount.add(cashableAmount0);
-
-
-        if (recharge.getRechargeType().equals(0)) {//判断是否为零钱充值
-            updateWrapper.eq("id", id);
-            if (rechargeAmount.compareTo(cashableAmount0) < 1) {
-                if (recharge.getMembershipTime().equals(1L)) {
-                    //充值会员
-                    if (user.getGrade().equals(0)){
-                        user.setMembershipExpTime(localDateTime.plusMonths(1L));
-                    }
-                    if (user.getGrade().equals(1)){
-                        //续费会员
-                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(1L));
-
-                    }
-                }
-                if (recharge.getMembershipTime().equals(2L)) {
-                    //充值会员
-                    if (user.getGrade().equals(0)){
-                        user.setMembershipExpTime(localDateTime.plusMonths(3L));
-                    }
-                    if (user.getGrade().equals(1)){
-                        //续费会员
-                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(3L));
-
-                    }
-                }
-                if (recharge.getMembershipTime().equals(3L)) {
-                    //充值会员
-                    if (user.getGrade().equals(0)){
-                        user.setMembershipExpTime(localDateTime.plusYears(1L));
-                    }
-                    if (user.getGrade().equals(1)){
-                        //续费会员
-                        user.setMembershipExpTime(user.getMembershipExpTime().plusYears(1L));
-
-                    }
-                }
-                BigDecimal cashableAmount = user.getCashableAmount().subtract(rechargeAmount);
-                user.setCashableAmount(cashableAmount);
-                // 修改用户等级为会员
-                user.setGrade(1);
-                userService.update(user, updateWrapper);
-
-                recharge.setStatus(2);
-                rechargeService.update(recharge, wrapper);
-            }
-            else if (rechargeAmount.compareTo(cashableAmount0) == 1 && rechargeAmount.compareTo(total)<1) {
-                if (recharge.getMembershipTime().equals(1L)) {
-                    //充值会员
-                    if (user.getGrade().equals(0)){
-                        user.setMembershipExpTime(localDateTime.plusMonths(1L));
-                    }
-                    if (user.getGrade().equals(1)){
-                        //续费会员
-                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(1L));
-
-                    }
-                }
-                if (recharge.getMembershipTime().equals(2L)) {
-                    //充值会员
-                    if (user.getGrade().equals(0)){
-                        user.setMembershipExpTime(localDateTime.plusMonths(3L));
-                    }
-                    if (user.getGrade().equals(1)){
-                        //续费会员
-                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(3L));
-
-                    }
-                }
-                if (recharge.getMembershipTime().equals(3L)) {
-                    //充值会员
-                    if (user.getGrade().equals(0)){
-                        user.setMembershipExpTime(localDateTime.plusYears(1L));
-                    }
-                    if (user.getGrade().equals(1)){
-                        //续费会员
-                        user.setMembershipExpTime(user.getMembershipExpTime().plusYears(1L));
-
-                    }
-                }
-                BigDecimal zero = new BigDecimal(0);
-                BigDecimal cashableAmount = rechargeAmount.subtract(cashableAmount0);
-                user.setCashableAmount(zero);
-                // 修改用户等级为会员
-                user.setGrade(1);
-                userService.update(user, updateWrapper);
-
-                //更新团队表
-                update.eq("user_id",id);
-                BigDecimal totalWithdrawAmount1 = totalWithdrawnAmount.subtract(cashableAmount);
-                team.setTotalWithdrawnAmount(totalWithdrawAmount1);
-                teamService.update(team,update);
-
-                recharge.setStatus(2);
+                wrapper.eq("out_trade_no", outTradeNo);
+                recharge.setRechargeType(rechargeType);
                 rechargeService.update(recharge, wrapper);
 
-                //插入数据到team_msg
-                String teamMsg = user.getName()+"申请了充值，并且从团队钱包扣除了"+cashableAmount+"元";
-                teamMsgService.addRecharge(id,teamMsg);
 
+                //根据冲值表数据更新用户表数据
+                BigDecimal rechargeAmount = recharge.getRechargeAmount();
+                Long userId = recharge.getUserId();
+                LocalDateTime localDateTime = recharge.getUpdateTime();
+
+                //获取用户表数据
+                User user = userService.getById(userId);
+                BigDecimal cashableAmount0 = user.getCashableAmount();
+
+                //获取团队表数据
+                teamQueryWrapper.eq("user_id", userId);
+                Team team = teamService.getOne(teamQueryWrapper);
+                BigDecimal totalWithdrawnAmount = team.getTotalWithdrawnAmount();
+
+                //总金额
+                BigDecimal total = totalWithdrawnAmount.add(cashableAmount0);
+
+
+                //判断是否为待充值
+                if (recharge.getStatus().equals(1)) {
+                    if (recharge.getRechargeType().equals(0)) {//判断是否为零钱充值
+                        updateWrapper.eq("id", userId);
+                        if (rechargeAmount.compareTo(cashableAmount0) < 1) {
+                            if (recharge.getMembershipTime().equals(1L)) {
+                                //充值会员
+                                if (user.getGrade().equals(0)) {
+                                    user.setMembershipExpTime(localDateTime.plusMonths(1L));
+                                }
+                                if (user.getGrade().equals(1)) {
+                                    //续费会员
+                                    user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(1L));
+
+                                }
+                            }
+                            if (recharge.getMembershipTime().equals(2L)) {
+                                //充值会员
+                                if (user.getGrade().equals(0)) {
+                                    user.setMembershipExpTime(localDateTime.plusMonths(3L));
+                                }
+                                if (user.getGrade().equals(1)) {
+                                    //续费会员
+                                    user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(3L));
+
+                                }
+                            }
+                            if (recharge.getMembershipTime().equals(3L)) {
+                                //充值会员
+                                if (user.getGrade().equals(0)) {
+                                    user.setMembershipExpTime(localDateTime.plusYears(1L));
+                                }
+                                if (user.getGrade().equals(1)) {
+                                    //续费会员
+                                    user.setMembershipExpTime(user.getMembershipExpTime().plusYears(1L));
+
+                                }
+                            }
+                            BigDecimal cashableAmount = user.getCashableAmount().subtract(rechargeAmount);
+                            user.setCashableAmount(cashableAmount);
+                            // 修改用户等级为会员
+                            user.setGrade(1);
+                            userService.update(user, updateWrapper);
+
+                            recharge.setStatus(2);
+                            rechargeService.update(recharge, wrapper);
+                        } else if (rechargeAmount.compareTo(cashableAmount0) == 1 && rechargeAmount.compareTo(total) < 1) {
+                            if (recharge.getMembershipTime().equals(1L)) {
+                                //充值会员
+                                if (user.getGrade().equals(0)) {
+                                    user.setMembershipExpTime(localDateTime.plusMonths(1L));
+                                }
+                                if (user.getGrade().equals(1)) {
+                                    //续费会员
+                                    user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(1L));
+
+                                }
+                            }
+                            if (recharge.getMembershipTime().equals(2L)) {
+                                //充值会员
+                                if (user.getGrade().equals(0)) {
+                                    user.setMembershipExpTime(localDateTime.plusMonths(3L));
+                                }
+                                if (user.getGrade().equals(1)) {
+                                    //续费会员
+                                    user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(3L));
+
+                                }
+                            }
+                            if (recharge.getMembershipTime().equals(3L)) {
+                                //充值会员
+                                if (user.getGrade().equals(0)) {
+                                    user.setMembershipExpTime(localDateTime.plusYears(1L));
+                                }
+                                if (user.getGrade().equals(1)) {
+                                    //续费会员
+                                    user.setMembershipExpTime(user.getMembershipExpTime().plusYears(1L));
+
+                                }
+                            }
+                            BigDecimal zero = new BigDecimal(0);
+                            BigDecimal cashableAmount = rechargeAmount.subtract(cashableAmount0);
+                            user.setCashableAmount(zero);
+                            // 修改用户等级为会员
+                            user.setGrade(1);
+                            userService.update(user, updateWrapper);
+
+                            //更新团队表
+                            update.eq("user_id", userId);
+                            BigDecimal totalWithdrawAmount1 = totalWithdrawnAmount.subtract(cashableAmount);
+                            team.setTotalWithdrawnAmount(totalWithdrawAmount1);
+                            teamService.update(team, update);
+
+                            recharge.setStatus(2);
+                            rechargeService.update(recharge, wrapper);
+
+                            //插入数据到team_msg
+                            String teamMsg = user.getName() + "申请了充值，并且从团队钱包扣除了" + cashableAmount + "元";
+                            teamMsgService.addRecharge(userId, teamMsg);
+
+                        } else {
+                            result = "充值金额不满足条件";
+                        }
+                    }
+                } else {
+                    result = "不是待充值状态";
+                }
+            }else {
+                result = "参数错误";
             }
-            else {
-                result = "充值金额不满足条件";
-            }
+
         }else {
-            result = "fail";
+            result = "参数错误";
         }
+
+
 
 
         return R.success(result);
@@ -346,20 +395,32 @@ public class RechargeController {
      * author Kenlihankun
      *
      * @return
-     * @Param tradeNo 充值订单号
+     * @Param outTradeNo 充值订单号
      */
     //充值失败
     @Transactional
     @PutMapping("/updateFailInfo")
-    public R<String> recharge_cancel(@RequestParam("tradeNo") Long tradeNo) {
+    public R<String> recharge_cancel(@RequestParam("outTradeNo") Long outTradeNo) {
         UpdateWrapper<Recharge> wrapper = new UpdateWrapper<>();
-        QueryWrapper<Recharge> queryWrapper = new QueryWrapper();
-        queryWrapper.eq("out_trade_no", tradeNo);
+        QueryWrapper<Recharge> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("out_trade_no",outTradeNo);
         Recharge recharge = rechargeService.getOne(queryWrapper);
-        wrapper.eq("out_trade_no", tradeNo);
-        recharge.setStatus(3);
-        rechargeService.update(recharge, wrapper);
-        return R.success("success");
+        String result = "success";
+        if (recharge!=null){
+            if (recharge.getStatus().equals(1)){
+                wrapper.eq("id", outTradeNo);
+                recharge.setStatus(3);
+                rechargeService.update(recharge, wrapper);
+            }else {
+                result = "不是待充值状态";
+            }
+
+        }else {
+            result = "参数错误";
+        }
+
+
+        return R.success(result);
     }
 
     /**
