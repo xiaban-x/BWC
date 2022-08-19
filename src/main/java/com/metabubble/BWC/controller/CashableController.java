@@ -36,9 +36,8 @@ public class CashableController {
     /**
      * 提现统计查询
      * author Kenlihankun
-     * @RequestBody map
      * beginTime 选择的查询时间
-     * type 选择的查询类型
+     * type 选择的查询类型 1为按天查询查询 2为按月查询 3为按年查询
      * @return
      */
     @GetMapping("/getCashableCount")
@@ -46,48 +45,54 @@ public class CashableController {
 
         QueryWrapper<Cashable> queryWrapper = new QueryWrapper<>();
         QueryWrapper<Cashable> qw = new QueryWrapper<>();
-
-        if (type.equals(1) && beginTime!=null) {
-            String beginTime02 = beginTime.substring(0, 10);
-            beginTime = beginTime02;
-
-        }
-        if (type.equals(2) && beginTime!=null) {
-            String beginTime03 = beginTime.substring(0, 7);
-            beginTime = beginTime03;
-
-        }
-        if (type.equals(3)  && beginTime!=null) {
-            String beginTime04 = beginTime.substring(0, 4);
-            beginTime = beginTime04;
-
-        }
-        queryWrapper.likeRight("update_time", beginTime).and(c -> c.eq("status", 2));
-
-        //统计待转账次数条件
-        qw.likeRight("create_time", beginTime).and(c1 -> c1.eq("status", 1));
-
-
-        //统计提现次数
-        queryWrapper.select("COUNT(*) as cashable_times");
-        Map<String, Object> map02 = cashableService.getMap(queryWrapper);
-        int times = Integer.valueOf(String.valueOf(map02.get("cashable_times")));
-        BigDecimal count_0 = BigDecimal.valueOf(times);
-
-        //提现累计金额
-        queryWrapper.select("IFNULL(sum(cashable_amount),0) as total");
-        Map<String, Object> map01 = cashableService.getMap(queryWrapper);
-        BigDecimal sumCount = (BigDecimal) map01.get("total");
-
-        //统计待转账次数
-        Integer count1 = cashableService.count(qw);
-        BigDecimal count_1 = new BigDecimal( Integer.parseInt ( count1.toString() ) );
-
         CDto cDto = new CDto();
-        cDto.setAllAmount(sumCount);
-        cDto.setCashableTimes(count_0);
-        cDto.setWaitingTimes(count_1);
+        if (beginTime.length()>9){
+            if (type.equals(1) ) {
+                String beginTime02 = beginTime.substring(0, 10);
+                beginTime = beginTime02;
 
+            }
+            else if (type.equals(2) ) {
+                String beginTime03 = beginTime.substring(0, 7);
+                beginTime = beginTime03;
+
+            }
+            else if (type.equals(3)) {
+                String beginTime04 = beginTime.substring(0, 4);
+                beginTime = beginTime04;
+
+            }else {
+                beginTime = "0000-00-00 00:00:00";
+            }
+            queryWrapper.likeRight("update_time", beginTime).and(c -> c.eq("status", 2));
+
+            //统计待转账次数条件
+            qw.likeRight("create_time", beginTime).and(c1 -> c1.eq("status", 1));
+
+
+            //统计提现次数
+            queryWrapper.select("COUNT(*) as cashable_times");
+            Map<String, Object> map02 = cashableService.getMap(queryWrapper);
+            int times = Integer.valueOf(String.valueOf(map02.get("cashable_times")));
+            BigDecimal count_0 = BigDecimal.valueOf(times);
+
+            //提现累计金额
+            queryWrapper.select("IFNULL(sum(cashable_amount),0) as total");
+            Map<String, Object> map01 = cashableService.getMap(queryWrapper);
+            BigDecimal sumCount = (BigDecimal) map01.get("total");
+
+            //统计待转账次数
+            Integer count1 = cashableService.count(qw);
+            BigDecimal count_1 = new BigDecimal( Integer.parseInt ( count1.toString() ) );
+
+            cDto.setAllAmount(sumCount);
+            cDto.setCashableTimes(count_0);
+            cDto.setWaitingTimes(count_1);
+        }else {
+            cDto.setAllAmount(new BigDecimal(0));
+            cDto.setCashableTimes(new BigDecimal(0));
+            cDto.setWaitingTimes(new BigDecimal(0));
+        }
         return R.success(cDto);
     }
 
@@ -323,46 +328,53 @@ public class CashableController {
         wrapper.eq("id",cashableDto.getId());
         Cashable cashable = cashableService.getById(cashableDto.getId());
 
-        //判断是否为待转账状态
-        if (cashable.getStatus().equals(1)){
+        //判断参数是否正确
+        if (cashable!=null){
+            //判断是否为待转账状态
+            if (cashable.getStatus().equals(1)){
 
-            cashable.setWithdrawReason(withDrawReason);
-            cashable.setStatus(3);
-            cashableService.update(cashable,wrapper);
+                cashable.setWithdrawReason(withDrawReason);
+                cashable.setStatus(3);
+                cashableService.update(cashable,wrapper);
 
-            User user = userService.getById(cashable.getUserId());
+                User user = userService.getById(cashable.getUserId());
 
-            //更新用户表
-            //将申请的金额退回主钱包
-            userUpdateWrapper.eq("id",cashable.getUserId());
-            BigDecimal beforeAmount = user.getCashableAmount();
-            BigDecimal afterAmount = beforeAmount.add(cashable.getMainWallet());
-            user.setCashableAmount(afterAmount);
-            userService.update(user,userUpdateWrapper);
+                //更新用户表
+                //将申请的金额退回主钱包
+                userUpdateWrapper.eq("id",cashable.getUserId());
+                BigDecimal beforeAmount = user.getCashableAmount();
+                BigDecimal afterAmount = beforeAmount.add(cashable.getMainWallet());
+                user.setCashableAmount(afterAmount);
+                userService.update(user,userUpdateWrapper);
 
-            //更新团队表
-            //将金额退回副钱包
-            BigDecimal zero = new BigDecimal(0);
-            if (cashable.getViceWallet().compareTo(zero)==1){
-                teamUpdateWrapper.eq("user_id",cashable.getUserId());
-                Team team = teamService.getOne(teamUpdateWrapper);
-                team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(cashable.getViceWallet()));
-                teamService.update(team,teamUpdateWrapper);
+                //更新团队表
+                //将金额退回副钱包
+                BigDecimal zero = new BigDecimal(0);
+                if (cashable.getViceWallet().compareTo(zero)==1){
+                    teamUpdateWrapper.eq("user_id",cashable.getUserId());
+                    Team team = teamService.getOne(teamUpdateWrapper);
+                    team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(cashable.getViceWallet()));
+                    teamService.update(team,teamUpdateWrapper);
+                }
+
+
+                //日志
+                String title = "订单审核";
+                String content = user.getName()+"订单审核不通过";
+                logsService.saveLog(title,content);
+
+                //插入数据到team_msg
+                String teamMsg = user.getName()+"提现申请被取消，并且返还团队钱包"+cashable.getViceWallet()+"元";
+                teamMsgService.addWithdrawals(cashable.getUserId(),teamMsg);
+
+            }else {
+                result = "不是待转账状态";
             }
 
-
-            //日志
-            String title = "订单审核";
-            String content = user.getName()+"订单审核不通过";
-            logsService.saveLog(title,content);
-
-            //插入数据到team_msg
-            String teamMsg = user.getName()+"提现申请被取消，并且返还团队钱包"+cashable.getViceWallet()+"元";
-            teamMsgService.addWithdrawals(cashable.getUserId(),teamMsg);
-
         }else {
-            result = "不是待转账状态";
+            result = "参数不正确";
         }
+
 
 
         return R.success(result);
@@ -385,22 +397,26 @@ public class CashableController {
         Cashable cashable = cashableService.getById(cashableDto.getId());
         String result = "success";
 
-        //判断是否为待转账状态
-        if (cashable.getStatus().equals(1)){
-            cashable.setStatus(2);
-            cashableService.update(cashable,wrapper);
+        //判断参数是否正确
+        if (cashable!=null){
+            //判断是否为待转账状态
+            if (cashable.getStatus().equals(1)){
+                cashable.setStatus(2);
+                cashableService.update(cashable,wrapper);
 
-            User user = userService.getById(cashable.getUserId());
+                User user = userService.getById(cashable.getUserId());
 
-            //日志
-            String title = "订单审核";
-            String content = user.getName()+"订单审核通过";
-            logsService.saveLog(title,content);
+                //日志
+                String title = "订单审核";
+                String content = user.getName()+"订单审核通过";
+                logsService.saveLog(title,content);
 
+            }else {
+                result = "不是待转账状态";
+            }
         }else {
-            result = "不是待转账状态";
+            result = "参数不正确";
         }
-
 
 
         return R.success(result);

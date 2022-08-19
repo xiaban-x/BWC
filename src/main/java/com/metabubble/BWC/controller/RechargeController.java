@@ -42,7 +42,7 @@ public class RechargeController {
      * 充值统计
      * author Kenlihankun
      * beginTime 要查询的时间
-     * type 查询条件
+     * type 1为按天查询查询 2为按月查询 3为按年查询
      * @return
      * @RequestBody map
      */
@@ -54,54 +54,63 @@ public class RechargeController {
         QueryWrapper<Recharge> queryAmount01 = new QueryWrapper<>();
         QueryWrapper<Recharge> queryAmount02 = new QueryWrapper<>();
         QueryWrapper<Recharge> queryAll = new QueryWrapper<>();
-
-        //充值
-        if (type.equals(1) && beginTime != null) {
-            String beginTime02 = beginTime.substring(0, 10);
-            beginTime = beginTime02;
-
-        }
-        if (type.equals(2) && beginTime != null) {
-            String beginTime03 = beginTime.substring(0, 7);
-            beginTime = beginTime03;
-
-        }
-        if (type.equals(3) && beginTime != null) {
-            String beginTime04 = beginTime.substring(0, 4);
-            beginTime = beginTime04;
-
-        }
-        //统计微信充值条件
-        queryAmount01.likeRight("update_time", beginTime).and(c2 -> c2.eq("recharge_type", 1))
-                .and(c2 -> c2.eq("status", 2));
-        //统计支付宝充值条件
-        queryAmount02.likeRight("update_time", beginTime).and(c3 -> c3.eq("recharge_type", 2))
-                .and(c3 -> c3.eq("status", 2));
-
-        //统计充值总金额条件
-        queryAll.likeRight("update_time", beginTime).and(c1 -> c1.eq("status", 2));
-
-
-        //统计微信转账金额
-        queryAmount01.select("IFNULL(sum(recharge_amount),0) AS wx_all");
-        Map<String, Object> map11 = rechargeService.getMap(queryAmount01);
-        BigDecimal sumCount1 = (BigDecimal) map11.get("wx_all");
-
-        //统计支付宝转账金额
-        queryAmount02.select("IFNULL(sum(recharge_amount),0) AS zfb_all");
-        Map<String, Object> map12 = rechargeService.getMap(queryAmount02);
-        BigDecimal sumCount2 = (BigDecimal) map12.get("zfb_all");
-
-
-        //统计充值总额
-        queryAll.select("IFNULL(sum(recharge_amount),0) AS all0");
-        Map<String, Object> map13 = rechargeService.getMap(queryAll);
-        BigDecimal sumAll0 = (BigDecimal) map13.get("all0");
-
         RDto rDto = new RDto();
-        rDto.setWxAmount(sumCount1);
-        rDto.setZfbAmount(sumCount2);
-        rDto.setAllAmount(sumAll0);
+
+        if (beginTime.length()>9){
+            //充值
+            if (type.equals(1)) {
+                String beginTime02 = beginTime.substring(0, 10);
+                beginTime = beginTime02;
+
+            }
+            else if (type.equals(2) ) {
+                String beginTime03 = beginTime.substring(0, 7);
+                beginTime = beginTime03;
+
+            }
+            else if (type.equals(3) ) {
+                String beginTime04 = beginTime.substring(0, 4);
+                beginTime = beginTime04;
+
+            }else {
+                beginTime = "0000-00-00 00:00:00";
+            }
+            //统计微信充值条件
+            queryAmount01.likeRight("update_time", beginTime).and(c2 -> c2.eq("recharge_type", 1))
+                    .and(c2 -> c2.eq("status", 2));
+            //统计支付宝充值条件
+            queryAmount02.likeRight("update_time", beginTime).and(c3 -> c3.eq("recharge_type", 2))
+                    .and(c3 -> c3.eq("status", 2));
+
+            //统计充值总金额条件
+            queryAll.likeRight("update_time", beginTime).and(c1 -> c1.eq("status", 2));
+
+
+            //统计微信转账金额
+            queryAmount01.select("IFNULL(sum(recharge_amount),0) AS wx_all");
+            Map<String, Object> map11 = rechargeService.getMap(queryAmount01);
+            BigDecimal sumCount1 = (BigDecimal) map11.get("wx_all");
+
+            //统计支付宝转账金额
+            queryAmount02.select("IFNULL(sum(recharge_amount),0) AS zfb_all");
+            Map<String, Object> map12 = rechargeService.getMap(queryAmount02);
+            BigDecimal sumCount2 = (BigDecimal) map12.get("zfb_all");
+
+
+            //统计充值总额
+            queryAll.select("IFNULL(sum(recharge_amount),0) AS all0");
+            Map<String, Object> map13 = rechargeService.getMap(queryAll);
+            BigDecimal sumAll0 = (BigDecimal) map13.get("all0");
+
+            rDto.setWxAmount(sumCount1);
+            rDto.setZfbAmount(sumCount2);
+            rDto.setAllAmount(sumAll0);
+        }else {
+            rDto.setWxAmount(new BigDecimal(0));
+            rDto.setZfbAmount(new BigDecimal(0));
+            rDto.setAllAmount(new BigDecimal(0));
+        }
+
 
         return R.success(rDto);
     }
