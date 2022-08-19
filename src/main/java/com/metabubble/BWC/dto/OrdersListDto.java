@@ -16,17 +16,23 @@ public class OrdersListDto {
     private Integer status;
 
     //商家名称
-    private String name;
-
-    //创建时间
-    private LocalDateTime createTime;
+    private String merchantName;
 
     //商家图片
     private String pic;
+
+    //任务名称
+    private String taskName;
+
+    //用户等级，0为普通用户(默认)；1为会员
+    private Integer grade;
 
     //最低消费
     private BigDecimal minConsumption;
 
     //返现金额
     private BigDecimal rebate;
+
+    //创建时间
+    private LocalDateTime createTime;
 }

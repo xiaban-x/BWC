@@ -8,6 +8,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public abstract class OrdersConverter {
+
     public static OrdersConverter INSTANCES = Mappers.getMapper(OrdersConverter.class);
 
 
