@@ -15,6 +15,7 @@ import javax.xml.crypto.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
@@ -33,7 +34,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
     public Boolean checkTaskStatus(Long id) {
         Task task = this.getById(id);
         if (task.getStatus()==1){
-            if (task.getAmount()>0) {
+            if (task.getTaskLeft()>0) {
                 return true;
             }else {
                 task.setStatus(0);
@@ -54,9 +55,9 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
     @Override
     public void updateAmount(Long id) {
         Task byId = this.getById(id);
-        if (byId.getAmount()>0) {
-            byId.setAmount(byId.getAmount() - 1);
-            if (byId.getAmount()==0){
+        if (byId.getTaskLeft()>0) {
+            byId.setTaskLeft(byId.getTaskLeft() - 1);
+            if (byId.getTaskLeft()==0){
                 byId.setStatus(0);
             }
             this.updateById(byId);
@@ -90,5 +91,14 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         }else {
             return true;
         }
+    }
+
+    @Override
+    public void addCompleted(Orders orders) {
+        Task task = this.getById(orders.getTaskId());
+        AtomicInteger atomicInteger = new AtomicInteger(task.getCompleted());
+        int addAndGet = atomicInteger.addAndGet(1);
+        task.setCompleted(addAndGet);
+        this.updateById(task);
     }
 }
