@@ -40,6 +40,9 @@ public class Orders implements Serializable {
     //订单金额
     private BigDecimal amount;
 
+    //最低消费
+    private BigDecimal minConsumption;
+
     //返现金额
     private BigDecimal rebate;
 

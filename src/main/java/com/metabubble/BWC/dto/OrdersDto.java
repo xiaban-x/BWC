@@ -29,6 +29,9 @@ public class OrdersDto {
     //订单金额
     private BigDecimal amount;
 
+    //最低消费
+    private BigDecimal minConsumption;
+
     //返现金额
     private BigDecimal rebate;
 
@@ -40,6 +43,15 @@ public class OrdersDto {
 
     //评论截图
     private String picComment;
+
+    //任务要求
+    private String requirement;
+
+    //任务备注
+    private String remark;
+
+    //创建时间
+    private LocalDateTime createTime;
 
     //过期时间
     private LocalDateTime expiredTime;
