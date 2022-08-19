@@ -9,8 +9,10 @@ public interface OrdersService extends IService<Orders> {
 
 
 
-    //判断订单是否过期
+    //审核时判断订单是否过期
     public Boolean updateStatusFormExpiredTime(Long id);
+    //查询订单时跟新任务状态
+    public Orders updateStatusFormExpiredTimeAndReturn(Orders orders);
     //添加订单过期时间
     public Orders addExpiredTime(Orders orders);
     //用户一审机器审核

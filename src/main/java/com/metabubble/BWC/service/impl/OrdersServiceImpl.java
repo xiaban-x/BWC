@@ -37,7 +37,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
      */
     @Override
     //添加非事务处理使此方法直接生效
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public Boolean updateStatusFormExpiredTime(Long id) {
         Orders orders = this.getById(id);
         LocalDateTime expiredTime = orders.getExpiredTime();
@@ -59,6 +59,32 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
             return true;
         }
         throw new CustomException("订单状态错误");
+    }
+
+    @Override
+    public Orders updateStatusFormExpiredTimeAndReturn(Orders orders) {
+        if (orders.getStatus()==1||orders.getStatus()==4||orders.getStatus()==6||orders.getStatus()==7||orders.getStatus()==8){
+            return orders;
+        }
+        LocalDateTime expiredTime = orders.getExpiredTime();
+        LocalDateTime now = LocalDateTime.now();
+        if (orders.getStatus()==0||orders.getStatus()==3){
+            if (now.isAfter(expiredTime)) {
+                orders.setStatus(8);
+                this.updateById(orders);
+                return orders;
+            }
+            return orders;
+        }
+        if (orders.getStatus()==2||orders.getStatus()==5){
+            if(now.isAfter(expiredTime)){
+                orders.setStatus(8);
+                this.updateById(orders);
+                return orders;
+            }
+            return orders;
+        }
+        throw new CustomException("订单"+orders.getId()+"状态错误!");
     }
 
     /**

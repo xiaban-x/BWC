@@ -47,6 +47,7 @@ public class OrdersController {
      * @author leitianyu999
      */
     @GetMapping("/user/page")
+    @Transactional
     public R<Page> userPage(int offset, int limit,@RequestParam List<String> status){
         Long id = BaseContext.getCurrentId();
         //分页构造器
@@ -70,8 +71,9 @@ public class OrdersController {
         ordersService.page(pageSearch,queryWrapper);
 
         List<OrdersListDto> collect = pageSearch.getRecords().stream().map(item -> {
-            Long merchantId = item.getMerchantId();
-            OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(item);
+            Orders orders = ordersService.updateStatusFormExpiredTimeAndReturn(item);
+            Long merchantId = orders.getMerchantId();
+            OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(orders);
             Merchant merchant = merchantService.getById(merchantId);
             ordersListDto.setPic(merchant.getPic());
             ordersListDto.setMerchantName(merchant.getName());
