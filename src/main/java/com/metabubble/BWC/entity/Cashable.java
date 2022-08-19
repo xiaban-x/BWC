@@ -24,11 +24,14 @@ public class Cashable {
     //转账订单号
     private Long tradeNo;
 
+    //主钱包
+    private BigDecimal mainWallet;
+
+    //副钱包
+    private BigDecimal viceWallet;
+
     //提现金额
     private BigDecimal cashableAmount;
-
-    //提现方式 0，个人余额（默认） 1，团队余额
-    private Integer chooseType;
 
     //提现类型 1,支付宝(默认) 2，微信
     private Integer payType;
