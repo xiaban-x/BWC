@@ -19,7 +19,7 @@ public class OrdersListDto {
     private String merchantName;
 
     //商家图片
-    private String pic;
+    private String merchantPic;
 
     //任务名称
     private String taskName;

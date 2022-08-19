@@ -75,7 +75,7 @@ public class OrdersController {
             Long merchantId = orders.getMerchantId();
             OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(orders);
             Merchant merchant = merchantService.getById(merchantId);
-            ordersListDto.setPic(merchant.getPic());
+            ordersListDto.setMerchantPic(merchant.getPic());
             ordersListDto.setMerchantName(merchant.getName());
             return ordersListDto;
         }).collect(Collectors.toList());
