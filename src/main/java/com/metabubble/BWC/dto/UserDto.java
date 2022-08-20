@@ -14,8 +14,12 @@ public class UserDto {
 
     //序列化
     private static final long serialVersionUID = 1L;
+
     //主键id
     private Long id;
+
+    //下级邀请码
+    private String downId;
 
     //用户名
     private String name;
