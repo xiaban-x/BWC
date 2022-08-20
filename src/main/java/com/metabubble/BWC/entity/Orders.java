@@ -28,6 +28,9 @@ public class Orders implements Serializable {
     //任务id
     private Long taskId;
 
+    //平台类型：0为美团(默认)，1为饿了么
+    private Integer platform;
+
     //任务名称
     private String taskName;
 
