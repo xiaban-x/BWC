@@ -167,7 +167,12 @@ public class UserController {
         Long id = BaseContext.getCurrentId();
         UserDto userDto = new UserDto();
         userDto.setId(id);
-        userDto.setName(userDto1.getName());
+        if (userDto1.getName()!=null) {
+            userDto.setName(userDto1.getName());
+        }
+        if (userDto1.getAvatar()!=null){
+            userDto.setAvatar(userDto1.getAvatar());
+        }
         User user = UserConverter.INSTANCES.toUserDtoRoleUser(userDto);
         userService.updateById(user);
         redisTemplate.delete(userKey+id);
