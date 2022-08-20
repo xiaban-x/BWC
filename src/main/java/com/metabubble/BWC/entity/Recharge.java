@@ -34,14 +34,11 @@ public class Recharge {
     //充值金额
     private BigDecimal rechargeAmount;
 
-    //状态 1待充值(默认)，2充值成功，3充值失败
+    //状态 1充值成功，2充值失败
     private Integer status;
 
     //创建时间
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    //支付时间
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
 }
