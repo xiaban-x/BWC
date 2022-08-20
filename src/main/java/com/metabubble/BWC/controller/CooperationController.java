@@ -63,6 +63,7 @@ public class CooperationController {
      * @param limit
      * @param name
      * @param tel
+     * @param status
      * @return
      */
     @GetMapping
