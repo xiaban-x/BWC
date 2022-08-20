@@ -141,6 +141,8 @@ public class OrdersController {
                 orders.setRebate(task.getRebateB());
                 //添加最低消费金额
                 orders.setMinConsumption(task.getMinConsumptionB());
+                //添加平台类型
+                orders.setPlatform(task.getPlatform());
                 //添加订单会员信息
                 orders.setGrade(1);
             }else {
@@ -148,6 +150,8 @@ public class OrdersController {
                 orders.setRebate(task.getRebateA());
                 //添加最低消费金额
                 orders.setMinConsumption(task.getMinConsumptionA());
+                //添加平台类型
+                orders.setPlatform(task.getPlatform());
                 //添加订单会员信息
                 orders.setGrade(0);
             }

@@ -19,6 +19,12 @@ public class OrdersDto {
     //商家id
     private Long merchantId;
 
+    //商家名称
+    private String merchantName;
+
+    //平台类型：0为美团(默认)，1为饿了么
+    private Integer platform;
+
     //任务id
     private Long taskId;
 

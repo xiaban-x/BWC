@@ -18,6 +18,9 @@ public class OrdersListDto {
     //商家名称
     private String merchantName;
 
+    //平台类型：0为美团(默认)，1为饿了么
+    private Integer platform;
+
     //商家图片
     private String merchantPic;
 
