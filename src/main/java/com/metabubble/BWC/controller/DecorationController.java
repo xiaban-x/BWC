@@ -33,10 +33,10 @@ public class DecorationController {
      * author 晴天小杰
      * @return
      */
-    @GetMapping("/t/{type}")
-    public R<List<Config>> getAll(@PathVariable Integer type){
+    @GetMapping("/type")
+    public R<List<Config>> getAll(Integer type){
         LambdaQueryWrapper<Config> queryWrapper =  new LambdaQueryWrapper();
-        queryWrapper.eq(Config::getType,type);
+        queryWrapper.eq(type != null, Config::getType,type);
         List<Config> configs = configService.list(queryWrapper);
         return R.success(configs);
     }
