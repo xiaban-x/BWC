@@ -25,7 +25,5 @@ public class RechargeDto {
     //创建时间
     private LocalDateTime createTime;
 
-    //支付时间
-    private LocalDateTime updateTime;
 
 }
