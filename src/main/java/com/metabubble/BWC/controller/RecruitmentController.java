@@ -64,7 +64,7 @@ public class RecruitmentController {
      * @return
      */
     @GetMapping("/page")
-    public R<Page> page(Integer offset, Integer limit, String condition) {
+    public R<Page> page(int offset, int limit, String condition) {
         // 构建分页构造器
         Page<Recruitment> pageInfo = new Page(offset, limit);
 

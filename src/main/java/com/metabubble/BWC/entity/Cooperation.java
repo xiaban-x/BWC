@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -18,7 +19,7 @@ public class Cooperation {
     private String city;
 
     // 预计投入资金
-    private String funds;
+    private BigDecimal funds;
 
     // 团队规模
     private String scale;
@@ -31,6 +32,9 @@ public class Cooperation {
 
     // 手机号
     private String tel;
+
+    // 状态
+    private Integer status;
 
     //创建时间
     @TableField(fill = FieldFill.INSERT) //插入时填充字段

@@ -46,7 +46,7 @@ public class CooperationController {
      * @return
      */
     @PutMapping
-    public R<String> update(Cooperation cooperation) {
+    public R<String> update(@RequestBody Cooperation cooperation) {
 
         // 渠道合作新增日志
         logsService.saveLog("修改渠道合作信息", "“ " + cooperation.getName() + " ” 的信息");
@@ -57,24 +57,29 @@ public class CooperationController {
     }
 
     /**
-     * 分页查询 + 条件查询
+     * * 分页查询 + 条件查询
      * author cclucky
      * @param offset
      * @param limit
-     * @param condition
+     * @param name
+     * @param tel
      * @return
      */
     @GetMapping
-    public R<Page> page(Integer offset, Integer limit, String condition) {
+    public R<Page> page(int offset, int limit, String name, String tel, int status) {
         // 构建分页构造器
         Page<Cooperation> pageInfo = new Page(offset, limit);
 
         // 构建条件构造器
         LambdaQueryWrapper<Cooperation> cooperationLambdaQueryWrapper = new LambdaQueryWrapper<>();
         // 根据名称
-        cooperationLambdaQueryWrapper.like(condition != null, Cooperation::getName, condition);
+        cooperationLambdaQueryWrapper.like(name != null, Cooperation::getName, name);
         // 根据电话
-        cooperationLambdaQueryWrapper.like(condition != null, Cooperation::getTel, condition);
+        cooperationLambdaQueryWrapper.like(tel != null, Cooperation::getTel, tel);
+        // 根据状态
+        cooperationLambdaQueryWrapper.eq(Cooperation::getStatus, status);
+        // 排序条件
+        cooperationLambdaQueryWrapper.orderByAsc(Cooperation::getUpdateTime);
 
         // 查询结果
         cooperationService.page(pageInfo, cooperationLambdaQueryWrapper);
