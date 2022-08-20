@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.OrdersConverter;
+import com.metabubble.BWC.dto.Imp.PageConverter;
 import com.metabubble.BWC.dto.OrdersDto;
+import com.metabubble.BWC.dto.OrdersListDto;
 import com.metabubble.BWC.entity.*;
 import com.metabubble.BWC.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/orders")
@@ -44,6 +47,7 @@ public class OrdersController {
      * @author leitianyu999
      */
     @GetMapping("/user/page")
+    @Transactional
     public R<Page> userPage(int offset, int limit,@RequestParam List<String> status){
         Long id = BaseContext.getCurrentId();
         //分页构造器
@@ -65,7 +69,21 @@ public class OrdersController {
         //添加排序条件
         queryWrapper.orderByDesc(Orders::getUpdateTime);
         ordersService.page(pageSearch,queryWrapper);
-        return R.success(pageSearch);
+
+        List<OrdersListDto> collect = pageSearch.getRecords().stream().map(item -> {
+            Orders orders = ordersService.updateStatusFormExpiredTimeAndReturn(item);
+            Long merchantId = orders.getMerchantId();
+            OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(orders);
+            Merchant merchant = merchantService.getById(merchantId);
+            ordersListDto.setMerchantPic(merchant.getPic());
+            ordersListDto.setMerchantName(merchant.getName());
+            return ordersListDto;
+        }).collect(Collectors.toList());
+
+        Page page = PageConverter.INSTANCES.PageToPage(pageSearch);
+        page.setRecords(collect);
+
+        return R.success(page);
     }
 
     /**
@@ -77,7 +95,10 @@ public class OrdersController {
     @GetMapping("/user")
     public R<OrdersDto> selectByOrdersId(int id){
         Orders orders = ordersService.getById(id);
+        Task task = taskService.getById(orders.getTaskId());
         OrdersDto ordersDto = OrdersConverter.INSTANCES.OrdersToMerOrdersDto(orders);
+        ordersDto.setRequirement(task.getRequirement());
+        ordersDto.setRemark(task.getRemark());
         return R.success(ordersDto);
     }
 
@@ -107,6 +128,8 @@ public class OrdersController {
             orders.setStatus(0);
             //查找任务
             Task task = taskService.getById(taskId);
+            //订单添加任务信息
+            orders.setTaskName(task.getName());
             //查找商家
             Merchant merchant = merchantService.getById(task.getMerchantId());
             //添加商家id
@@ -116,9 +139,21 @@ public class OrdersController {
             if (aBoolean){
                 //添加返现金额
                 orders.setRebate(task.getRebateB());
+                //添加最低消费金额
+                orders.setMinConsumption(task.getMinConsumptionB());
+                //添加平台类型
+                orders.setPlatform(task.getPlatform());
+                //添加订单会员信息
+                orders.setGrade(1);
             }else {
                 //添加返现金额
                 orders.setRebate(task.getRebateA());
+                //添加最低消费金额
+                orders.setMinConsumption(task.getMinConsumptionA());
+                //添加平台类型
+                orders.setPlatform(task.getPlatform());
+                //添加订单会员信息
+                orders.setGrade(0);
             }
             //添加订单过期时间
             orders = ordersService.addExpiredTime(orders);

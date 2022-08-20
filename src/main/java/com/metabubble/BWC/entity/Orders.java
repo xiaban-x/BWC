@@ -28,6 +28,12 @@ public class Orders implements Serializable {
     //任务id
     private Long taskId;
 
+    //平台类型：0为美团(默认)，1为饿了么
+    private Integer platform;
+
+    //任务名称
+    private String taskName;
+
     //订单状态，0为已下单(默认)；1为一审待审核；2为一审通过；3为一审未通过；4为二审待审核；5为二审未通过；6为已完成；7为订单取消；8为订单过期
     private Integer status;
 
@@ -39,6 +45,12 @@ public class Orders implements Serializable {
 
     //订单金额
     private BigDecimal amount;
+
+    //用户等级，0为普通用户(默认)；1为会员
+    private Integer grade;
+
+    //最低消费
+    private BigDecimal minConsumption;
 
     //返现金额
     private BigDecimal rebate;
