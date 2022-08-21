@@ -238,6 +238,7 @@ public class LoginController {
                             //当前session有值，说明1.此帐号处于已登录状态有人正在使用，2.session还在有效期未被销毁
                             log.info("用户:"+user.getId()+"再次登录！");
                             httpSession.invalidate();
+                            manageSession.getManageSession().remove(user.getId().toString());
                         }
                     } catch (Exception e) {
                         log.info(e.toString()+"：无用报错");
@@ -280,6 +281,7 @@ public class LoginController {
                             //当前session有值，说明1.此帐号处于已登录状态有人正在使用，2.session还在有效期未被销毁
                             log.info("用户:"+user1.getId()+"再次登录！");
                             httpSession.invalidate();
+                            manageSession.getManageSession().remove(user1.getId().toString());
                         }
                     } catch (Exception e) {
                         log.info(e.toString()+"：无用报错");

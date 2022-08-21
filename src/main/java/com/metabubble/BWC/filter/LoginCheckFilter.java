@@ -49,6 +49,9 @@ public class LoginCheckFilter implements Filter {
 
         BaseContext.remove();
 
+        String cookieSessionId = CookieUtils.getCookieValue(request, this.stringSession, true);
+        String cookieUserId = CookieUtils.getCookieValue(request, this.userId, true);
+
         //定义不需要处理的请求路径
         if(request.getSession().getAttribute("user") != null){
             log.info("用户已登录，用户id为：{}",request.getSession().getAttribute("user"));
@@ -57,7 +60,7 @@ public class LoginCheckFilter implements Filter {
 
             HttpSession publicSession = manageSession.getManageSession().get(userId.toString());
 
-            if (publicSession!=null){
+            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
                 BaseContext.setCurrentId(userId);
 
                 filterChain.doFilter(request,response);
@@ -71,8 +74,7 @@ public class LoginCheckFilter implements Filter {
             return;
         }
 
-        String cookieSessionId = CookieUtils.getCookieValue(request, this.stringSession, true);
-        String cookieUserId = CookieUtils.getCookieValue(request, this.userId, true);
+
 
         if (cookieUserId!=null&&cookieSessionId!=null) {
             HttpSession publicSession = manageSession.getManageSession().get(cookieUserId);
