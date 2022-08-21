@@ -2,14 +2,20 @@ package com.metabubble.BWC.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.metabubble.BWC.common.BaseContext;
+import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
+import com.metabubble.BWC.utils.CookieUtils;
+import com.sun.webkit.network.CookieManager;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.AntPathMatcher;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
@@ -22,6 +28,12 @@ public class LoginCheckFilter implements Filter {
 
     //路径匹配器，支持通配符
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+
+    @Autowired
+    private ManageSession manageSession;
+
+    String stringSession = "session";
+    String userId = "userId";
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
@@ -42,12 +54,41 @@ public class LoginCheckFilter implements Filter {
             log.info("用户已登录，用户id为：{}",request.getSession().getAttribute("user"));
 
             Long userId = (Long) request.getSession().getAttribute("user");
-            BaseContext.setCurrentId(userId);
 
-            filterChain.doFilter(request,response);
+            HttpSession publicSession = manageSession.getManageSession().get(userId.toString());
+
+            if (publicSession!=null){
+                BaseContext.setCurrentId(userId);
+
+                filterChain.doFilter(request,response);
+                BaseContext.remove();
+                return;
+            }
+
+            request.getSession().invalidate();
+            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
             BaseContext.remove();
             return;
         }
+
+        String cookieSessionId = CookieUtils.getCookieValue(request, this.stringSession, true);
+        String cookieUserId = CookieUtils.getCookieValue(request, this.userId, true);
+
+        if (cookieUserId!=null&&cookieSessionId!=null) {
+            HttpSession publicSession = manageSession.getManageSession().get(cookieUserId);
+            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
+                HttpSession session = request.getSession();
+                session.setAttribute("user",Long.parseLong(cookieUserId));
+                session.setMaxInactiveInterval(publicSession.getMaxInactiveInterval());
+
+                BaseContext.setCurrentId(Long.parseLong(cookieUserId));
+
+                filterChain.doFilter(request,response);
+                BaseContext.remove();
+                return;
+            }
+        }
+
         String[] urls = new String[]{
                 //书写功能阶段，停止拦截器，暂时让请求发出
                 "/**",

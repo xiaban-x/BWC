@@ -12,6 +12,7 @@ import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.ConfigService;
 import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
+import com.metabubble.BWC.utils.CookieUtils;
 import com.metabubble.BWC.utils.MobileUtils;
 import com.metabubble.BWC.utils.SMSUtils;
 import com.metabubble.BWC.utils.ValidateCodeUtils;
@@ -26,8 +27,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.websocket.Session;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -47,7 +52,8 @@ public class LoginController {
     private ManageSession manageSession;
 
     String userKey = "userKey";
-
+    String stringSession = "session";
+    String userId = "userId";
     /**
      * 发送验证码
      * @param mobile    手机号
@@ -187,7 +193,7 @@ public class LoginController {
      * @return
      */
     @PostMapping()
-    public R<UserDto> login(String mobile,String password,String contents,String type, HttpServletRequest request){
+    public R<UserDto> login(String mobile,String password,String contents,String type, HttpServletRequest request,HttpServletResponse response){
         // 判断请求参数是否正确
         if (StringUtils.isBlank(mobile)) {
             return R.error("缺少必要的参数");
@@ -241,6 +247,8 @@ public class LoginController {
                     session.setAttribute("user",user.getId());
                     session.setMaxInactiveInterval(1296000);
                     manageSession.getManageSession().put(user.getId().toString(),session);
+                    CookieUtils.setCookie(request,response,stringSession,session.getId(),60*60*24*14,true);
+                    CookieUtils.setCookie(request,response,userId,user.getId().toString(),60*60*24*14,true);
                     redisTemplate.delete(limitKey);
                     UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
                     //redisTemplate.opsForValue().set(userKey+user.getId(),user,24,TimeUnit.HOURS);
@@ -281,6 +289,8 @@ public class LoginController {
                     session.setAttribute("user",user1.getId());
                     session.setMaxInactiveInterval(1296000);
                     manageSession.getManageSession().put(user1.getId().toString(),session);
+                    CookieUtils.setCookie(request,response,stringSession,session.getId(),60*60*24*14,true);
+                    CookieUtils.setCookie(request,response,userId,user1.getId().toString(),60*60*24*14,true);
                     redisTemplate.delete(mobileKey);
                     redisTemplate.delete(limitKey);
                     UserDto userDto1 = UserConverter.INSTANCES.toUserRoleDto(user1);
@@ -303,7 +313,7 @@ public class LoginController {
      * @return
      */
     @PostMapping("/reset")
-    public R<String> resetSecret(String mobile, String contents, String password,HttpServletRequest request){
+    public R<String> resetSecret(String mobile, String contents, String password,HttpServletRequest request,HttpServletResponse response){
 
         if (StringUtils.isBlank(mobile) || StringUtils.isBlank(contents) || StringUtils.isBlank(password)) {
             return R.error("缺少必要的参数");
@@ -359,6 +369,8 @@ public class LoginController {
 
             //删除session中的账户信息
             request.getSession().removeAttribute("user");
+            CookieUtils.deleteCookie(request,response,userId);
+            CookieUtils.deleteCookie(request,response,stringSession);
         }
 
         return R.success("修改成功");
@@ -422,13 +434,11 @@ public class LoginController {
      * @return 返回退出信息
      */
     @DeleteMapping("/logout")
-    public R<String> logout(HttpServletRequest request){
+    public R<String> logout(HttpServletRequest request,HttpServletResponse response){
         try {
             HttpSession httpSession = manageSession.getManageSession().get(BaseContext.getCurrentId().toString());
             if (httpSession!=null){
                 httpSession.invalidate();
-
-
             }
         } catch (Exception e) {
             log.info(e.toString()+"：无用报错");
@@ -437,8 +447,12 @@ public class LoginController {
 
             //删除session中的账户信息
             request.getSession().removeAttribute("user");
+            CookieUtils.deleteCookie(request,response,userId);
+            CookieUtils.deleteCookie(request,response,stringSession);
         }
 
         return R.success("退出成功");
     }
+
+
 }
