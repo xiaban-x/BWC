@@ -13,6 +13,7 @@ import com.metabubble.BWC.entity.*;
 import com.metabubble.BWC.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +56,7 @@ public class OrdersController {
         //条件构造器
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper();
         queryWrapper.eq(!String.valueOf(id).equals(""),Orders::getUserId,id);
-        if (!(status.size()==1&&status.get(0).equals("9"))) {
+        if (!(status.size()==1&&!status.get(0).equals("9"))) {
             if (status.size()!=0&&status!=null) {
                 queryWrapper.and(ordersLambdaQueryWrapper -> {
                     for (String o : status) {
@@ -248,7 +249,7 @@ public class OrdersController {
      */
     @GetMapping("/page")
     @Transactional
-    public R<Page> page(String name,int offset,int limit,String merchantName,String status){
+    public R<Page> page(String name,int offset,int limit,String merchantName,@RequestParam List<String> status,String orderNumber,String tel){
         Page<Orders> page = new Page(offset,limit);
 
         LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper();
@@ -256,9 +257,10 @@ public class OrdersController {
         LambdaQueryWrapper<Merchant> queryWrapper2 = new LambdaQueryWrapper();
 
         LambdaQueryWrapper<Orders> queryWrapper3 = new LambdaQueryWrapper<>();
-        //判断name是否为空
-        if (name!=null){
-            queryWrapper1.like(User::getName,name);
+        //判断name或tel是否为空
+        if (StringUtils.isNotEmpty(name) ||StringUtils.isNotEmpty(tel)){
+            queryWrapper1.like(StringUtils.isNotEmpty(name),User::getName,name);
+            queryWrapper1.like(StringUtils.isNotEmpty(tel),User::getTel,tel);
             List<User> list = userService.list(queryWrapper1);
             //判断name在用户表查的数据是否存在
             if (list!=null&&list.size()!=0){
@@ -287,8 +289,19 @@ public class OrdersController {
             }
         }
 
-        //添加状态判断
-        queryWrapper3.eq(StringUtils.isNotEmpty(status),Orders::getStatus,status);
+        //
+        if (!(status.size()==1&&status.get(0).equals("9"))) {
+            if (status.size()!=0&&status!=null) {
+                queryWrapper3.and(ordersLambdaQueryWrapper -> {
+                    for (String o : status) {
+                        int i = Integer.parseInt(o);
+                        ordersLambdaQueryWrapper.or().eq(Orders::getStatus,i);
+                    }
+                });
+            }
+        }
+        //添加orderNumber
+        queryWrapper3.like(StringUtils.isNotEmpty(orderNumber),Orders::getOrderNumber,orderNumber);
         //根据创建时间排序
         queryWrapper3.orderByDesc(Orders::getUpdateTime);
 
