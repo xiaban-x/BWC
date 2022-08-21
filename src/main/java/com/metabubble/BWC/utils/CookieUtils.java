@@ -231,7 +231,6 @@ public final class CookieUtils {
             }
             Cookie cookie = new Cookie(cookieName, cookieValue);
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);
             if (cookieMaxage > 0)
                 cookie.setMaxAge(cookieMaxage);
             if (null != request) {// 设置域名的cookie
