@@ -49,8 +49,8 @@ public class LoginCheckFilter implements Filter {
 
         BaseContext.remove();
 
-        String cookieSessionId = CookieUtils.getCookieValue(request, this.stringSession, true);
-        String cookieUserId = CookieUtils.getCookieValue(request, this.userId, true);
+//        String cookieSessionId = CookieUtils.getCookieValue(request, this.stringSession, true);
+//        String cookieUserId = CookieUtils.getCookieValue(request, this.userId, true);
 
         //定义不需要处理的请求路径
         if(request.getSession().getAttribute("user") != null){
@@ -60,36 +60,36 @@ public class LoginCheckFilter implements Filter {
 
             HttpSession publicSession = manageSession.getManageSession().get(userId.toString());
 
-            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
+//            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
                 BaseContext.setCurrentId(userId);
 
                 filterChain.doFilter(request,response);
                 BaseContext.remove();
                 return;
-            }
-
-            request.getSession().invalidate();
-            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
-            BaseContext.remove();
-            return;
+//            }
+//
+//            request.getSession().invalidate();
+//            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
+//            BaseContext.remove();
+//            return;
         }
 
 
 
-        if (cookieUserId!=null&&cookieSessionId!=null) {
-            HttpSession publicSession = manageSession.getManageSession().get(cookieUserId);
-            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
-                HttpSession session = request.getSession();
-                session.setAttribute("user",Long.parseLong(cookieUserId));
-                session.setMaxInactiveInterval(publicSession.getMaxInactiveInterval());
-
-                BaseContext.setCurrentId(Long.parseLong(cookieUserId));
-
-                filterChain.doFilter(request,response);
-                BaseContext.remove();
-                return;
-            }
-        }
+//        if (cookieUserId!=null&&cookieSessionId!=null) {
+//            HttpSession publicSession = manageSession.getManageSession().get(cookieUserId);
+//            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
+//                HttpSession session = request.getSession();
+//                session.setAttribute("user",Long.parseLong(cookieUserId));
+//                session.setMaxInactiveInterval(publicSession.getMaxInactiveInterval());
+//
+//                BaseContext.setCurrentId(Long.parseLong(cookieUserId));
+//
+//                filterChain.doFilter(request,response);
+//                BaseContext.remove();
+//                return;
+//            }
+//        }
 
         String[] urls = new String[]{
                 //书写功能阶段，停止拦截器，暂时让请求发出
