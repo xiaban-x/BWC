@@ -397,7 +397,7 @@ public class LoginController {
      * @param response
      * @return
      */
-    @PutMapping("resetPhoneFirst")
+    @PutMapping("/resetPhoneFirst")
     public R<String> resetPhoneFirst(String mobile, String contents,HttpServletRequest request,HttpServletResponse response){
 
         Long id = BaseContext.getCurrentId();
@@ -464,7 +464,7 @@ public class LoginController {
     }
 
 
-
+    @PutMapping("/resetPhoneSecond")
     public R<String> resetPhoneSecond(String mobile, String contents,HttpServletRequest request,HttpServletResponse response){
 
 
