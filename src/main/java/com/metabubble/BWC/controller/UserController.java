@@ -1,6 +1,8 @@
 package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
@@ -13,6 +15,7 @@ import com.metabubble.BWC.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -252,6 +255,33 @@ public class UserController {
             return R.success("添加成功");
         }
         return R.error("已有用户");
+    }
+
+    /**
+     * 测试用添加用户
+     * @RequsetBody wxId 用户资料
+     * @return
+     * @author Kenlihankun
+     */
+
+    @PostMapping("/bindWX")
+    @Transactional
+    public R<String> bindWX(@RequestBody User user){
+        Long userId = BaseContext.getCurrentId();
+        User user1 = userService.getById(userId);
+        UpdateWrapper<User> userUpdateWrapper = new UpdateWrapper<>();
+        if (user1.getWxId() == null){
+            user1.setWxId(user.getWxId());
+            userService.save(user1);
+        }
+        if (user1.getWxId()!=null) {
+            userUpdateWrapper.eq("id",userId);
+            user1.setWxId(user.getWxId());
+            userService.update(user1,userUpdateWrapper);
+        }
+
+
+        return R.success("success");
     }
 
 }
