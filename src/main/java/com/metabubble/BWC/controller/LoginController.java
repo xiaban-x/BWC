@@ -115,14 +115,14 @@ public class LoginController {
                 }
                 modelCode = "";
                 break;
-            case "resetPhone"://发送重置手机号的验证码
+            case "resetphone"://发送重置手机号的验证码
                 //判断手机号是否注册
                 if (!userService.findUser(mobile)){
                     return R.error("当前手机号未注册，请先注册");
                 }
                 modelCode = "";
                 break;
-            case "addPhone":
+            case "addphone":
                 //判断手机号是否注册
                 if (userService.findUser(mobile)){
                     return R.error("当前手机号已注册");
@@ -397,7 +397,7 @@ public class LoginController {
      * @param response
      * @return
      */
-    @PutMapping("/resetPhoneFirst")
+    @PutMapping("/resetfirst")
     public R<String> resetPhoneFirst(String mobile, String contents,HttpServletRequest request,HttpServletResponse response){
 
         Long id = BaseContext.getCurrentId();
@@ -406,7 +406,7 @@ public class LoginController {
             R.error("用户未登录");
         }
 
-        String successMobile = "resetPhone_mobile_"+id+"success";
+        String successMobile = "resetphone_mobile_"+id+"success";
 
         String successKey = (String) redisTemplate.opsForValue().get(successMobile);
 
@@ -439,7 +439,7 @@ public class LoginController {
             return R.error("此手机号未注册");
         }
 
-        String mobileKey = "resetPhone_mobile_"+mobile;// 存储到redis中的验证码的key
+        String mobileKey = "resetphone_mobile_"+mobile;// 存储到redis中的验证码的key
 
         // 校验短信验证码
         String code = (String) redisTemplate.opsForValue().get(mobileKey);
@@ -458,13 +458,13 @@ public class LoginController {
 
 
         //添加用户修改密码标识
-        redisTemplate.opsForValue().set(successMobile,true, 60 * 5 + 5, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(successMobile,"ture", 60 * 5 + 5, TimeUnit.SECONDS);
 
         return R.success("验证成功，请输入更换的手机号");
     }
 
 
-    @PutMapping("/resetPhoneSecond")
+    @PutMapping("/resetsecond")
     public R<String> resetPhoneSecond(String mobile, String contents,HttpServletRequest request,HttpServletResponse response){
 
 
@@ -484,16 +484,16 @@ public class LoginController {
             R.error("用户未登录");
         }
 
-        String successMobile = "resetPhone_mobile_"+id+"success";
+        String successMobile = "resetphone_mobile_"+id+"success";
 
-        String mobileKey = "addPhone_mobile_"+mobile;// 存储到redis中的验证码的key
+        String mobileKey = "addphone_mobile_"+mobile;// 存储到redis中的验证码的key
 
 
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getTel,mobile);
         List<User> list = userService.list(queryWrapper);
-        if (list==null){
-            return R.success("改手机号已注册");
+        if (list.size()!=0){
+            return R.success("该手机号已注册");
         }
 
         String success = (String) redisTemplate.opsForValue().get(successMobile);
