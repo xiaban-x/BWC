@@ -22,10 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
@@ -116,7 +113,21 @@ public class LoginController {
                 if (!userService.findUser(mobile)){
                     return R.error("当前手机号未注册，请先注册");
                 }
-
+                modelCode = "";
+                break;
+            case "resetPhone"://发送重置手机号的验证码
+                //判断手机号是否注册
+                if (!userService.findUser(mobile)){
+                    return R.error("当前手机号未注册，请先注册");
+                }
+                modelCode = "";
+                break;
+            case "addPhone":
+                //判断手机号是否注册
+                if (userService.findUser(mobile)){
+                    return R.error("当前手机号已注册");
+                }
+                modelCode = "";
                 break;
             default:
 
@@ -357,7 +368,6 @@ public class LoginController {
         user.setPassword(password);
         userService.updateById(user);
         redisTemplate.delete(userKey+user.getId());
-        request.getSession().removeAttribute("user");
 
         try {
             HttpSession httpSession = manageSession.getManageSession().get(BaseContext.getCurrentId().toString());
@@ -377,6 +387,167 @@ public class LoginController {
 
         return R.success("修改成功");
     }
+
+
+    /**
+     * 修改手机号第一步，验证当前手机号验证码
+     * @param mobile
+     * @param contents
+     * @param request
+     * @param response
+     * @return
+     */
+    @PutMapping("resetPhoneFirst")
+    public R<String> resetPhoneFirst(String mobile, String contents,HttpServletRequest request,HttpServletResponse response){
+
+        Long id = BaseContext.getCurrentId();
+
+        if (id==null){
+            R.error("用户未登录");
+        }
+
+        String successMobile = "resetPhone_mobile_"+id+"success";
+
+        String successKey = (String) redisTemplate.opsForValue().get(successMobile);
+
+        if (successKey!=null&&successKey.equals("ture")){
+            Long expire = redisTemplate.getExpire(successKey);
+            if(expire>0){
+                return R.success("您的手机号已验证成功，请在"+expire+"秒内完成手机号修改");
+            }else {
+                throw new CustomException(successMobile+"的redis储存有误！");
+            }
+        }
+
+
+        if (StringUtils.isBlank(mobile) || StringUtils.isBlank(contents)) {
+            return R.error("缺少必要的参数");
+        }
+
+        mobile = mobile.trim();
+        // 判断传入的手机号格式是否正确
+        if (mobile.length() != 11 || !MobileUtils.isMobileNum(mobile)) {
+            return R.error("传入的手机号格式不正确");
+        }
+
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getTel,mobile);
+        List<User> list = userService.list(queryWrapper);
+        if (list.size()>1){
+            throw new CustomException("手机号注册多名用户");
+        }else if (list==null){
+            return R.error("此手机号未注册");
+        }
+
+        String mobileKey = "resetPhone_mobile_"+mobile;// 存储到redis中的验证码的key
+
+        // 校验短信验证码
+        String code = (String) redisTemplate.opsForValue().get(mobileKey);
+        if (code == null) {
+            return R.error("当前验证码已失效，请获取最新验证码后再进行此操作");
+        } else if (!code.equals(contents)) {
+            return R.error("您输入的验证码不正确，请重新输入（不用重新获取）");
+        }
+
+        // 删除缓存的key
+        redisTemplate.delete(mobileKey);
+        // 删除用户今日登录失败次数的标识，如果有
+        redisTemplate.delete( mobile + "_login_error_times");
+
+
+
+
+        //添加用户修改密码标识
+        redisTemplate.opsForValue().set(successMobile,true, 60 * 5 + 5, TimeUnit.SECONDS);
+
+        return R.success("验证成功，请输入更换的手机号");
+    }
+
+
+
+    public R<String> resetPhoneSecond(String mobile, String contents,HttpServletRequest request,HttpServletResponse response){
+
+
+        if (StringUtils.isBlank(mobile) || StringUtils.isBlank(contents)) {
+            return R.error("缺少必要的参数");
+        }
+
+        mobile = mobile.trim();
+        // 判断传入的手机号格式是否正确
+        if (mobile.length() != 11 || !MobileUtils.isMobileNum(mobile)) {
+            return R.error("传入的手机号格式不正确");
+        }
+
+        Long id = BaseContext.getCurrentId();
+
+        if (id==null){
+            R.error("用户未登录");
+        }
+
+        String successMobile = "resetPhone_mobile_"+id+"success";
+
+        String mobileKey = "addPhone_mobile_"+mobile;// 存储到redis中的验证码的key
+
+
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getTel,mobile);
+        List<User> list = userService.list(queryWrapper);
+        if (list==null){
+            return R.success("改手机号已注册");
+        }
+
+        String success = (String) redisTemplate.opsForValue().get(successMobile);
+
+        if (success==null){
+            return R.error("用户尚未完成第一步验证或已过期");
+        }
+
+        if (!success.equals("ture")){
+            throw new CustomException(successMobile+"的redis储存有误！");
+        }
+
+        // 校验短信验证码
+        String code = (String) redisTemplate.opsForValue().get(mobileKey);
+        if (code == null) {
+            return R.error("当前验证码已失效，请获取最新验证码后再进行此操作");
+        } else if (!code.equals(contents)) {
+            return R.error("您输入的验证码不正确，请重新输入（不用重新获取）");
+        }
+
+        User user = new User();
+        user.setId(id);
+        user.setTel(mobile);
+        userService.updateById(user);
+
+        // 删除缓存的key
+        redisTemplate.delete(mobileKey);
+        redisTemplate.delete(successMobile);
+        // 删除用户今日登录失败次数的标识，如果有
+        redisTemplate.delete( mobile + "_login_error_times");
+
+
+        redisTemplate.delete(userKey+user.getId());
+
+        try {
+            HttpSession httpSession = manageSession.getManageSession().get(BaseContext.getCurrentId().toString());
+            if (httpSession!=null){
+                httpSession.invalidate();
+            }
+        } catch (Exception e) {
+            log.info(e.toString()+"：无用报错");
+        }finally {
+            redisTemplate.delete(userKey+BaseContext.getCurrentId());
+
+            //删除session中的账户信息
+            request.getSession().removeAttribute("user");
+            CookieUtils.deleteCookie(request,response,userId);
+            CookieUtils.deleteCookie(request,response,stringSession);
+        }
+
+        return R.success("修改手机号成功");
+
+    }
+
 
     /**
      * 注册账户
