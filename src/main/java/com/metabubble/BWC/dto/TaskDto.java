@@ -16,6 +16,9 @@ public class TaskDto {
     //商家id
     private Long merchantId;
 
+    //商家名字
+    private String merchantName;
+
     //任务名称
     private String name;
 
