@@ -28,6 +28,9 @@ public class TaskDto {
     //平台类型：0为美团(默认)，1为饿了么
     private Integer platform;
 
+    //任务是否需要评价：0为需要(默认)，1为不需要
+    private Integer comment;
+
     //任务数量
     private Integer amount;
 
