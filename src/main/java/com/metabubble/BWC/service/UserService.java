@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.metabubble.BWC.entity.Orders;
 import com.metabubble.BWC.entity.User;
 
+import java.util.Map;
+
 
 public interface UserService extends IService<User> {
 
@@ -15,6 +17,10 @@ public interface UserService extends IService<User> {
     public String createUUID();
     //检查手机号是否注册
     public Boolean findUser(String mobile);
+    //检查账号是否封禁
+    public Map<String,String> findStatus(String mobile);
+    //检查账号是否封禁
+    public Map<String,String> findStatus(Long id);
 
 
 

@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.websocket.Session;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -87,11 +88,21 @@ public class LoginController {
 
         String modelCode = null;
 
+        Map<String, String> status = userService.findStatus(mobile);
+        String normal = null;
+        if (status!=null) {
+            if (status.get("ban")!=null){
+                return R.error("您的账号已被封禁，理由是："+status.get("ban"));
+            }
+
+            normal = status.get("normal");
+        }
+
         switch (type) {
             case "register":// 发送注册的短信验证码
 
                 //判断手机号是否注册
-                if(userService.findUser(mobile)){//伪代码
+                if(normal!=null&&normal.equals("right")){//伪代码
                     return R.error("当前手机号已注册，请直接登录");
                 }
 
@@ -101,7 +112,7 @@ public class LoginController {
             case "reset":// 发送重置登录密码的短信验证码
 
                 //判断手机号是否注册
-                if(!userService.findUser(mobile)){//伪代码
+                if(status!=null){//伪代码
                     return R.error("当前手机号未注册，请先注册");
                 }
 
@@ -110,21 +121,21 @@ public class LoginController {
             case "login":
 
                 //判断手机号是否注册
-                if (!userService.findUser(mobile)){
+                if (status!=null){
                     return R.error("当前手机号未注册，请先注册");
                 }
                 modelCode = "";
                 break;
             case "resetphone"://发送重置手机号的验证码
                 //判断手机号是否注册
-                if (!userService.findUser(mobile)){
+                if (status!=null){
                     return R.error("当前手机号未注册，请先注册");
                 }
                 modelCode = "";
                 break;
             case "addphone":
                 //判断手机号是否注册
-                if (userService.findUser(mobile)){
+                if (normal!=null&&normal.equals("right")){
                     return R.error("当前手机号已注册");
                 }
                 modelCode = "";
@@ -216,8 +227,18 @@ public class LoginController {
             return R.error("传入的手机号格式不正确");
         }
 
-        if (!userService.findUser(mobile)){
-            return R.error("该用户未注册");
+        Map<String, String> status = userService.findStatus(mobile);
+        String normal = null;
+        if (status!=null) {
+            if (status.get("ban")!=null){
+                return R.error("您的账号已被封禁，理由是："+status.get("ban"));
+            }
+
+            normal = status.get("normal");
+        }
+
+        if (status==null){
+            return R.error("用户尚未注册");
         }
 
         // 判断当前手机号的登录失败次数，防止有人暴力破解用户的密码
@@ -464,6 +485,14 @@ public class LoginController {
     }
 
 
+    /**
+     * 修改手机号第二部
+     * @param mobile    新的手机号
+     * @param contents  手机号验证码
+     * @param request
+     * @param response
+     * @return
+     */
     @PutMapping("/resetsecond")
     public R<String> resetPhoneSecond(String mobile, String contents,HttpServletRequest request,HttpServletResponse response){
 
@@ -501,6 +530,7 @@ public class LoginController {
         if (success==null){
             return R.error("用户尚未完成第一步验证或已过期");
         }
+
 
         if (!success.equals("ture")){
             throw new CustomException(successMobile+"的redis储存有误！");
