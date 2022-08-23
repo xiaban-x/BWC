@@ -156,6 +156,23 @@ public class UserController {
         return R.success("封禁成功");
     }
 
+    /**
+     * 管理端管理员解封用户账号
+     * @param id
+     * @param reason
+     * @return
+     */
+    @PutMapping("/unban")
+    public R<String> unbanUser(Long id,String reason){
+        User user = new User();
+        user.setStatus(0);
+        user.setReason(reason);
+        user.setId(id);
+        userService.updateById(user);
+        logsService.saveLog("用户解封","管理员”"+BaseContext.getCurrentId()+"解封用户"+id+"，理由是："+reason);
+        return R.success("封禁成功");
+    }
+
 
     /**
      * 用户端查询用户信息
