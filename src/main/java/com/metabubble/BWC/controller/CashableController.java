@@ -110,7 +110,8 @@ public class CashableController {
      */
 //提现管理
     @GetMapping("/getCashablePageInfo")
-    public R<IPage> Page(Integer Page, Integer PageSize, Integer chooseType,String zfbId,String zfbName) {
+    public R<IPage> Page(Integer Page, Integer PageSize, Integer chooseType,String zfbId,String zfbName
+    ,String beginTime,String endTime) {
         //分页构造器
         QueryWrapper<Object> wrapper = new QueryWrapper<>();
         //if(chooseType.equals(0)){
@@ -126,12 +127,20 @@ public class CashableController {
         if (zfbName != null) {
             wrapper.and(c -> {c.like("user.ali_pay_name",zfbName);});
         }
+        if (beginTime != null) {
+            wrapper.and(c -> {c.ge("cashable.update_time",beginTime);});
+        }
+        if (endTime != null) {
+            wrapper.and(c -> {c.le("cashable.update_time",endTime);});
+        }
+
         Page<CashableDto> cashableDtoPage = new Page<>(Page,PageSize);
         IPage<CashableDto> userPage = cashableService.select(cashableDtoPage,wrapper);
         return  R.success(userPage);
 
 
     }
+
 
     /**
      * 用户端提现信息增加与修改
