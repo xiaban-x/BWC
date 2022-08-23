@@ -22,6 +22,12 @@ public class TaskDto {
     //任务名称
     private String name;
 
+    //任务类型：0为早餐(默认)，1为午餐，2为下午茶，3为宵夜
+    private Integer type;
+
+    //平台类型：0为美团(默认)，1为饿了么
+    private Integer platform;
+
     //任务数量
     private Integer amount;
 

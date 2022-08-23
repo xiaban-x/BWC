@@ -12,7 +12,6 @@ import com.metabubble.BWC.dto.TaskDetailDto;
 import com.metabubble.BWC.dto.TaskDto;
 import com.metabubble.BWC.entity.Merchant;
 import com.metabubble.BWC.entity.Task;
-import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
 import com.metabubble.BWC.service.TaskService;
