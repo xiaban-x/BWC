@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
+import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.UserConverter;
 import com.metabubble.BWC.dto.UserDto;
@@ -12,6 +13,7 @@ import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
+import com.metabubble.BWC.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -35,7 +40,12 @@ public class UserController {
     private LogsService logsService;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private ManageSession manageSession;
 
+
+    String stringSession = "session";
+    String userId = "userId";
     String userKey = "userKey";
 
     /**
@@ -129,6 +139,40 @@ public class UserController {
         return R.success("删除成功");
     }
 
+    /**
+     * 管理端管理员封禁用户账号
+     * @param id    用户id
+     * @param reason    封禁理由
+     * @return
+     */
+    @DeleteMapping("/ban")
+    public R<String> banUser(Long id,String reason){
+        User user = new User();
+        user.setStatus(1);
+        user.setReason(reason);
+        user.setId(id);
+        userService.updateById(user);
+        logsService.saveLog("用户封禁","管理员”"+BaseContext.getCurrentId()+"封禁用户"+id+"，理由是："+reason);
+        return R.success("封禁成功");
+    }
+
+    /**
+     * 管理端管理员解封用户账号
+     * @param id
+     * @param reason
+     * @return
+     */
+    @PutMapping("/unban")
+    public R<String> unbanUser(Long id,String reason){
+        User user = new User();
+        user.setStatus(0);
+        user.setReason(reason);
+        user.setId(id);
+        userService.updateById(user);
+        logsService.saveLog("用户解封","管理员”"+BaseContext.getCurrentId()+"解封用户"+id+"，理由是："+reason);
+        return R.success("封禁成功");
+    }
+
 
     /**
      * 用户端查询用户信息
@@ -136,7 +180,7 @@ public class UserController {
      * @author leitianyu999
      */
     @GetMapping("/getuser")
-    public R<UserDto> getByIdForUser(){
+    public R<UserDto> getByIdForUser(HttpServletResponse response, HttpServletRequest request){
         Long id = BaseContext.getCurrentId();
         User o = (User) redisTemplate.opsForValue().get(userKey+id);
         if (o!=null){
@@ -150,6 +194,25 @@ public class UserController {
         User user = userService.getOne(queryWrapper);
 
         if (user!=null) {
+
+            if (user.getStatus()==1){
+                try {
+                    HttpSession httpSession = manageSession.getManageSession().get(BaseContext.getCurrentId().toString());
+                    if (httpSession!=null){
+                        httpSession.invalidate();
+                    }
+                } catch (Exception e) {
+                    log.info(e.toString()+"：无用报错");
+                }finally {
+                    redisTemplate.delete(userKey+BaseContext.getCurrentId());
+
+                    //删除session中的账户信息
+                    request.getSession().removeAttribute("user");
+                    CookieUtils.deleteCookie(request,response,userId);
+                    CookieUtils.deleteCookie(request,response,stringSession);
+                }
+                return R.error("您的账号已被封禁，理由是："+user.getReason());
+            }
 
             UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
             //redisTemplate.opsForValue().set(userKey+id,user,24, TimeUnit.HOURS);

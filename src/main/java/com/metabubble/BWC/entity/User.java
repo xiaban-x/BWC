@@ -55,6 +55,12 @@ public class User implements Serializable {
     //头像文件名
     private String avatar;
 
+    //用户状态：0是正常，1是封禁
+    private Integer status;
+
+    //封禁理由
+    private String reason;
+
     //用户等级，0为普通用户(默认)；1为会员
     private Integer grade;
 

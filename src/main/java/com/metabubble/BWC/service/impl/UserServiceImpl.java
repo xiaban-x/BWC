@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -108,6 +110,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new CustomException("手机号注册多名用户");
         }else {
             return false;
+        }
+    }
+
+    @Override
+    public Map<String,String> findStatus(String mobile) {
+        Map<String,String> map = new HashMap<>();
+
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getTel,mobile);
+        List<User> list = this.list(queryWrapper);
+        if (list!=null&&list.size()==1){
+            if (list.get(0).getStatus()==1){
+                map.put("ban",list.get(0).getReason());
+                return map;
+            }
+            map.put("normal","right");
+            return map;
+        }else if (list.size()>1){
+            throw new CustomException("手机号注册多名用户");
+        }else {
+            return null;
+        }
+
+
+    }
+
+    @Override
+    public Map<String, String> findStatus(Long id) {
+        Map<String,String> map = new HashMap<>();
+
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId,id);
+        List<User> list = this.list(queryWrapper);
+        if (list!=null&&list.size()==1){
+            if (list.get(0).getStatus()==1){
+                map.put("ban",list.get(0).getReason());
+                return map;
+            }
+            map.put("normal","right");
+            return map;
+        }else if (list.size()>1){
+            throw new CustomException("手机号注册多名用户");
+        }else {
+            return null;
         }
     }
 

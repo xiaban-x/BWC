@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 
 /**
  * 商家
- * 未完善
  */
 @Data
 public class Merchant implements Serializable {
