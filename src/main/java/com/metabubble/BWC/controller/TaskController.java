@@ -12,7 +12,6 @@ import com.metabubble.BWC.dto.TaskDetailDto;
 import com.metabubble.BWC.dto.TaskDto;
 import com.metabubble.BWC.entity.Merchant;
 import com.metabubble.BWC.entity.Task;
-import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
 import com.metabubble.BWC.service.TaskService;
@@ -56,7 +55,9 @@ public class TaskController {
         if (records != null) {
             for (Task record : records) {
                 if (record != null) {
+                    Merchant merchant = merchantService.getById(record.getMerchantId());
                     TaskDto taskDto = TaskConverter.INSTANCES.TaskToTaskDto(record);
+                    taskDto.setMerchantName(merchant.getName());
                     taskDtos.add(taskDto);
                 }
             }
@@ -212,7 +213,7 @@ public class TaskController {
      * @return
      */
     @GetMapping("/home")
-    public R<List<HomeDto>> getByCondition(Integer limit, Integer offset,String name,Integer type,Integer constraint,Integer comment,Integer platform,BigDecimal userLng,BigDecimal userLat) {
+    public R<List<HomeDto>> getByCondition(Integer limit, Integer offset,String name,String merchantName,Integer type,Integer constraint,Integer comment,Integer platform,BigDecimal userLng,BigDecimal userLat) {
         Page<Task> taskPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
         //获取所有商家
@@ -268,7 +269,9 @@ public class TaskController {
                         //获取商家
                         Merchant merchant = merchantService.getById(record.getMerchantId());
                         //获取商家名字
-                        String merchantName = merchant.getName();
+                        if (merchantName == null){
+                            merchantName = merchant.getName();
+                        }
                         //获取商家照片
                         String merchantPic = merchant.getPic();
                         //获取商家与用户之间的距离
@@ -335,7 +338,9 @@ public class TaskController {
                     //获取任务对应的商家
                     Merchant merchant = merchantService.getById(record.getMerchantId());
                     //获取商家名字
-                    String merchantName = merchant.getName();
+                    if (merchantName == null){
+                        merchantName = merchant.getName();
+                    }
                     //获取商家图片
                     String merchantPic = merchant.getPic();
                     //获取商家与用户之间的距离

@@ -15,6 +15,9 @@ public class MerchantDto {
     //商家名称
     private String name;
 
+    //商家电话
+    private String tel;
+
     //商家图片
     private String pic;
 
