@@ -152,6 +152,7 @@ public class UserController {
         user.setReason(reason);
         user.setId(id);
         userService.updateById(user);
+        logsService.saveLog("用户封禁","管理员”"+BaseContext.getCurrentId()+"封禁用户"+id+"，理由是："+reason);
         return R.success("封禁成功");
     }
 
