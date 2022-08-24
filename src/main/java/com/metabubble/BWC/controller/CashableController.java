@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -28,10 +30,12 @@ import java.util.regex.Pattern;
 public class CashableController {
     @Autowired CashableService cashableService;
     @Autowired UserService userService;
-    @Autowired LogsService logsService;
+    @Autowired HttpServletRequest request;
+    @Autowired AdminService adminService;
     @Autowired TeamService teamService;
     @Autowired ConfigService configService;
     @Autowired TeamMsgService teamMsgService;
+    @Autowired LogsService logsService;
 
     /**
      * 提现统计查询
@@ -64,10 +68,12 @@ public class CashableController {
             }else {
                 beginTime = "0000-00-00 00:00:00";
             }
+            //累计提现金额
             queryWrapper.likeRight("update_time", beginTime).and(c -> c.eq("status", 2));
 
             //统计待转账次数条件
             qw.likeRight("create_time", beginTime).and(c1 -> c1.eq("status", 1));
+
 
 
             //统计提现次数
@@ -337,51 +343,63 @@ public class CashableController {
         wrapper.eq("id",cashableDto.getId());
         Cashable cashable = cashableService.getById(cashableDto.getId());
 
-        //判断参数是否正确
-        if (cashable!=null){
-            //判断是否为待转账状态
-            if (cashable.getStatus().equals(1)){
+        //日志 判断管理员是否有权限
+        Long adminId = (Long) request.getSession().getAttribute("admin");
+        Admin adminServiceById = adminService.getById(adminId);
+        if (adminServiceById.getType().equals(0) || adminServiceById.getType().equals(1)) {
 
-                cashable.setWithdrawReason(withDrawReason);
-                cashable.setStatus(3);
-                cashableService.update(cashable,wrapper);
+            //判断参数是否正确
+            if (cashable!=null){
+                //判断是否为待转账状态
+                if (cashable.getStatus().equals(1)){
+                    cashable.setWithdrawReason(withDrawReason);
+                    cashable.setStatus(3);
+                    cashableService.update(cashable, wrapper);
 
-                User user = userService.getById(cashable.getUserId());
+                    User user = userService.getById(cashable.getUserId());
 
-                //更新用户表
-                //将申请的金额退回主钱包
-                userUpdateWrapper.eq("id",cashable.getUserId());
-                BigDecimal beforeAmount = user.getCashableAmount();
-                BigDecimal afterAmount = beforeAmount.add(cashable.getMainWallet());
-                user.setCashableAmount(afterAmount);
-                userService.update(user,userUpdateWrapper);
+                    //更新用户表
+                    //将申请的金额退回主钱包
+                    userUpdateWrapper.eq("id", cashable.getUserId());
+                    BigDecimal beforeAmount = user.getCashableAmount();
+                    BigDecimal afterAmount = beforeAmount.add(cashable.getMainWallet());
+                    user.setCashableAmount(afterAmount);
+                    userService.update(user, userUpdateWrapper);
 
-                //更新团队表
-                //将金额退回副钱包
-                BigDecimal zero = new BigDecimal(0);
-                if (cashable.getViceWallet().compareTo(zero)==1){
-                    teamUpdateWrapper.eq("user_id",cashable.getUserId());
-                    Team team = teamService.getOne(teamUpdateWrapper);
-                    team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(cashable.getViceWallet()));
-                    teamService.update(team,teamUpdateWrapper);
+                    //更新团队表
+                    //将金额退回副钱包
+                    BigDecimal zero = new BigDecimal(0);
+                    if (cashable.getViceWallet().compareTo(zero) == 1) {
+                        teamUpdateWrapper.eq("user_id", cashable.getUserId());
+                        Team team = teamService.getOne(teamUpdateWrapper);
+                        team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(cashable.getViceWallet()));
+                        teamService.update(team, teamUpdateWrapper);
+
+                        //插入数据到team_msg
+                        String teamMsg = user.getName() + "提现申请被取消，并且返还团队钱包" + cashable.getViceWallet() + "元";
+                        teamMsgService.addWithdrawals(cashable.getUserId(), teamMsg);
+                    }
+
+                    //日志
+                    String title = "订单审核";
+                    String content = user.getName() + "提现订单审核不通过";
+                    Logs log = new Logs();
+                    log.setAdminId(adminId);
+                    log.setAdminName(adminServiceById.getName());
+                    log.setName(title);
+                    log.setContent(content);
+                    logsService.save(log);
+
+
+                }else {
+                    result = "不是待转账状态";
                 }
 
-
-                //日志
-                String title = "订单审核";
-                String content = user.getName()+"订单审核不通过";
-                logsService.saveLog(title,content);
-
-                //插入数据到team_msg
-                String teamMsg = user.getName()+"提现申请被取消，并且返还团队钱包"+cashable.getViceWallet()+"元";
-                teamMsgService.addWithdrawals(cashable.getUserId(),teamMsg);
-
             }else {
-                result = "不是待转账状态";
+                result = "参数不正确";
             }
-
         }else {
-            result = "参数不正确";
+            result = "无权限";
         }
 
 
@@ -406,25 +424,38 @@ public class CashableController {
         Cashable cashable = cashableService.getById(cashableDto.getId());
         String result = "success";
 
-        //判断参数是否正确
-        if (cashable!=null){
-            //判断是否为待转账状态
-            if (cashable.getStatus().equals(1)){
-                cashable.setStatus(2);
-                cashableService.update(cashable,wrapper);
+        //判断管理员是否有权限
+        Long adminId = (Long) request.getSession().getAttribute("admin");
+        Admin adminServiceById = adminService.getById(adminId);
+        if (adminServiceById.getType().equals(0) || adminServiceById.getType().equals(1)){
 
-                User user = userService.getById(cashable.getUserId());
+            //判断参数是否正确
+            if (cashable!=null){
+                //判断是否为待转账状态
+                if (cashable.getStatus().equals(1)){
+                    cashable.setStatus(2);
+                    cashableService.update(cashable,wrapper);
 
-                //日志
-                String title = "订单审核";
-                String content = user.getName()+"订单审核通过";
-                logsService.saveLog(title,content);
+                    User user = userService.getById(cashable.getUserId());
 
+                    //日志
+                    String title = "订单审核";
+                    String content = user.getName()+"提现订单审核通过";
+                    Logs log = new Logs();
+                    log.setAdminId(adminId);
+                    log.setAdminName(adminServiceById.getName());
+                    log.setName(title);
+                    log.setContent(content);
+                    logsService.save(log);
+
+                }else {
+                    result = "不是待转账状态";
+                }
             }else {
-                result = "不是待转账状态";
+                result = "参数不正确";
             }
         }else {
-            result = "参数不正确";
+            result = "无权限";
         }
 
 
