@@ -128,10 +128,10 @@ public class CashableController {
             wrapper.and(c -> {c.like("user.ali_pay_name",zfbName);});
         }
         if (beginTime != null) {
-            wrapper.and(c -> {c.ge("cashable.update_time",beginTime);});
+            wrapper.and(c -> {c.ge("cashable.create_time",beginTime);});
         }
         if (endTime != null) {
-            wrapper.and(c -> {c.le("cashable.update_time",endTime);});
+            wrapper.and(c -> {c.le("cashable.create_time",endTime);});
         }
 
         Page<CashableDto> cashableDtoPage = new Page<>(Page,PageSize);
