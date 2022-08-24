@@ -14,11 +14,19 @@ public class CashableDto {
 
     //支付宝名称
     private String aliPayName;
+
+    //微信号
+    private String wxId;
+
     //序列化
     private static final long serialVersionUID = 1L;
 
     //提现编号
     private Long id;
+
+    //用户id
+    private Long userId;
+
 
     //转账订单号
     private Long tradeNo;

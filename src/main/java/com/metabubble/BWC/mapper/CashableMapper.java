@@ -16,9 +16,9 @@ import org.apache.ibatis.annotations.Select;
 @InterceptorIgnore(tenantLine = "true")
 public interface CashableMapper extends BaseMapper<Cashable> {
 
-    @Select("SELECT cashable.id,cashable.trade_no,cashable.cashable_amount,cashable.pay_type," +
+    @Select("SELECT cashable.id,cashable.user_id,cashable.trade_no,cashable.cashable_amount,cashable.pay_type," +
             "cashable.status,cashable.withdraw_reason,cashable.create_time,cashable.update_time," +
-            "user.ali_pay_id,user.ali_pay_name" +
+            "user.ali_pay_id,user.ali_pay_name,user.wx_id" +
             " FROM cashable" +
             " JOIN user" +
             " on cashable.user_id=user.id" +
