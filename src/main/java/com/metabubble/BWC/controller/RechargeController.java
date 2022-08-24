@@ -131,6 +131,7 @@ public class RechargeController {
                                   @RequestParam("rechargeType") Integer rechargeType) {
         //BaseContext 获取session Id
         Long userId = BaseContext.getCurrentId();
+        //Long userId = 2L;
 
         //充值成功
         UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
@@ -381,6 +382,7 @@ public class RechargeController {
                 if (user != null) {
                     String name = user.getName();
                     rechargeDto.setName(name);
+                    rechargeDto.setUserId(userId);
                 }
                 return rechargeDto;
             }).collect(Collectors.toList());

@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 
 @Data
 public class RechargeDto {
+    //用户id
+    private Long userId;
+
     //用户名
     private String name;
 
