@@ -109,7 +109,7 @@ public class OrdersController {
      * @return
      * @author leitianyu999
      */
-    @PostMapping("add")
+    @PostMapping("/user/add")
     @Transactional
     public R<String> add(Long taskId){
         //查询任务是否启用
@@ -172,7 +172,7 @@ public class OrdersController {
      * @return
      * @author leitianyu999
      */
-    @PutMapping("/firstaudit")
+    @PutMapping("/user/firstaudit")
     public R<String> firstAudit(@RequestBody Orders orders){
         //判断PicOrder是否为空
         if (orders.getPicOrder()==null){
@@ -217,7 +217,7 @@ public class OrdersController {
      * @return
      * @author leitianyu999
      */
-    @PutMapping("/secondaudit")
+    @PutMapping("/user/secondaudit")
     public R<String> secondAudit(@RequestBody Orders orders){
         //查询订单是否过期
         if (!ordersService.updateStatusFormExpiredTime(orders.getId())) {

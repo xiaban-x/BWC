@@ -290,35 +290,6 @@ public class UserController {
         return R.error("已填写邀请码");
     }
 
-    /**
-     * 测试用添加用户
-     * @param user 用户资料
-     * @return
-     * @author leitianyu999
-     */
-    @PutMapping("/creatuser")
-    @Transactional
-    public R<String> creatUser(@RequestBody User user){
-
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        //添加id条件判断
-        queryWrapper.eq(User::getTel,user.getTel());
-        //查询是否有该用户
-        User one = userService.getOne(queryWrapper);
-        if (one==null) {
-            //生成邀请码
-            String uuid = userService.createUUID();
-            //添加邀请码
-            user.setDownId(uuid);
-            //保存用户信息
-            userService.save(user);
-            User serviceOne = userService.getOne(queryWrapper);
-            //创建团队表
-            teamService.save(serviceOne);
-            return R.success("添加成功");
-        }
-        return R.error("已有用户");
-    }
 
     /**
      * 测试用添加用户
@@ -327,7 +298,7 @@ public class UserController {
      * @author Kenlihankun
      */
 
-    @PostMapping("/bindWX")
+    @PostMapping("/user/bindWX")
     @Transactional
     public R<String> bindWX(@RequestBody User user){
         Long userId = BaseContext.getCurrentId();
