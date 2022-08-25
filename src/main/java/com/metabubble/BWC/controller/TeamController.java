@@ -32,6 +32,10 @@ public class TeamController {
     @Autowired
     private TeamService teamService;
 
+    /**
+     * 获取团队信息
+     * @return
+     */
     @GetMapping
     public R<TeamDto> get(){
         Long id = BaseContext.getCurrentId();
