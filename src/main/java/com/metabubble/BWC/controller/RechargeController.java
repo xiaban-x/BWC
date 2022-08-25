@@ -146,7 +146,6 @@ public class RechargeController {
         Team team = teamService.getOne(teamQueryWrapper);
 
 
-        String result = "success";
         Recharge recharge = new Recharge();
 
         LocalDateTime localDateTime = LocalDateTime.now();
@@ -315,21 +314,21 @@ public class RechargeController {
                             rechargeService.update(recharge, wrapper);
                         }
                         else {
-                            result = "充值金额不足";
+                            return R.error("充值金额不足");
                         }
 
                     }
 
                 }else {
-                    result = "memberTime参数错误";
+                    return R.error("memberTime参数错误");
                 }
 
             }else {
-                result = "rechargeType参数错误";
+                return R.error("rechargeType参数错误");
             }
         }
 
-        return R.success(result);
+        return R.success("success");
     }
 
     /**

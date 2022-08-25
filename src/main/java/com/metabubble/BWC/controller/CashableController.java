@@ -166,11 +166,9 @@ public class CashableController {
         UpdateWrapper<Team> teamWrapper = new UpdateWrapper<>();
         QueryWrapper<Cashable> queryWrapper = new QueryWrapper<>();
         QueryWrapper<Team> teamQueryWrapper = new QueryWrapper<>();
-        String result = "success";
 
         //BaseContext 获取session Id
         Long userId = BaseContext.getCurrentId();
-        //Long userId = 2L;//测试
 
         BigDecimal minA = new BigDecimal(0);
         BigDecimal maxA = new BigDecimal(1000);
@@ -309,17 +307,17 @@ public class CashableController {
                     cashable.setTradeNo(TradeNo);
                     cashableService.update(cashable,wrapper);
                 }else {
-                    result = "提现金额不满足条件";
+                    return  R.error("提现金额不满足条件");
                 }
 
             }else {
-                result = "超过当天最大提现次数";
+                return  R.error("超过当天最大提现次数");
             }
         }else {
-            result = "参数不符合条件";
+            return R.error("参数不符合条件");
         }
 
-        return R.success(result);
+        return R.success("success");
     }
 
     /**
@@ -337,8 +335,6 @@ public class CashableController {
         UpdateWrapper<Cashable> wrapper = new UpdateWrapper<>();
         UpdateWrapper<User> userUpdateWrapper = new UpdateWrapper<>();
         UpdateWrapper<Team> teamUpdateWrapper = new UpdateWrapper<>();
-        String result = "success";
-
         //更新提现表
         wrapper.eq("id",cashableDto.getId());
         Cashable cashable = cashableService.getById(cashableDto.getId());
@@ -392,19 +388,19 @@ public class CashableController {
 
 
                 }else {
-                    result = "不是待转账状态";
+                    return R.error("不是待转账状态") ;
                 }
 
             }else {
-                result = "参数不正确";
+                return R.error("参数不正确");
             }
         }else {
-            result = "无权限";
+            return R.error("无权限");
         }
 
 
 
-        return R.success(result);
+        return R.success("success");
     }
     /**
      * 管理端的提现转账
@@ -422,7 +418,6 @@ public class CashableController {
         //更新提现表
         wrapper.eq("id",cashableDto.getId());
         Cashable cashable = cashableService.getById(cashableDto.getId());
-        String result = "success";
 
         //判断管理员是否有权限
         Long adminId = (Long) request.getSession().getAttribute("admin");
@@ -449,17 +444,17 @@ public class CashableController {
                     logsService.save(log);
 
                 }else {
-                    result = "不是待转账状态";
+                    return R.error("不是待转账状态");
                 }
             }else {
-                result = "参数不正确";
+                return R.error("参数不正确") ;
             }
         }else {
-            result = "无权限";
+            return R.error("无权限") ;
         }
 
 
-        return R.success(result);
+        return R.success("success");
     }
 
 }
