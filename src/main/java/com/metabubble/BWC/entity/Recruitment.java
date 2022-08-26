@@ -35,6 +35,9 @@ public class Recruitment {
     // 详细地址
     private String address;
 
+    // 审核状态 （0 : 待审核（默认），1 ： 驳回， 2 ： 通过）
+    private Integer status;
+
     //创建时间
     @TableField(fill = FieldFill.INSERT) //插入时填充字段
     private LocalDateTime createTime;

@@ -33,9 +33,6 @@ public class Cooperation {
     // 手机号
     private String tel;
 
-    // 状态
-    private Integer status;
-
     //创建时间
     @TableField(fill = FieldFill.INSERT) //插入时填充字段
     private LocalDateTime createTime;
