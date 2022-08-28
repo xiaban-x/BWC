@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.Condition;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.MerchantConverter;
+import com.metabubble.BWC.dto.Imp.PageConverter;
 import com.metabubble.BWC.dto.MerchantDto;
 import com.metabubble.BWC.entity.Merchant;
 import com.metabubble.BWC.service.LogsService;
@@ -45,7 +46,7 @@ public class MerchantController {
      * @return
      */
     @GetMapping
-    public R<List<MerchantDto>> getMerchantByPage(Integer limit,Integer offset,String name,String tel) {
+    public R<Page> getMerchantByPage(Integer limit,Integer offset,String name,String tel) {
 
         Page<Merchant> merchantPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Merchant> mLqw = new LambdaQueryWrapper<>();
@@ -68,7 +69,9 @@ public class MerchantController {
                 }
             }
         }
-        return R.success(merchants);
+        Page page = PageConverter.INSTANCES.PageToPage(merchantPage);
+        page.setRecords(merchants);
+        return R.success(page);
     }
 
     /**

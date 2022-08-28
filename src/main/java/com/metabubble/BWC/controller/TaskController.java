@@ -6,11 +6,13 @@ import com.metabubble.BWC.common.Condition;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.HomeDto;
 import com.metabubble.BWC.dto.Imp.HomeConverter;
+import com.metabubble.BWC.dto.Imp.PageConverter;
 import com.metabubble.BWC.dto.Imp.TaskConverter;
 import com.metabubble.BWC.dto.Imp.TaskDetailConverter;
 import com.metabubble.BWC.dto.TaskDetailDto;
 import com.metabubble.BWC.dto.TaskDto;
 import com.metabubble.BWC.entity.Merchant;
+import com.metabubble.BWC.entity.Orders;
 import com.metabubble.BWC.entity.Task;
 import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
@@ -51,7 +53,10 @@ public class TaskController {
      * @return
      */
     @GetMapping
-    public R<List<TaskDto>> getAll(Integer offset, Integer limit, String taskName, String merchantName, Integer status, Integer platform) {
+    public R<Page> getAll(Integer offset, Integer limit, String taskName, String merchantName, Integer status, Integer platform) {
+
+        //分页构造器
+        Page<Task> pageSearch = new Page(offset,limit);
 
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
         //添加过滤条件
@@ -66,7 +71,9 @@ public class TaskController {
 
         //添加排序条件
         mLqw.orderByDesc(Task::getCreateTime);
-        List<Task> records= taskService.list(mLqw);
+        Page<Task> page = taskService.page(pageSearch, mLqw);
+        List<Task> records = page.getRecords();
+//        List<Task> records= taskService.list(mLqw);
         List<TaskDto> taskDtos = new ArrayList<>();
         if (records != null) {
             for (Task record : records) {
@@ -91,24 +98,9 @@ public class TaskController {
                 }
             }
         }
-        //分页返回
-        ArrayList<TaskDto> realTaskDtos = new ArrayList<>();
-        //如果少于五条数据则返回taskDtos的全部 多于五条返回limit
-        int realLimit;
-        if (taskDtos.size() < limit){
-            realLimit = taskDtos.size();
-        }else{
-            realLimit = limit;
-        }
-        for (int i = 0; i < realLimit; i++) {
-            //2 5
-            if (realLimit < limit){
-                realTaskDtos.add(taskDtos.get(i));
-            }else{
-                realTaskDtos.add(taskDtos.get(i+(offset-1)*limit));
-            }
-        }
-        return R.success(realTaskDtos);
+        Page page1 = PageConverter.INSTANCES.PageToPage(pageSearch);
+        page1.setRecords(taskDtos);
+        return R.success(page1);
     }
 
     /**
@@ -259,7 +251,7 @@ public class TaskController {
      * @return
      */
     @GetMapping("/home")
-    public R<List<HomeDto>> getByCondition(Integer limit, Integer offset,String name,String merchantName,Integer type,Integer constraint,Integer comment,Integer platform,BigDecimal userLng,BigDecimal userLat) {
+    public R<Page> getByCondition(Integer limit, Integer offset,String name,String merchantName,Integer type,Integer constraint,Integer comment,Integer platform,BigDecimal userLng,BigDecimal userLat) {
         Page<Task> taskPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
         //获取所有商家
@@ -295,6 +287,7 @@ public class TaskController {
                 mLqw2.eq(Task::getStatus,1);
                 //查询所有符合条件的任务
                 List<Task> tasks = taskService.list(mLqw2);
+                Page<Task> page = taskService.page(taskPage, mLqw2);
                 //获取从近到远排序的商家
                 Set<Merchant> merchantsOrder = calculationOfConstraints(merchants, userLng,userLat);
                 for (Merchant merchant : merchantsOrder) {
@@ -347,7 +340,9 @@ public class TaskController {
                         homeDtos.add(homeDtoList.get(i+(offset-1)*limit));
                     }
                 }
-                return R.success(homeDtos);
+                Page page1 = PageConverter.INSTANCES.PageToPage(taskPage);
+                page1.setRecords(homeDtos);
+                return R.success(page1);
             }else if (constraint == 2){
                 mLqw.orderByAsc(Task::getRebateA);
             }else if (constraint == 3){
@@ -400,7 +395,9 @@ public class TaskController {
                 }
             }
         }
-        return R.success(homes);
+        Page page1 = PageConverter.INSTANCES.PageToPage(taskPage);
+        page1.setRecords(homes);
+        return R.success(page1);
     }
 
     /**
