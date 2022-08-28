@@ -54,7 +54,8 @@ public class AdminFilter implements Filter {
                 "/admin",   // 人员管理
                 "/orders/commit",    // 订单审核
                 "/orders/audit" ,   // 订单审核
-                "/task/**"
+                "/task",
+                "/task/"
         };
 
         //判断本次请求是否需要处理
