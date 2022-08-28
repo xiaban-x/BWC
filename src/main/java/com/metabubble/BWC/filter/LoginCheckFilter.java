@@ -8,6 +8,7 @@ import com.metabubble.BWC.utils.CookieUtils;
 import com.sun.webkit.network.CookieManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.util.AntPathMatcher;
 
 import javax.servlet.*;
@@ -22,6 +23,7 @@ import java.io.IOException;
  * 过滤器
  * 检查用户是否已经完成登录
  */
+@Order(1)   // @Order用于多个过滤器时定义执行顺序，值越小越先执行
 @WebFilter(filterName = "loginCheckFilter",urlPatterns = "/*")
 @Slf4j
 public class LoginCheckFilter implements Filter {
@@ -115,7 +117,9 @@ public class LoginCheckFilter implements Filter {
                 "/backend/**",
                 "/front/**",
                 "/merchant/**",
-                "/financeList/**"
+                "/financeList/**",
+                "/cooperation/**",
+                "/recruitment/**"
         };
         //判断本次请求是否需要处理
         boolean check = check(urls,requestURI);
