@@ -110,12 +110,20 @@ public class AdminController {
         password = DigestUtils.md5DigestAsHex(password.getBytes());
         admin.setPassword(password);
 
-        adminService.save(admin);
+        if (admin.getType() != 0 || admin.getType() != 1 || admin.getType() != 2) {
+            return R.error("信息错误");
+        }
 
-        // 管理员新增日志
-        logsService.saveLog("增加管理员", "增加了 “ " + admin.getName() + " ” 管理员");
+        if (adminService.save(admin)) {
+            // 管理员新增日志
+            logsService.saveLog("增加管理员", "增加了 “ " + admin.getName() + " ” 管理员");
 
-        return R.success("添加成功");
+            return R.success("添加成功");
+
+        } else {
+            return R.error("网络错误，请稍后再试");
+        }
+
     }
 
 
@@ -180,6 +188,10 @@ public class AdminController {
     public R<String> update(@RequestBody Admin admin) {
         // 管理员更改日志
         logsService.saveLog("修改管理员", "修改 “ " + admin.getName() + " ”管理员的基本信息");
+
+        if (admin.getType() != 0 || admin.getType() != 1 || admin.getType() != 2) {
+            return R.error("信息错误");
+        }
 
         adminService.updateById(admin);
 
