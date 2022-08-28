@@ -1,7 +1,9 @@
 package com.metabubble.BWC.filter;
 
+import com.alibaba.fastjson.JSON;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.CustomException;
+import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.service.AdminService;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +38,19 @@ public class AdminFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
+        // 判断用户端是否已登录
+//        if (request.getSession().getAttribute("user") != null) {
+//            response.getWriter().write(JSON.toJSONString(R.error("用户端已登录")));
+//            filterChain.doFilter(request, response);
+//            BaseContext.remove();
+//            return;
+//        }
+
         log.info("拦截到请求 : {}",request.getRequestURI());
 
         // 获取本次请求的URI
         String method = request.getMethod();
+        log.info("该请求为查询请求 : {}", method);
         System.out.println(method);
         String requestURI = request.getRequestURI();
 
@@ -55,7 +66,10 @@ public class AdminFilter implements Filter {
                 "/orders/commit",    // 订单审核
                 "/orders/audit" ,   // 订单审核
                 "/task",
-                "/task/"
+                "/task/",
+                "/recruitment/reject",
+                "/recruitment/pass",
+                "/recruitment"
         };
 
         //判断本次请求是否需要处理
@@ -103,6 +117,15 @@ public class AdminFilter implements Filter {
         }
 
         // 不需要处理
+        // 判断管理员是否已登录
+        if (requestURI.equals("/admin/login")) {
+            if (request.getSession().getAttribute("admin") != null) {
+                response.getWriter().write(JSON.toJSONString(R.error("管理端已登录")));
+                BaseContext.remove();
+                return;
+            }
+        }
+
         filterChain.doFilter(request, response);
         BaseContext.remove();
         return;
