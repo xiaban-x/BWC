@@ -91,6 +91,16 @@ public class LoginCheckFilter implements Filter {
 //            }
 //        }
 
+        if (request.getSession().getAttribute("employee")!=null){
+
+            Long empId = (Long) request.getSession().getAttribute("employee");
+            BaseContext.setCurrentId(empId);
+
+            filterChain.doFilter(request,response);
+            BaseContext.remove();
+            return;
+        }
+
         String[] urls = new String[]{
                 //书写功能阶段，停止拦截器，暂时让请求发出
                 "/**",
