@@ -2,21 +2,28 @@ package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.metabubble.BWC.common.BaseContext;
+import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.AdminDto;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.service.AdminService;
 import com.metabubble.BWC.service.LogsService;
+import com.metabubble.BWC.utils.CookieUtils;
+import com.metabubble.BWC.utils.MobileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +40,14 @@ public class AdminController {
     @Autowired
     private LogsService logsService;
 
+    @Autowired
+    private ManageSession manageSession;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    String admin = "admin";
+
     /**
      * 管理员登录
      * author 晴天小杰
@@ -41,7 +56,7 @@ public class AdminController {
      * @return 返回登陆的信息
      */
     @PostMapping("/login")
-    public R<AdminDto> login(HttpServletRequest request, @RequestBody Map map)
+    public R<AdminDto> login(HttpServletRequest request, @RequestBody Map map , HttpServletResponse response)
             throws Exception{
         //获取邮箱
         String email = map.get("email").toString();
@@ -66,22 +81,69 @@ public class AdminController {
         if (adminMsg == null) {
             return R.error("用户名或密码错误");
         }
-        //密码错误==》登陆失败
-        if (!adminMsg.getPassword().equals(password)) {
-            return R.error("用户名或密码错误");
+        // 判断当前管理员的登录失败次数，防止有人暴力破解用户的密码
+        String limitKey =  adminMsg.getId() + "_login_error_times";
+        String limitTimes = (String) redisTemplate.opsForValue().get(limitKey);
+        Integer times = 1;
+        if (limitTimes != null) {
+            if (new Integer(limitTimes).intValue() >= 6) {
+                return R.error("当前账号今日登录失败次数超过6次，为保证您的账号安全，系统已锁定当前账号，请找负责人联系！");
+            }
+            times = new Integer(limitTimes) + 1;
         }
         //查看员工状态；0==》禁用
         if (adminMsg.getStatus() == 0) {
             return R.error("账号已禁用");
         }
+        //密码错误==》登陆失败
+        if (!adminMsg.getPassword().equals(password)) {
+            // 记录密码输入错误数
+            redisTemplate.opsForValue().set(limitKey, times + "");
+
+            return R.error("用户名或密码错误");
+        }
+        try {
+            HttpSession httpSession = manageSession.getManageSession().get(admin+adminMsg.getId().toString());
+            if (httpSession!=null){
+                //当前session有值，说明1.此帐号处于已登录状态有人正在使用，2.session还在有效期未被销毁
+                log.info("管理员:"+adminMsg.getId()+"再次登录！");
+                httpSession.invalidate();
+                manageSession.getManageSession().remove(admin+adminMsg.getId().toString());
+            }
+        } catch (Exception e) {
+            log.info(e.toString()+"：无用报错");
+        }
+        //删除当前管理员的登录失败次数
+        redisTemplate.delete(limitKey);
+        //设置过期时间24h
+        session.setMaxInactiveInterval(60*60*24);
         //登陆成功，id存入session
         request.getSession().setAttribute("admin", adminMsg.getId());
+        //登陆成功，session存入
+        manageSession.getManageSession().put(admin+adminMsg.getId().toString(),session);
 
         //Dto对象拷贝
         AdminDto adminDto = new AdminDto();
         BeanUtils.copyProperties(adminMsg,adminDto,"adminMsg");
 
         return R.success(adminDto);
+    }
+
+
+    /**
+     * 删除管理员登陆失败次数
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/limitkey")
+    public R<String> removeLimitKey(Long id){
+        String limitKey =  id + "_login_error_times";
+        Boolean delete = redisTemplate.delete(limitKey);
+        if (delete) {
+            return R.success("恢复成功！");
+        }else {
+            return R.error("恢复失败，请尝试重新登录或联系技术人员！");
+        }
     }
 
     /**
@@ -92,8 +154,23 @@ public class AdminController {
      */
     @DeleteMapping("/logout")
     public R<String> logout(HttpServletRequest request){
-        //删除session中的账户信息
-        request.getSession().removeAttribute("admin");
+
+        Long id = BaseContext.getCurrentId();
+
+
+
+        try {
+            HttpSession httpSession = manageSession.getManageSession().get(admin+id.toString());
+            if (httpSession!=null){
+                httpSession.invalidate();
+            }
+        } catch (Exception e) {
+            log.info(e.toString()+"：无用报错");
+        }finally {
+            //删除session中的账户信息
+            request.getSession().removeAttribute("admin");
+        }
+
         return R.success("退出成功");
     }
 
