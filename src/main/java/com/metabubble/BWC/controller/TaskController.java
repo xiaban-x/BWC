@@ -43,26 +43,72 @@ public class TaskController {
      * 查询所有任务
      * @param offset
      * @param limit
+     * @param taskName
+     * @param merchantName
+     * @param status
+     * @param platform
      * @Author 看客
      * @return
      */
     @GetMapping
-    public R<List<TaskDto>> getAll(Integer offset, Integer limit) {
+    public R<List<TaskDto>> getAll(Integer offset, Integer limit, String taskName, String merchantName, Integer status, Integer platform) {
 
-        Page<Task> page = new Page<>(offset, limit);
-        List<Task> records = taskService.page(page).getRecords();
+        LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
+        //添加过滤条件
+        mLqw.like(StringUtils.isNotEmpty(taskName), Task::getName, taskName);
+
+        if (status != null){
+            mLqw.eq(Task::getStatus,status);
+        }
+        if (platform != null){
+            mLqw.eq(Task::getPlatform,platform);
+        }
+
+        //添加排序条件
+        mLqw.orderByDesc(Task::getCreateTime);
+        List<Task> records= taskService.list(mLqw);
         List<TaskDto> taskDtos = new ArrayList<>();
         if (records != null) {
             for (Task record : records) {
                 if (record != null) {
                     Merchant merchant = merchantService.getById(record.getMerchantId());
                     TaskDto taskDto = TaskConverter.INSTANCES.TaskToTaskDto(record);
-                    taskDto.setMerchantName(merchant.getName());
-                    taskDtos.add(taskDto);
+                    //获取当前任务的商家名字
+                    String merchantName1 = merchant.getName();
+                    //与要搜索的商家名字进行比对
+                    if (merchantName != null){
+                        //检验当前查出的任务的商家名字是否包含要求搜寻的商家名字
+                        int i = merchantName1.indexOf(merchantName);
+                        if (i != -1){
+                            //如果是则保存
+                            taskDto.setMerchantName(merchantName1);
+                            taskDtos.add(taskDto);
+                        }
+                    }else {
+                        taskDto.setMerchantName(merchantName1);
+                        taskDtos.add(taskDto);
+                    }
                 }
             }
         }
-        return R.success(taskDtos);
+        //分页返回
+        ArrayList<TaskDto> realTaskDtos = new ArrayList<>();
+        //如果少于五条数据则返回taskDtos的全部 多于五条返回limit
+        int realLimit;
+        if (taskDtos.size() < limit){
+            realLimit = taskDtos.size();
+        }else{
+            realLimit = limit;
+        }
+        for (int i = 0; i < realLimit; i++) {
+            //2 5
+            if (realLimit < limit){
+                realTaskDtos.add(taskDtos.get(i));
+            }else{
+                realTaskDtos.add(taskDtos.get(i+(offset-1)*limit));
+            }
+        }
+        return R.success(realTaskDtos);
     }
 
     /**
