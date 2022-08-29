@@ -37,7 +37,7 @@ public class TeamMsgController {
         LambdaQueryWrapper<TeamMsg> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TeamMsg::getUserId,id);
         queryWrapper.orderByDesc(TeamMsg::getCreateTime);
-        if (!(type==4)){
+        if (type!=5){
             queryWrapper.eq(TeamMsg::getType,type);
         }
 
