@@ -21,7 +21,7 @@ public class TeamMsg {
     //用户/团队id
     private Long userId;
 
-    //状态：//状态：0是团队返现类(默认)，1是添加上下级类
+    //状态：//状态：0是团队返现类(默认)，1是添加上下级类,2是提现信息
     private int type;
 
     //电话号

@@ -21,7 +21,7 @@ public class UserMsg {
     //用户/团队id
     private Long userId;
 
-    //状态：//状态：0是用户提现类,1是充值信息,2.用户任务返现类
+    ////状态：0是用户提现类,1是充值信息,2.用户任务返现类
     private int type;
 
     //团队信息
