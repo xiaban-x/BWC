@@ -28,10 +28,11 @@ public class UserMsgServiceImpl extends ServiceImpl<UserMsgMapper, UserMsg>
     public void addWithdrawals(Long id, String amount) {
         UserMsg userMsg = new UserMsg();
         userMsg.setUserId(id);
-        userMsg.setType(2);
+        userMsg.setType(0);
         userMsg.setMsg(amount);
         this.save(userMsg);
     }
+
 
     @Override
     public void addRecharge(Long id, String amount) {

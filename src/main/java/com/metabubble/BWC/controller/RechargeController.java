@@ -36,6 +36,8 @@ public class RechargeController {
     @Autowired
     TeamMsgService teamMsgService;
 
+    @Autowired UserMsgService userMsgService;
+
     /**
      * 充值统计
      * author Kenlihankun
@@ -232,6 +234,10 @@ public class RechargeController {
                                 user.setGrade(1);
                                 userService.update(user, updateWrapper);
 
+                                //插入到userMsg
+                                String userMsg = rechargeAmount.toString();
+                                userMsgService.addRecharge(userId, userMsg);
+
                             } else if (rechargeAmount.compareTo(cashableAmount0) == 1 && rechargeAmount.compareTo(total) < 1) {
                                 if (membershipTime.equals(1L)) {
                                     //充值会员
@@ -283,6 +289,10 @@ public class RechargeController {
                                 //插入数据到team_msg
                                 String teamMsg = user.getName() + "申请了充值，并且从团队钱包扣除了" + cashableAmount + "元";
                                 teamMsgService.addRecharge(userId, teamMsg);
+
+                                //插入到userMsg
+                                String userMsg = rechargeAmount.toString();
+                                userMsgService.addRecharge(userId, userMsg);
 
 
 
