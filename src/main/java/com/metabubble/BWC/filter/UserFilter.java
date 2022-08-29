@@ -77,7 +77,8 @@ public class UserFilter implements Filter {
                 "/login/reset",
                 "/common/checkCodeGen",
                 "/decoration/type",
-
+                "/task/home",
+                "/task/detail"
         };
 
         // 用户未登录才能放行的请求路径
@@ -101,7 +102,9 @@ public class UserFilter implements Filter {
                 "/financeList/insertRechargeInfo",
                 "/financeList/insertCashableInfo",
                 "/cusservice",
-                "/task/pickTask"
+                "/task/pickTask",
+                "/merchant/getAddress",
+                "apis.map.qq.com/ws/geocoder/v1/"
         };
 
         boolean check1 = check(urls1, requestURI);
