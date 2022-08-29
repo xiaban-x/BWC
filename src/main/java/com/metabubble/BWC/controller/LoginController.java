@@ -280,8 +280,8 @@ public class LoginController {
                     session.setAttribute("user",user.getId());
                     session.setMaxInactiveInterval(1296000);
                     manageSession.getManageSession().put(user.getId().toString(),session);
-//                    CookieUtils.setCookie(request,response,stringSession,session.getId(),60*60*24*14,true);
-//                    CookieUtils.setCookie(request,response,userId,user.getId().toString(),60*60*24*14,true);
+                    CookieUtils.setCookie(request,response,stringSession,session.getId(),60*60*24*14,true);
+                    CookieUtils.setCookie(request,response,userId,user.getId().toString(),60*60*24*14,true);
                     redisTemplate.delete(limitKey);
                     UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
                     //redisTemplate.opsForValue().set(userKey+user.getId(),user,24,TimeUnit.HOURS);
@@ -323,8 +323,8 @@ public class LoginController {
                     session.setAttribute("user",user1.getId());
                     session.setMaxInactiveInterval(1296000);
                     manageSession.getManageSession().put(user1.getId().toString(),session);
-//                    CookieUtils.setCookie(request,response,stringSession,session.getId(),60*60*24*14,true);
-//                    CookieUtils.setCookie(request,response,userId,user1.getId().toString(),60*60*24*14,true);
+                    CookieUtils.setCookie(request,response,stringSession,session.getId(),60*60*24*14,true);
+                    CookieUtils.setCookie(request,response,userId,user1.getId().toString(),60*60*24*14,true);
                     redisTemplate.delete(mobileKey);
                     redisTemplate.delete(limitKey);
                     UserDto userDto1 = UserConverter.INSTANCES.toUserRoleDto(user1);

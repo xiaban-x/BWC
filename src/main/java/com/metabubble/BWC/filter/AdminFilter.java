@@ -48,6 +48,8 @@ public class AdminFilter implements Filter {
 
         log.info("拦截到请求 : {}",request.getRequestURI());
 
+        BaseContext.remove();
+
         // 获取本次请求的URI
         String method = request.getMethod();
         log.info("该请求为查询请求 : {}", method);

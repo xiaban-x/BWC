@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.CustomException;
+import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.UserService;
+import com.metabubble.BWC.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -16,6 +18,7 @@ import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
@@ -31,6 +34,13 @@ public class UserFilter implements Filter {
 
     @Autowired
     private UserService userService;
+
+
+    @Autowired
+    private ManageSession manageSession;
+
+    String stringSession = "session";
+    String userId = "userId";
 
     @Override
     public void doFilter(
@@ -127,6 +137,9 @@ public class UserFilter implements Filter {
             return;
         }
 
+        String cookieSessionId = CookieUtils.getCookieValue(request, this.stringSession, true);
+        String cookieUserId = CookieUtils.getCookieValue(request, this.userId, true);
+
         // 登录后才能放行
         if (check3) {
 
@@ -151,12 +164,39 @@ public class UserFilter implements Filter {
                 log.info("用户已登录");
 
                 Long userId = (Long) request.getSession().getAttribute("user");
+
+                HttpSession publicSession = manageSession.getManageSession().get(userId.toString());
+
+            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
                 BaseContext.setCurrentId(userId);
 
                 filterChain.doFilter(request, response);
                 BaseContext.remove();
                 return;
             }
+
+            request.getSession().invalidate();
+            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
+            BaseContext.remove();
+            return;
+          }
+
+
+            if (cookieUserId!=null&&cookieSessionId!=null) {
+            HttpSession publicSession = manageSession.getManageSession().get(cookieUserId);
+            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
+                HttpSession session = request.getSession();
+                session.setAttribute("user",Long.parseLong(cookieUserId));
+                session.setMaxInactiveInterval(publicSession.getMaxInactiveInterval());
+
+                BaseContext.setCurrentId(Long.parseLong(cookieUserId));
+
+                filterChain.doFilter(request,response);
+                BaseContext.remove();
+                return;
+            }
+        }
+
 
             // 未登录，通过输出流方式向客户端页面响应数据
             response.setContentType("text/json;charset=UTF-8");
