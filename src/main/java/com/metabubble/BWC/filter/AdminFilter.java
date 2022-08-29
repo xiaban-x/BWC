@@ -120,6 +120,8 @@ public class AdminFilter implements Filter {
         // 判断管理员是否已登录
         if (requestURI.equals("/admin/login")) {
             if (request.getSession().getAttribute("admin") != null) {
+                response.setContentType("text/json;charset=UTF-8");
+                response.setCharacterEncoding("UTF-8");
                 response.getWriter().write(JSON.toJSONString(R.error("管理端已登录")));
                 BaseContext.remove();
                 return;

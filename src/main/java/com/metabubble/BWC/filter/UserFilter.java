@@ -119,7 +119,10 @@ public class UserFilter implements Filter {
             }
 
             // 用户已登陆，通过输出流方式向客户端页面响应数据
+            response.setContentType("text/json;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
             response.getWriter().write(JSON.toJSONString(R.error("请先退出登录")));
+
             BaseContext.remove();
             return;
         }
@@ -156,7 +159,10 @@ public class UserFilter implements Filter {
             }
 
             // 未登录，通过输出流方式向客户端页面响应数据
+            response.setContentType("text/json;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
             response.getWriter().write(JSON.toJSONString(R.error("用户未登录")));
+
             BaseContext.remove();
             return;
         }
