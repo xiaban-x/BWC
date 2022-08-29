@@ -37,6 +37,15 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
     }
 
     @Override
+    public void addRecharge(Long id, String amount) {
+        TeamMsg teamMsg = new TeamMsg();
+        teamMsg.setType(3);
+        teamMsg.setUserId(id);
+        teamMsg.setMsg(amount);
+        this.save(teamMsg);
+    }
+
+    @Override
     public void addCashback(Long id, String tel, String amount) {
         String phone = MobileUtils.blurPhone(tel);
         TeamMsg teamMsg = new TeamMsg();
