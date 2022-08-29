@@ -7,6 +7,7 @@ import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.OrdersConverter;
 import com.metabubble.BWC.dto.Imp.PageConverter;
+import com.metabubble.BWC.dto.OrdersDo;
 import com.metabubble.BWC.dto.OrdersDto;
 import com.metabubble.BWC.dto.OrdersListDto;
 import com.metabubble.BWC.entity.*;
@@ -308,7 +309,21 @@ public class OrdersController {
 
 
         ordersService.page(page,queryWrapper3);
-        return R.success(page);
+
+        List<Orders> records = page.getRecords();
+        List<OrdersDo> collect = records.stream().map(item -> {
+            Long userId = item.getUserId();
+            User byId = userService.getById(userId);
+            OrdersDo ordersDo = OrdersConverter.INSTANCES.OrdersToOrdersDo(item);
+            ordersDo.setTel(byId.getTel());
+            return ordersDo;
+        }).collect(Collectors.toList());
+
+        Page pageToPage = PageConverter.INSTANCES.PageToPage(page);
+        pageToPage.setRecords(collect);
+
+
+        return R.success(pageToPage);
     }
 
     /**

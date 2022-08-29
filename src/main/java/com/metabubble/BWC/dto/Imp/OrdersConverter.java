@@ -1,5 +1,6 @@
 package com.metabubble.BWC.dto.Imp;
 
+import com.metabubble.BWC.dto.OrdersDo;
 import com.metabubble.BWC.dto.OrdersDto;
 import com.metabubble.BWC.dto.OrdersListDto;
 import com.metabubble.BWC.entity.Orders;
@@ -16,5 +17,8 @@ public abstract class OrdersConverter {
 
 
     public abstract OrdersListDto OrdersToOrdersListDto(Orders orders);
+
+
+    public abstract OrdersDo OrdersToOrdersDo(Orders orders);
 
 }
