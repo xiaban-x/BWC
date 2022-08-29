@@ -154,6 +154,8 @@ public class LoginCheckFilter implements Filter {
 
         log.info("用户未登录");
         //5、如果未登录则返回未登录结果，通过输出流方式向客户端页面响应数据
+        response.setContentType("text/json;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
         BaseContext.remove();
         return;
