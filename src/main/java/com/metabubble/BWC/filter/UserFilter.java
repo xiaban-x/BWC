@@ -167,35 +167,35 @@ public class UserFilter implements Filter {
 
                 HttpSession publicSession = manageSession.getManageSession().get(userId.toString());
 
-            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
+//            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
                 BaseContext.setCurrentId(userId);
 
                 filterChain.doFilter(request, response);
                 BaseContext.remove();
                 return;
-            }
-
-            request.getSession().invalidate();
-            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
-            BaseContext.remove();
-            return;
+//            }
+//
+//            request.getSession().invalidate();
+//            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
+//            BaseContext.remove();
+//            return;
           }
 
 
-            if (cookieUserId!=null&&cookieSessionId!=null) {
-            HttpSession publicSession = manageSession.getManageSession().get(cookieUserId);
-            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
-                HttpSession session = request.getSession();
-                session.setAttribute("user",Long.parseLong(cookieUserId));
-                session.setMaxInactiveInterval(publicSession.getMaxInactiveInterval());
-
-                BaseContext.setCurrentId(Long.parseLong(cookieUserId));
-
-                filterChain.doFilter(request,response);
-                BaseContext.remove();
-                return;
-            }
-        }
+//            if (cookieUserId!=null&&cookieSessionId!=null) {
+//            HttpSession publicSession = manageSession.getManageSession().get(cookieUserId);
+//            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
+//                HttpSession session = request.getSession();
+//                session.setAttribute("user",Long.parseLong(cookieUserId));
+//                session.setMaxInactiveInterval(publicSession.getMaxInactiveInterval());
+//
+//                BaseContext.setCurrentId(Long.parseLong(cookieUserId));
+//
+//                filterChain.doFilter(request,response);
+//                BaseContext.remove();
+//                return;
+//            }
+//        }
 
 
             // 未登录，通过输出流方式向客户端页面响应数据
