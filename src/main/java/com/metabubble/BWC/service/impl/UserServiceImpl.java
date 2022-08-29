@@ -33,6 +33,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private TeamService teamService;
     @Autowired
     private OrdersService ordersService;
+    @Autowired
+    private TeamMsgService teamMsgService;
 
 
     /**
@@ -48,6 +50,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = this.getById(userId);
         user.setCashableAmount(user.getCashableAmount().add(rebate));
         user.setSavedAmount(user.getSavedAmount().add(rebate));
+        teamMsgService.addUserCashback(orders);
         this.updateById(user);
     }
 
