@@ -8,10 +8,7 @@ import com.metabubble.BWC.entity.Team;
 import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.mapper.AdminMapper;
 import com.metabubble.BWC.mapper.TeamMapper;
-import com.metabubble.BWC.service.AdminService;
-import com.metabubble.BWC.service.TeamMsgService;
-import com.metabubble.BWC.service.TeamService;
-import com.metabubble.BWC.service.UserService;
+import com.metabubble.BWC.service.*;
 import com.metabubble.BWC.utils.MobileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +30,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     private UserService userService;
     @Autowired
     private TeamMsgService teamMsgService;
+    @Autowired
+    private UserMsgService userMsgService;
 
     /**
      * 团队向上一级返现
@@ -54,6 +53,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithVip));
                 //团队信息计入
                 teamMsgService.addCashback(id,tel,"一级成员会员返现"+bigDecimalForFirstWithVip);
+                userMsgService.addCashback(id,tel,"一级成员会员返现"+bigDecimalForFirstWithVip);
             }
         }else {
             if (!bigDecimalForFirstWithNtoVip.equals(0)) {
@@ -62,6 +62,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip));
                 //团队信息计入
                 teamMsgService.addCashback(id,tel,"一级成员非会员返现"+bigDecimalForFirstWithNtoVip);
+                userMsgService.addCashback(id,tel,"一级成员非会员返现"+bigDecimalForFirstWithNtoVip);
             }
         }
         this.update(team,queryWrapper123);
@@ -86,6 +87,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithVip));
                 //团队信息计入
                 teamMsgService.addCashback(id,tel,"二级成员会员返现"+bigDecimalForSecondWithVip);
+                userMsgService.addCashback(id,tel,"二级成员会员返现"+bigDecimalForSecondWithVip);
             }
         }else {
             if (!bigDecimalForSecondWithNtoVip.equals(0)) {
@@ -93,6 +95,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithNtoVip));
                 //团队信息计入
                 teamMsgService.addCashback(id,tel,"二级成员非会员返现"+bigDecimalForSecondWithNtoVip);
+                userMsgService.addCashback(id,tel,"二级成员非会员返现"+bigDecimalForSecondWithNtoVip);
             }
         }
         this.update(team,queryWrapper123);

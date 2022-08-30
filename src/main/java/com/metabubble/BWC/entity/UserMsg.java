@@ -8,10 +8,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 团队信息
+ * 用户信息
  */
 @Data
-public class TeamMsg {
+public class UserMsg {
     //序列化
     private static final long serialVersionUID = 1L;
 
@@ -21,11 +21,8 @@ public class TeamMsg {
     //用户/团队id
     private Long userId;
 
-    //状态：//状态：0是团队返现类(默认)，1是添加上下级类,2是提现信息,3是充值类
+    ////状态：0是用户提现类,1是充值信息,2.用户任务返现类
     private int type;
-
-    //电话号
-    private String downPhone;
 
     //团队信息
     private String msg;

@@ -36,6 +36,7 @@ public class CashableController {
     @Autowired ConfigService configService;
     @Autowired TeamMsgService teamMsgService;
     @Autowired LogsService logsService;
+    @Autowired UserMsgService userMsgService;
 
     /**
      * 提现统计查询
@@ -259,6 +260,10 @@ public class CashableController {
                     cashable.setTradeNo(TradeNo);
                     cashableService.update(cashable,wrapper);
 
+                    //插入数据到userMsg
+                    String userMsg = "发起提现请求,扣除"+amount+"元";
+                    userMsgService.addWithdrawals(userId,userMsg);
+
                 }
                 //主钱包不够提现金额
                 else if (amount.compareTo(cashableAmount)==1 && minA.compareTo(total)<1 && amount.compareTo(maxA)<1
@@ -306,6 +311,10 @@ public class CashableController {
                     Long TradeNo = time0*10000000000L+tradeNo;
                     cashable.setTradeNo(TradeNo);
                     cashableService.update(cashable,wrapper);
+
+                    //插入数据到userMsg
+                    String userMsg = "发起提现请求,扣除"+amount+"元";
+                    userMsgService.addWithdrawals(userId,userMsg);
                 }else {
                     return  R.error("提现金额不满足条件");
                 }
@@ -385,6 +394,10 @@ public class CashableController {
                     log.setName(title);
                     log.setContent(content);
                     logsService.save(log);
+
+                    //插入数据到userMsg
+                    String amount = "提现请求不通过,返回"+cashable.getCashableAmount()+"元";
+                    userMsgService.addWithdrawals(cashable.getUserId(),amount);
 
 
                 }else {
