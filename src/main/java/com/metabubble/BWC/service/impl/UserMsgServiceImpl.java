@@ -47,7 +47,7 @@ public class UserMsgServiceImpl extends ServiceImpl<UserMsgMapper, UserMsg>
     public void addCashback(Long id, String tel, String amount) {
         UserMsg userMsg = new UserMsg();
         userMsg.setUserId(id);
-        userMsg.setType(1);
+        userMsg.setType(2);
         String s = MobileUtils.blurPhone(tel);
         String cashbackMsg = "用户"+s+"返现"+amount;
         userMsg.setMsg(cashbackMsg);
