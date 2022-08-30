@@ -75,6 +75,18 @@ public class MerchantController {
     }
 
     /**
+     * 根据id获取商家信息
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public R<MerchantDto> getMerchantById(@PathVariable("id") Long id){
+        Merchant merchant = merchantService.getById(id);
+        MerchantDto merchantDto = MerchantConverter.INSTANCES.MerchantToMerchantDto(merchant);
+        return R.success(merchantDto);
+    }
+
+    /**
      * 新增商家
      * @param merchant
      * @Author 看客
@@ -110,10 +122,17 @@ public class MerchantController {
      */
     @PutMapping
     public R<String> update(@RequestBody Merchant merchant) {
-        BigDecimal lng = getGeocoderLatitude(merchant.getAddress()).get("lng");
-        BigDecimal lat = getGeocoderLatitude(merchant.getAddress()).get("lat");
+        //获取修改前的商家
+        Merchant merchantOld = merchantService.getById(merchant.getId());
         //获取修改前的商家名字
-        String merchantName = merchantService.getById(merchant.getId()).getName();
+        String merchantName = merchantOld.getName();
+        //给手机号之间增加一个逗号分隔开
+        if (merchant.getBlacklist() != null){
+            //获取之前的黑名单手机号
+            String blacklist = merchantOld.getBlacklist();
+            String newBlacklist = blacklist + "," + merchant.getBlacklist();
+            merchant.setBlacklist(newBlacklist);
+        }
         boolean flag = merchantService.updateById(merchant);
         if (flag){
             logsService.saveLog("修改商家","修改了\""+merchantName+"\"商家的基本信息");
@@ -147,13 +166,13 @@ public class MerchantController {
      * @Author 看客
      * @return
      */
+    @GetMapping("/getPosition")
     public static Map<String, BigDecimal> getGeocoderLatitude(String address) {
         BufferedReader in = null;
         try {
             //将地址转换成utf-8的16进制
             address = URLEncoder.encode(address, "UTF-8");
             URL tirc = new URL("https://apis.map.qq.com/ws/geocoder/v1/?address=" + address + "&output=json&key=" + KEY_1);
-
 
             in = new BufferedReader(new InputStreamReader(tirc.openStream(), StandardCharsets.UTF_8));
             String res;
@@ -214,10 +233,6 @@ public class MerchantController {
         } catch (Exception e) {
             System.out.println("error in wapaction,and e is " + e.getMessage());
         }
-//        int addressIndex = res.indexOf("address");
-//        int i = res.indexOf(" ", addressIndex);
-//        int j = res.indexOf(",", addressIndex);
-//        res = res.substring(i+1, j);
         System.out.println(res);
         return res;
     }
