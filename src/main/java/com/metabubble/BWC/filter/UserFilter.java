@@ -77,7 +77,7 @@ public class UserFilter implements Filter {
                 "/login/reset",
                 "/common/checkCodeGen",
                 "/decoration/type",
-                "/task/home",
+                "/task/home/",
                 "/task/detail",
                 "/merchant/getAddress",
                 "apis.map.qq.com/ws/geocoder/v1/",
