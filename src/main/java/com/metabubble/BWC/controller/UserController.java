@@ -210,8 +210,8 @@ public class UserController {
                     request.getSession().removeAttribute("user");
                     CookieUtils.deleteCookie(request,response,userId);
                     CookieUtils.deleteCookie(request,response,stringSession);
+                    return R.error("您的账号已被封禁，理由是："+user.getReason());
                 }
-                return R.error("您的账号已被封禁，理由是："+user.getReason());
             }
 
             UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
