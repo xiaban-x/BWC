@@ -80,7 +80,10 @@ public class UserFilter implements Filter {
                 "/task/home",
                 "/task/detail",
                 "/merchant/getAddress",
-                "apis.map.qq.com/ws/geocoder/v1/"
+                "apis.map.qq.com/ws/geocoder/v1/",
+                // 新增
+                "/common/upload",
+                "/admin/login"
         };
 
         // 用户未登录才能放行的请求路径
@@ -104,7 +107,13 @@ public class UserFilter implements Filter {
                 "/financeList/insertRechargeInfo",
                 "/financeList/insertCashableInfo",
                 "/cusservice",
-                "/task/pickTask"
+                "/task/pickTask",
+                // 新增
+                "/admin/logout",
+                "/data/**",
+                "/logs/page",
+                "/decoration/**",
+                "/cusservice/**"
         };
 
         boolean check1 = check(urls1, requestURI);
