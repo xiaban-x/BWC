@@ -116,7 +116,9 @@ public class OrdersController {
         //查询任务是否启用
         if (taskService.checkTaskStatus(taskId)) {
             Long userId = BaseContext.getCurrentId();
-            if (!taskService.checkOrders(userId,taskId)){
+            //查找任务
+            Task task = taskService.getById(taskId);
+            if (!taskService.checkOrders(userId,task)){
                 return R.error("用户今日已接过此任务");
             }
             //更新任务数量
@@ -128,8 +130,6 @@ public class OrdersController {
             orders.setTaskId(taskId);
             //添加订单状态0
             orders.setStatus(0);
-            //查找任务
-            Task task = taskService.getById(taskId);
             //订单添加任务信息
             orders.setTaskName(task.getName());
             //查找商家
