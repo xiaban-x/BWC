@@ -74,9 +74,15 @@ public class AdminFilter implements Filter {
                 "/recruitment"
         };
 
+        // type 为 0
+        String[] urls3 = new String[]{
+                "/admin/limitkey"
+        };
+
         //判断本次请求是否需要处理
         boolean check1 = check(urls1, requestURI);
         boolean check2 = check(urls2,requestURI);
+        boolean check3 = check(urls3,requestURI);
 
         // 需要处理
         if (check1) {
@@ -116,6 +122,20 @@ public class AdminFilter implements Filter {
             } else {
                 throw new CustomException("无权限访问！");
             }
+        }
+
+        if (check3) {
+            Long adminId = (Long) request.getSession().getAttribute("admin");
+            BaseContext.setCurrentId(adminId);
+            Admin admin = adminService.getById(adminId);
+
+            if (admin.getType() != 0) {
+                throw new CustomException("无权限修改");
+            }
+
+            filterChain.doFilter(request, response);
+            BaseContext.remove();
+            return;
         }
 
         // 不需要处理

@@ -109,11 +109,11 @@ public class UserFilter implements Filter {
                 "/cusservice",
                 "/task/pickTask",
                 // 新增
-                "/admin/logout",
                 "/data/**",
                 "/logs/page",
                 "/decoration/**",
-                "/cusservice/**"
+                "/cusservice/**",
+                "/usermsg"
         };
 
         boolean check1 = check(urls1, requestURI);
