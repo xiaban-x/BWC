@@ -4,6 +4,7 @@ package com.metabubble.BWC.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
+import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.OrdersConverter;
 import com.metabubble.BWC.dto.Imp.PageConverter;
@@ -12,15 +13,21 @@ import com.metabubble.BWC.dto.OrdersDto;
 import com.metabubble.BWC.dto.OrdersListDto;
 import com.metabubble.BWC.entity.*;
 import com.metabubble.BWC.service.*;
+import com.metabubble.BWC.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -39,6 +46,16 @@ public class OrdersController {
     private TeamService teamService;
     @Autowired
     private LogsService logsService;
+    @Autowired
+    private ManageSession manageSession;
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    String normal = "normal";
+    String right = "right";
+    String stringSession = "session";
+    String userId = "userId";
+    String userKey = "userKey";
 
     /**
      * 用户端查看全部订单（根据状态查询）
@@ -112,11 +129,32 @@ public class OrdersController {
      */
     @PostMapping("/user/add")
     @Transactional
-    public R<String> add(Long taskId){
+    public R<String> add(Long taskId, HttpServletResponse response, HttpServletRequest request){
+        Map<String, String> status = userService.findStatus(BaseContext.getCurrentId());
+        if (!(status.get(normal)!=null&&status.get(normal).equals(right))){
+            try {
+                HttpSession httpSession = manageSession.getManageSession().get(BaseContext.getCurrentId().toString());
+                if (httpSession!=null){
+                    httpSession.invalidate();
+                }
+            } catch (Exception e) {
+                log.info(e.toString()+"：无用报错");
+            }finally {
+                redisTemplate.delete(userKey+BaseContext.getCurrentId());
+
+                //删除session中的账户信息
+                request.getSession().removeAttribute("user");
+                CookieUtils.deleteCookie(request,response,userId);
+                CookieUtils.deleteCookie(request,response,stringSession);
+                return R.error("您的账号已被封禁，理由是："+status.get("ban"));
+            }
+        }
         //查询任务是否启用
         if (taskService.checkTaskStatus(taskId)) {
             Long userId = BaseContext.getCurrentId();
-            if (!taskService.checkOrders(userId,taskId)){
+            //查找任务
+            Task task = taskService.getById(taskId);
+            if (!taskService.checkOrders(userId,task)){
                 return R.error("用户今日已接过此任务");
             }
             //更新任务数量
@@ -128,8 +166,6 @@ public class OrdersController {
             orders.setTaskId(taskId);
             //添加订单状态0
             orders.setStatus(0);
-            //查找任务
-            Task task = taskService.getById(taskId);
             //订单添加任务信息
             orders.setTaskName(task.getName());
             //查找商家

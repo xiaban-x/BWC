@@ -65,6 +65,9 @@ public class Task implements Serializable {
     //任务备注
     private String remark;
 
+    //接取任务时间间隔
+    private Integer timeInterval;
+
     //是否启用，0为禁用(默认)，1为启用
     private Integer status;
 

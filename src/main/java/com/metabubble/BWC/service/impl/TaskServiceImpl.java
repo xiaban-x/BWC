@@ -12,9 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.xml.crypto.Data;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -68,20 +68,29 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
     /**
      * 查询用户当天是否接取过同一任务
      * @param userId 用户id
-     * @param taskId 任务id
+     * @param task 任务对象
      * @return
      */
     @Override
-    public Boolean checkOrders(Long userId, Long taskId) {
+    public Boolean checkOrders(Long userId, Task task) {
         LocalDate now = LocalDate.now();
         LocalTime time1 = LocalTime.of(0, 0,0);
         LocalTime time2 = LocalTime.of(23, 59,59);
-        LocalDateTime begin = LocalDateTime.of(now, time1);
+
+
+        AtomicInteger atomicInteger = new AtomicInteger(task.getTimeInterval());
+        int i = atomicInteger.decrementAndGet();
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH,-i);
+        Date time = cal.getTime();
+        LocalDate localDate = time.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDateTime begin = LocalDateTime.of(localDate, time1);
         LocalDateTime end = LocalDateTime.of(now, time2);
 
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Orders::getUserId,userId);
-        queryWrapper.eq(Orders::getTaskId,taskId);
+        queryWrapper.eq(Orders::getTaskId,task.getId());
         queryWrapper.ge(Orders::getCreateTime,begin);
         queryWrapper.le(Orders::getCreateTime,end);
 
@@ -93,6 +102,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         }
     }
 
+    //完成任务后任务完成数量加一
     @Override
     public void addCompleted(Orders orders) {
         Task task = this.getById(orders.getTaskId());
