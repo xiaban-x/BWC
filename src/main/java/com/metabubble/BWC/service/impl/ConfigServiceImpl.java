@@ -26,6 +26,11 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config>
         return R.success(content);
     }
 
+    @Override
+    public String getOnlyContentById(Long id) {
+        return this.getById(id).getContent();
+    }
+
     /**
      * 一个根据id获取内容的静态类，不设置接口，可调用
      * @param id

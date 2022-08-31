@@ -16,6 +16,14 @@ public interface ConfigService extends IService<Config> {
      */
     public R<String> getContentById(Long id);
 
+
+    /**
+     * 根据id直接获取内容
+     * @param id
+     * @return
+     */
+    public String getOnlyContentById(Long id);
+
     /**
      * 一个根据id获取详细内容的静态类，不设置接口，可调用
      * @param id
