@@ -83,7 +83,8 @@ public class UserFilter implements Filter {
                 "apis.map.qq.com/ws/geocoder/v1/",
                 // 新增
                 "/common/upload",
-                "/admin/login"
+                "/admin/login",
+                "/config/getContents/{id}"
         };
 
         // 用户未登录才能放行的请求路径
