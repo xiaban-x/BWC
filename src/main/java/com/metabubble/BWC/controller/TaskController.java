@@ -334,7 +334,7 @@ public class TaskController {
      * @Author 看客
      * @return
      */
-    @GetMapping("/home")
+    @GetMapping("/home/")
     public R<Page> getByCondition(Integer limit, Integer offset,String name,String merchantName,Integer type,Integer constraint,Integer comment,Integer platform,BigDecimal userLng,BigDecimal userLat) {
         Page<Task> taskPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
