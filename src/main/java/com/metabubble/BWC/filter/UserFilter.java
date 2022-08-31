@@ -84,7 +84,7 @@ public class UserFilter implements Filter {
                 // 新增
                 "/common/upload",
                 "/admin/login",
-                "/config/{id}"
+                "/config/getContents/{id}"
         };
 
         // 用户未登录才能放行的请求路径
