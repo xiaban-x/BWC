@@ -245,7 +245,7 @@ public class OrdersController {
         //判断订单状态
         if (orders.getStatus()==0||orders.getStatus()==3) {
             //更改订单状态为一审待审核
-            orders.setStatus(1);
+            orders.setStatus(2);
 
             ordersService.updateById(orders);
             return R.success("上传成功");
