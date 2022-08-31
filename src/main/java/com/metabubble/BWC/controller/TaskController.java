@@ -72,7 +72,6 @@ public class TaskController {
         mLqw.orderByDesc(Task::getCreateTime);
         Page<Task> page = taskService.page(pageSearch, mLqw);
         List<Task> records = page.getRecords();
-//        List<Task> records= taskService.list(mLqw);
         List<TaskDto> taskDtos = new ArrayList<>();
         if (records != null) {
             for (Task record : records) {
@@ -340,8 +339,19 @@ public class TaskController {
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
         //获取所有商家
         List<Merchant> merchants = merchantService.list();
+        //存储通过名字搜索后的商家
+        List<Merchant> merchantsByFind = new ArrayList<>();
+        if (name != null){
+            for(Merchant m : merchants){
+                if (m.getName().equals(name)){
+                    merchantsByFind.add(m);
+                }
+            }
+        }else{
+            merchantsByFind = merchants;
+        }
         //得到每个商家与用户的距离
-        Map<Merchant, BigDecimal> merchantBigDecimalMap = distanceToMerchant(merchants, userLng, userLat);
+        Map<Merchant, BigDecimal> merchantBigDecimalMap = distanceToMerchant(merchantsByFind, userLng, userLat);
 
         //任务要求排序：0为人气高，1为距离近，2为最省钱，3为新商家
         if (constraint != null) {
@@ -350,11 +360,12 @@ public class TaskController {
             } else if (constraint == 1) {
                 //任务的条件构造器
                 LambdaQueryWrapper<Task> mLqw2 = new LambdaQueryWrapper<>();
+                //用以存放任务按距离进行排序 从近到远后的集合
                 ArrayList<Task> taskList = new ArrayList<>();
                 //获取所有订单
                 //添加过滤条件
                 //通过名字搜索
-                mLqw2.like(StringUtils.isNotEmpty(name), Task::getName,name);
+//                mLqw2.like(StringUtils.isNotEmpty(name), Task::getName,name);
 
                 //任务类型筛选：0为早餐(默认)，1为午餐，2为下午茶，3为宵夜
                 if (type != null) {
@@ -371,16 +382,32 @@ public class TaskController {
                 mLqw2.eq(Task::getStatus,1);
                 //查询所有符合条件的任务
                 List<Task> tasks = taskService.list(mLqw2);
-                taskService.page(taskPage, mLqw2);
+                //设置一个实际的任务集合
+                List<Task> tasksAc = new ArrayList<>();
+                //当用户搜索商家名字的时候，对符合条件的任务进行进一步的筛选
+                if (merchantsByFind != merchants){
+                    for(Task t : tasks){
+                        for(Merchant m : merchantsByFind){
+                            //每个任务的所属商家id与搜索名字后的商家进行比对
+                            if (Objects.equals(t.getMerchantId(), m.getId())){
+                                //相同，则说明该任务是用户搜索后的商家发放的
+                                tasksAc.add(t);
+                            }
+                        }
+                    }
+                }else{
+                    tasksAc = tasks;
+                }
+//                taskService.page(taskPage, mLqw2);
                 //获取从近到远排序的商家
-                Set<Merchant> merchantsOrder = calculationOfConstraints(merchants, userLng,userLat);
+                Set<Merchant> merchantsOrder = calculationOfConstraints(merchantsByFind, userLng,userLat);
                 for (Merchant merchant : merchantsOrder) {
                     //获取商家id
                     Long id = merchant.getId();
-                    for (Task task : tasks) {
+                    for (Task task : tasksAc) {
                         //如果商家id等于订单中的商家id 说明此时是同一个商家
                         if (task.getMerchantId().equals(id)) {
-                            //则放入到taskList中 得到最终的结果————订单按距离进行排序 从近到远
+                            //则放入到taskList中 得到最终的结果————任务按距离进行排序 从近到远
                             taskList.add(task);
                         }
                     }
@@ -411,6 +438,7 @@ public class TaskController {
                 ArrayList<HomeDto> homeDtos = new ArrayList<>();
                 //如果少于五条数据则返回homeDtoList的全部 多于五条返回limit
                 int realLimit;
+                int total = homeDtoList.size();
                 if (homeDtoList.size() < limit){
                     realLimit = homeDtoList.size();
                 }else{
@@ -426,6 +454,7 @@ public class TaskController {
                 }
                 Page page1 = PageConverter.INSTANCES.PageToPage(taskPage);
                 page1.setRecords(homeDtos);
+                page1.setTotal(total);
                 return R.success(page1);
             }else if (constraint == 2){
                 mLqw.orderByAsc(Task::getRebateA);
@@ -435,7 +464,7 @@ public class TaskController {
         }
         //添加过滤条件
         //通过名字搜索
-        mLqw.like(StringUtils.isNotEmpty(name), Task::getName, name);
+//        mLqw.like(StringUtils.isNotEmpty(name), Task::getName, name);
         //任务类型筛选：0为早餐(默认)，1为午餐，2为下午茶，3为宵夜
         if (type != null) {
             mLqw.eq(Task::getType, type);
@@ -452,12 +481,75 @@ public class TaskController {
         mLqw.eq(Task::getStatus,1);
 
         taskService.page(taskPage, mLqw);
+        List<HomeDto> homes = new ArrayList<>();
         //得到按条件查询的任务
         List<Task> records = taskPage.getRecords();
-
-        List<HomeDto> homes = new ArrayList<>();
-        if (records != null) {
-            for (Task record : records) {
+        //设置一个实际的任务集合
+        List<Task> tasksAc = new ArrayList<>();
+        //当用户搜索商家名字的时候，对符合条件的任务进行进一步的筛选
+        if (merchantsByFind != merchants){
+            //得到按条件筛选后的不分页的任务集合
+            List<Task> taskList = taskService.list(mLqw);
+            for(Task t : taskList){
+                for(Merchant m : merchantsByFind){
+                    //每个任务的所属商家id与搜索名字后的商家进行比对
+                    if (Objects.equals(t.getMerchantId(), m.getId())){
+                        //相同，则说明该任务是用户搜索后的商家发放的
+                        tasksAc.add(t);
+                    }
+                }
+            }
+            //进行分页
+            ArrayList<Task> tasksAcByPage = new ArrayList<>();
+            //如果少于五条数据则返回homeDtoList的全部 多于五条返回limit
+            int realLimit;
+            //记录总的数据量
+            int total = tasksAc.size();
+            if (tasksAc.size() < limit){
+                realLimit = tasksAc.size();
+            }else{
+                realLimit = limit;
+            }
+            for (int i = 0; i < realLimit; i++) {
+                //2 5
+                if (realLimit < limit){
+                    tasksAcByPage.add(tasksAc.get(i));
+                }else{
+                    tasksAcByPage.add(tasksAc.get(i+(offset-1)*limit));
+                }
+            }
+            if (tasksAcByPage != null) {
+                for (Task record : tasksAcByPage) {
+                    if (record != null) {
+                        HomeDto homeDto = HomeConverter.INSTANCES.TaskToHomeDto(record);
+                        //获取任务对应的商家
+                        Merchant merchant = merchantService.getById(record.getMerchantId());
+                        //获取商家名字
+                        if (merchantName == null){
+                            merchantName = merchant.getName();
+                        }
+                        //获取商家图片
+                        String merchantPic = merchant.getPic();
+                        //获取商家与用户之间的距离
+                        BigDecimal distance = merchantBigDecimalMap.get(merchant);
+                        //设置进homeDto
+                        homeDto.setMerchantName(merchantName);
+                        homeDto.setUserToMerchantDistance(distance);
+                        homeDto.setMerchantPic(merchantPic);
+                        //添加进集合
+                        homes.add(homeDto);
+                    }
+                }
+            }
+            Page page1 = PageConverter.INSTANCES.PageToPage(taskPage);
+            page1.setRecords(homes);
+            page1.setTotal(total);
+            return R.success(page1);
+        }else{
+            tasksAc = records;
+        }
+        if (tasksAc != null) {
+            for (Task record : tasksAc) {
                 if (record != null) {
                     HomeDto homeDto = HomeConverter.INSTANCES.TaskToHomeDto(record);
                     //获取任务对应的商家
