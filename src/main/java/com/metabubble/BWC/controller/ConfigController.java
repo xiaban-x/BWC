@@ -59,4 +59,9 @@ public class ConfigController {
         return R.success("修改成功");
     }
 
+    @GetMapping("/getContents/{id}")
+    public R<Config> getContentsById(@PathVariable Long id) {
+        Config contents = configService.getById(id);
+        return R.success(contents);
+    }
 }
