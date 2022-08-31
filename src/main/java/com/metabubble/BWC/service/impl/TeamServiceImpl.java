@@ -21,10 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         implements TeamService {
 
-    private static final BigDecimal bigDecimalForFirstWithVip =new BigDecimal("0.5");
-    private static final BigDecimal bigDecimalForFirstWithNtoVip =new BigDecimal("0.5");
-    private static final BigDecimal bigDecimalForSecondWithVip =new BigDecimal("0.2");
-    private static final BigDecimal bigDecimalForSecondWithNtoVip =new BigDecimal(0);
+
 
     @Autowired
     private UserService userService;
@@ -32,6 +29,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     private TeamMsgService teamMsgService;
     @Autowired
     private UserMsgService userMsgService;
+    @Autowired
+    private ConfigService configService;
 
     /**
      * 团队向上一级返现
@@ -48,6 +47,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         String phone = MobileUtils.blurPhone(tel);
         //查询是否为会员
         if (userService.checkGrade(id)) {
+            BigDecimal bigDecimalForFirstWithVip = BigDecimal.valueOf(Integer.parseInt(configService.getOnlyContentById(Long.parseLong("18"))));
             if (!bigDecimalForFirstWithVip.equals(0)) {
                 //会员返现
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithVip));
@@ -56,6 +56,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 userMsgService.addCashback(id,tel,"一级成员会员返现"+bigDecimalForFirstWithVip);
             }
         }else {
+            BigDecimal bigDecimalForFirstWithNtoVip = BigDecimal.valueOf(Integer.parseInt(configService.getOnlyContentById(Long.parseLong("19"))));
             if (!bigDecimalForFirstWithNtoVip.equals(0)) {
                 //非会员返现
                 BigDecimal add = team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip);
@@ -82,6 +83,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
         //查询是否为会员
         if (userService.checkGrade(id)) {
+            BigDecimal bigDecimalForSecondWithVip = BigDecimal.valueOf(Integer.parseInt(configService.getOnlyContentById(Long.parseLong("20"))));
             if (!bigDecimalForSecondWithVip.equals(0)) {
                 //会员返现
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithVip));
@@ -90,6 +92,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 userMsgService.addCashback(id,tel,"二级成员会员返现"+bigDecimalForSecondWithVip);
             }
         }else {
+            BigDecimal bigDecimalForSecondWithNtoVip = BigDecimal.valueOf(Integer.parseInt(configService.getOnlyContentById(Long.parseLong("21"))));
             if (!bigDecimalForSecondWithNtoVip.equals(0)) {
                 //非会员返现
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithNtoVip));

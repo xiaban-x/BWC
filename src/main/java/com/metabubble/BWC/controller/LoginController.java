@@ -30,9 +30,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.websocket.Session;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/login")
@@ -102,7 +104,7 @@ public class LoginController {
             case "register":// 发送注册的短信验证码
 
                 //判断手机号是否注册
-                if(normal!=null&&normal.equals("right")){//伪代码
+                if(normal!=null){//伪代码
                     return R.error("当前手机号已注册，请直接登录");
                 }
 
@@ -112,7 +114,7 @@ public class LoginController {
             case "reset":// 发送重置登录密码的短信验证码
 
                 //判断手机号是否注册
-                if(status!=null){//伪代码
+                if(status==null){//伪代码
                     return R.error("当前手机号未注册，请先注册");
                 }
 
@@ -121,21 +123,21 @@ public class LoginController {
             case "login":
 
                 //判断手机号是否注册
-                if (status!=null){
+                if (status==null){
                     return R.error("当前手机号未注册，请先注册");
                 }
                 modelCode = "";
                 break;
             case "resetphone"://发送重置手机号的验证码
                 //判断手机号是否注册
-                if (status!=null){
+                if (status==null){
                     return R.error("当前手机号未注册，请先注册");
                 }
                 modelCode = "";
                 break;
             case "addphone":
                 //判断手机号是否注册
-                if (normal!=null&&normal.equals("right")){
+                if (normal!=null){
                     return R.error("当前手机号已注册");
                 }
                 modelCode = "";
@@ -150,9 +152,13 @@ public class LoginController {
         //
         String todayKey = "today_mobile_code_times_" + mobile;
 
+        int limitMsg = Integer.parseInt(configService.getOnlyContentById(Long.parseLong("1")));
+        BigDecimal bigDecimal = BigDecimal.valueOf(limitMsg);
+        int limitTimes = Integer.parseInt(bigDecimal.subtract(new BigDecimal(60)).toString());
+
         Long times = redisTemplate.getExpire(mobileKey);
         if (times!=null) {
-            if (times>=240){
+            if (times>=limitTimes){
                 return R.error("距离您上次发送验证码不足一分钟，请一分钟后再尝试获取");
             } else if (times==-1){
                 throw new CustomException("redis储存有误");
@@ -164,7 +170,7 @@ public class LoginController {
         int todayCount = 1;
         if (todayTimes != null) {
             todayCount = new Integer(todayTimes);
-            if (todayCount >= 15) {
+            if (todayCount >= Integer.parseInt(configService.getOnlyContentById(Long.parseLong("2")))) {
 
                 return R.error("当前手机号今日发送验证码已达上限，请明日再来");
             }
@@ -186,7 +192,7 @@ public class LoginController {
 //            if (msg) {
 
                 // 保存验证码到redis
-                redisTemplate.opsForValue().set(mobileKey, mobileCode, 60 * 5 + 5, TimeUnit.SECONDS);//redis中的code比实际要多5秒
+                redisTemplate.opsForValue().set(mobileKey, mobileCode, limitMsg, TimeUnit.SECONDS);//redis中的code比实际要多5秒
 
                 // 记录本号码发送验证码次数
                 redisTemplate.opsForValue().set(todayKey, todayCount + "", MobileUtils.getSurplusTime(),TimeUnit.SECONDS);
@@ -245,9 +251,12 @@ public class LoginController {
         String limitKey =  mobile + "_login_error_times";
         String limitTimes = (String) redisTemplate.opsForValue().get(limitKey);
         Integer times = 1;
+
+        int limitTime = Integer.parseInt(configService.getOnlyContentById(Long.parseLong("3")));
+
         if (limitTimes != null) {
-            if (new Integer(limitTimes).intValue() >= 6) {
-                return R.error("当前账号今日登录失败次数超过6次，为保证您的账号安全，系统已锁定当前账号，您可明天再登录或立即重置密码后使用新密码登录！");
+            if (new Integer(limitTimes).intValue() > limitTime) {
+                return R.error("当前账号今日登录失败次数超过"+limitKey+"次，为保证您的账号安全，系统已锁定当前账号，您可明天再登录或立即重置密码后使用新密码登录！");
             }
             times = new Integer(limitTimes) + 1;
         }
