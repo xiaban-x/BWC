@@ -83,7 +83,6 @@ public class UserFilter implements Filter {
                 "apis.map.qq.com/ws/geocoder/v1/",
                 // 新增
                 "/common/upload",
-                "/admin/login",
                 "/config/getContents/{id}"
         };
 
@@ -110,8 +109,6 @@ public class UserFilter implements Filter {
                 "/cusservice",
                 "/task/pickTask",
                 // 新增
-                "/data/**",
-                "/logs/page",
                 "/decoration/**",
                 "/cusservice/**",
                 "/usermsg"
