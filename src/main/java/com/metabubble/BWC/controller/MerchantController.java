@@ -8,6 +8,7 @@ import com.metabubble.BWC.dto.Imp.MerchantConverter;
 import com.metabubble.BWC.dto.Imp.PageConverter;
 import com.metabubble.BWC.dto.MerchantDto;
 import com.metabubble.BWC.entity.Merchant;
+import com.metabubble.BWC.service.ConfigService;
 import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +34,10 @@ public class MerchantController {
     MerchantService merchantService;
     @Autowired
     LogsService logsService;
+    @Autowired
+    ConfigService configService;
 
-    public static final String KEY_1 = "XEABZ-GFERQ-GVY5M-GZCOR-EJGOT-OWBOP";
+//    public static final String KEY_1 = "XEABZ-GFERQ-GVY5M-GZCOR-EJGOT-OWBOP";
 
     /**
      * 查询商家信息
@@ -167,12 +170,13 @@ public class MerchantController {
      * @return
      */
     @GetMapping("/getPosition")
-    public static Map<String, BigDecimal> getGeocoderLatitude(String address) {
+    public Map<String, BigDecimal> getGeocoderLatitude(String address) {
+        String key = configService.getById(10).getContent();
         BufferedReader in = null;
         try {
             //将地址转换成utf-8的16进制
             address = URLEncoder.encode(address, "UTF-8");
-            URL tirc = new URL("https://apis.map.qq.com/ws/geocoder/v1/?address=" + address + "&output=json&key=" + KEY_1);
+            URL tirc = new URL("https://apis.map.qq.com/ws/geocoder/v1/?address=" + address + "&output=json&key=" + key);
 
             in = new BufferedReader(new InputStreamReader(tirc.openStream(), StandardCharsets.UTF_8));
             String res;
@@ -219,7 +223,8 @@ public class MerchantController {
      */
     @GetMapping("/getAddress")
     public String getAdd(String lng, String lat ){
-        String urlString = "https://apis.map.qq.com/ws/geocoder/v1/?location="+lat+","+lng+"&output=json&key="+KEY_1;
+        String key = configService.getById(10).getContent();
+        String urlString = "https://apis.map.qq.com/ws/geocoder/v1/?location="+lat+","+lng+"&output=json&key="+ key;
         String res = "";
         try {
             URL url = new URL(urlString);
