@@ -5,19 +5,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.Condition;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.HomeDto;
-import com.metabubble.BWC.dto.Imp.HomeConverter;
-import com.metabubble.BWC.dto.Imp.PageConverter;
-import com.metabubble.BWC.dto.Imp.TaskConverter;
-import com.metabubble.BWC.dto.Imp.TaskDetailConverter;
+import com.metabubble.BWC.dto.Imp.*;
 import com.metabubble.BWC.dto.TaskDetailDto;
 import com.metabubble.BWC.dto.TaskDto;
+import com.metabubble.BWC.dto.TaskUserDto;
 import com.metabubble.BWC.entity.Merchant;
 import com.metabubble.BWC.entity.Orders;
 import com.metabubble.BWC.entity.Task;
-import com.metabubble.BWC.service.LogsService;
-import com.metabubble.BWC.service.MerchantService;
-import com.metabubble.BWC.service.TaskService;
-import com.metabubble.BWC.service.UserService;
+import com.metabubble.BWC.entity.User;
+import com.metabubble.BWC.service.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +32,9 @@ public class TaskController {
     UserService userService;
     @Autowired
     LogsService logsService;
+    @Autowired
+    OrdersService ordersService;
+
     /**
      * 默认地球半径
      */
@@ -56,7 +55,7 @@ public class TaskController {
     public R<Page> getAll(Integer offset, Integer limit, String taskName, String merchantName, Integer status, Integer platform) {
 
         //分页构造器
-        Page<Task> pageSearch = new Page(offset,limit);
+        Page<Task> pageSearch = new Page<>(offset,limit);
 
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
         //添加过滤条件
@@ -201,6 +200,91 @@ public class TaskController {
         }
     }
 
+    @GetMapping("/getTaskUser")
+    public R<Page> getTaskUser(Integer offset, Integer limit,Long taskId,String tel){
+        //分页构造器
+        Page<Orders> pageSearch = new Page<>(offset,limit);
+
+        LambdaQueryWrapper<Orders> mLqw = new LambdaQueryWrapper<>();
+        //添加过滤条件
+        mLqw.eq(Orders::getTaskId,taskId);
+
+        //添加排序条件
+        mLqw.orderByDesc(Orders::getCreateTime);
+
+        if (tel != null){
+            //如果要通过手机号进行搜索，则先获取该任务的所有接单者
+            List<Orders> ordersListNotPage = ordersService.list(mLqw);
+            ordersService.page(pageSearch,mLqw);
+            //用一个集合存储所有满足手机号的订单
+            ArrayList<Orders> ordersList = new ArrayList<>();
+            for(Orders o : ordersListNotPage){
+                //获取该订单对应的用户id
+                Long userId = o.getUserId();
+                //获取该用户的手机号
+                String userTel = userService.getById(userId).getTel();
+                //如果要搜索的手机号是该用户的手机号的一部分，则放入到ordersList集合中
+                if (userTel.contains(tel)){
+                    ordersList.add(o);
+                }
+            }
+            //循环结束后，ordersList存储的即为满足搜索条件的手机号
+            //用集合存储转为dto后的用户集合
+            ArrayList<TaskUserDto> taskUserDtos = new ArrayList<>();
+            for(Orders o : ordersList){
+                //获取该订单对应的用户
+                User user = userService.getById(o.getUserId());
+                //转为dto
+                TaskUserDto taskUserDto = UserConverter.INSTANCES.UserToTaskUserDto(user);
+                taskUserDto.setStatus(o.getStatus());
+                taskUserDto.setCreateTime(o.getCreateTime());
+                taskUserDtos.add(taskUserDto);
+            }
+            //分页返回
+            ArrayList<TaskUserDto> realTaskUserDtos = new ArrayList<>();
+            //如果少于五条数据则返回homeDtoList的全部 多于五条返回limit
+            int realLimit;
+            //记录总的数据量
+            int total = taskUserDtos.size();
+            if (taskUserDtos.size() < limit){
+                realLimit = taskUserDtos.size();
+            }else{
+                realLimit = limit;
+            }
+            for (int i = 0; i < realLimit; i++) {
+                //2 5
+                if (realLimit < limit){
+                    realTaskUserDtos.add(taskUserDtos.get(i));
+                }else{
+                    realTaskUserDtos.add(taskUserDtos.get(i+(offset-1)*limit));
+                }
+            }
+            Page page1 = PageConverter.INSTANCES.PageToPage(pageSearch);
+            page1.setRecords(realTaskUserDtos);
+            page1.setTotal(total);
+            return R.success(page1);
+        }
+        Page<Orders> page = ordersService.page(pageSearch,mLqw);
+        List<Orders> records = page.getRecords();
+        //用集合存储转为dto后的用户集合
+        ArrayList<TaskUserDto> taskUserDtos = new ArrayList<>();
+        if (records != null) {
+            for (Orders record : records) {
+                if (record != null) {
+                    //获取该订单对应的用户
+                    User user = userService.getById(record.getUserId());
+                    //转为dto
+                    TaskUserDto taskUserDto = UserConverter.INSTANCES.UserToTaskUserDto(user);
+                    taskUserDto.setStatus(record.getStatus());
+                    taskUserDto.setCreateTime(record.getCreateTime());
+                    taskUserDtos.add(taskUserDto);
+                }
+            }
+        }
+        Page page1 = PageConverter.INSTANCES.PageToPage(pageSearch);
+        page1.setRecords(taskUserDtos);
+        return R.success(page1);
+    }
     /**
      * 任务信息详情
      * @param id
@@ -250,7 +334,7 @@ public class TaskController {
      * @Author 看客
      * @return
      */
-    @GetMapping("/home")
+    @GetMapping("/home/")
     public R<Page> getByCondition(Integer limit, Integer offset,String name,String merchantName,Integer type,Integer constraint,Integer comment,Integer platform,BigDecimal userLng,BigDecimal userLat) {
         Page<Task> taskPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
@@ -287,7 +371,7 @@ public class TaskController {
                 mLqw2.eq(Task::getStatus,1);
                 //查询所有符合条件的任务
                 List<Task> tasks = taskService.list(mLqw2);
-                Page<Task> page = taskService.page(taskPage, mLqw2);
+                taskService.page(taskPage, mLqw2);
                 //获取从近到远排序的商家
                 Set<Merchant> merchantsOrder = calculationOfConstraints(merchants, userLng,userLat);
                 for (Merchant merchant : merchantsOrder) {

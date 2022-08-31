@@ -152,8 +152,13 @@ public class OrdersController {
         //查询任务是否启用
         if (taskService.checkTaskStatus(taskId)) {
             Long userId = BaseContext.getCurrentId();
+
+            User user = userService.getById(userId);
             //查找任务
             Task task = taskService.getById(taskId);
+            if (merchantService.checkBlackList(user.getTel(),task.getMerchantId())){
+                return R.error("您进入了该商家的黑名单，不可接取此任务");
+            }
             if (!taskService.checkOrders(userId,task)){
                 return R.error("用户今日已接过此任务");
             }
@@ -240,7 +245,7 @@ public class OrdersController {
         //判断订单状态
         if (orders.getStatus()==0||orders.getStatus()==3) {
             //更改订单状态为一审待审核
-            orders.setStatus(1);
+            orders.setStatus(2);
 
             ordersService.updateById(orders);
             return R.success("上传成功");

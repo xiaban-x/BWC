@@ -226,7 +226,7 @@ public class CashableController {
         if (payType.equals(1) || payType.equals(2)){
             //判断是否超过当天最大提现次数
             if (count_1.compareTo(maxTimes)<1){
-                if (amount.compareTo(cashableAmount)<1 && amount.compareTo(zero)==1 && minA.compareTo(total)<1
+                if (amount.compareTo(cashableAmount)<1 && minA.compareTo(amount)<1 && amount.compareTo(zero)==1
                         &&amount.compareTo(maxA)<1 && maxA.compareTo(minA)==1){
                     //更新用户表提现金额
                     BigDecimal cashableAmount1 = cashableAmount.subtract(amount);
@@ -266,8 +266,8 @@ public class CashableController {
 
                 }
                 //主钱包不够提现金额
-                else if (amount.compareTo(cashableAmount)==1 && minA.compareTo(total)<1 && amount.compareTo(maxA)<1
-                        && amount.compareTo(total)<1 && maxA.compareTo(minA)==1){
+                else if (amount.compareTo(cashableAmount)==1 && minA.compareTo(amount)<1 && amount.compareTo(maxA)<1
+                        && amount.compareTo(total)<1 && maxA.compareTo(minA)==1 && amount.compareTo(zero)==1){
                     BigDecimal cashableAmount1 = amount.subtract(cashableAmount);
 
                     //更新用户表提现金额
