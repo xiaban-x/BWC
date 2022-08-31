@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 
-import static com.metabubble.BWC.controller.MerchantController.getGeocoderLatitude;
-
 /**
  * 商家入驻
  */
@@ -32,6 +30,9 @@ public class RecruitmentController {
 
     @Autowired
     private MerchantService merchantService;
+
+    @Autowired
+    private MerchantController merchantController;
 
     @Autowired
     private RecruitmentService recruitmentService;
@@ -139,8 +140,8 @@ public class RecruitmentController {
         BigDecimal lng = merchant.getLng();
         BigDecimal lat = merchant.getLat();
         if (lng == null  || lat == null){
-            lng = getGeocoderLatitude(merchant.getAddress()).get("lng");
-            lat = getGeocoderLatitude(merchant.getAddress()).get("lat");
+            lng = merchantController.getGeocoderLatitude(merchant.getAddress()).get("lng");
+            lat = merchantController.getGeocoderLatitude(merchant.getAddress()).get("lat");
         }
 
         merchant.setLng(lng);
