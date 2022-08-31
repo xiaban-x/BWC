@@ -7,6 +7,9 @@ import com.metabubble.BWC.mapper.ConfigMapper;
 import com.metabubble.BWC.service.ConfigService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config>
         implements ConfigService {
@@ -21,5 +24,23 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config>
         String content = config.getContent();
 
         return R.success(content);
+    }
+
+    /**
+     * 一个根据id获取内容的静态类，不设置接口，可调用
+     * @param id
+     * @return
+     * 晴天小杰
+     */
+    public R<List> getContentsById(Long id) {
+
+        Config config = this.getById(id);
+        String content = config.getContent();
+        String contents = config.getContents();
+
+        List<String> lists = new ArrayList<>();
+        lists.add(content);
+        lists.add(contents);
+        return R.success(lists);
     }
 }
