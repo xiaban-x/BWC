@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -42,30 +43,31 @@ public class TaskController {
 
     /**
      * 查询所有任务
+     *
      * @param offset
      * @param limit
      * @param taskName
      * @param merchantName
      * @param status
      * @param platform
-     * @Author 看客
      * @return
+     * @Author 看客
      */
     @GetMapping
     public R<Page> getAll(Integer offset, Integer limit, String taskName, String merchantName, Integer status, Integer platform) {
 
         //分页构造器
-        Page<Task> pageSearch = new Page<>(offset,limit);
+        Page<Task> pageSearch = new Page<>(offset, limit);
 
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
         //添加过滤条件
         mLqw.like(StringUtils.isNotEmpty(taskName), Task::getName, taskName);
 
-        if (status != null){
-            mLqw.eq(Task::getStatus,status);
+        if (status != null) {
+            mLqw.eq(Task::getStatus, status);
         }
-        if (platform != null){
-            mLqw.eq(Task::getPlatform,platform);
+        if (platform != null) {
+            mLqw.eq(Task::getPlatform, platform);
         }
 
         //添加排序条件
@@ -81,15 +83,15 @@ public class TaskController {
                     //获取当前任务的商家名字
                     String merchantName1 = merchant.getName();
                     //与要搜索的商家名字进行比对
-                    if (merchantName != null){
+                    if (merchantName != null) {
                         //检验当前查出的任务的商家名字是否包含要求搜寻的商家名字
                         int i = merchantName1.indexOf(merchantName);
-                        if (i != -1){
+                        if (i != -1) {
                             //如果是则保存
                             taskDto.setMerchantName(merchantName1);
                             taskDtos.add(taskDto);
                         }
-                    }else {
+                    } else {
                         taskDto.setMerchantName(merchantName1);
                         taskDtos.add(taskDto);
                     }
@@ -103,18 +105,19 @@ public class TaskController {
 
     /**
      * 修改任务
+     *
      * @param task
-     * @Author 看客
      * @return
+     * @Author 看客
      */
     @PutMapping
     public R<String> update(@RequestBody Task task) {
         //前端如果没传任务总数 说明后台管理的没填 任务总数与剩余量，完成量默认恢复为刚发布任务的状态
         //如果穿了，则使任务剩余量设置为和新设置的amount一致，且任务完成量清零
-        if (task.getAmount() != null){
+        if (task.getAmount() != null) {
             task.setCompleted(0);
             task.setTaskLeft(task.getAmount());
-        }else{
+        } else {
             //获取任务总数
             Integer amount = taskService.getById(task.getId()).getAmount();
             task.setAmount(amount);
@@ -127,7 +130,7 @@ public class TaskController {
         String taskName = taskService.getById(task.getId()).getName();
         boolean flag = taskService.updateById(task);
         if (flag) {
-            logsService.saveLog("修改任务","修改了\""+name+"\"的\""+taskName+"\"的任务");
+            logsService.saveLog("修改任务", "修改了\"" + name + "\"的\"" + taskName + "\"的任务");
             return R.success("修改成功");
         } else {
             return R.error("修改失败");
@@ -136,9 +139,10 @@ public class TaskController {
 
     /**
      * 删除任务
+     *
      * @param id
-     * @Author 看客
      * @return
+     * @Author 看客
      */
     @DeleteMapping("/{id}")
     public R<String> delete(@PathVariable Long id) {
@@ -150,7 +154,7 @@ public class TaskController {
         String merchantName = merchantService.getById(task.getMerchantId()).getName();
         boolean flag = taskService.removeById(id);
         if (flag) {
-            logsService.saveLog("删除任务","删除了\""+merchantName+"\"的\""+taskName+"\"的任务");
+            logsService.saveLog("删除任务", "删除了\"" + merchantName + "\"的\"" + taskName + "\"的任务");
             return R.success("删除成功");
         } else {
             return R.error("删除失败");
@@ -159,9 +163,10 @@ public class TaskController {
 
     /**
      * 添加订单
+     *
      * @param task
-     * @Author 看客
      * @return
+     * @Author 看客
      */
     @PostMapping
     public R<String> save(@RequestBody Task task) {
@@ -173,7 +178,7 @@ public class TaskController {
         String name = merchantService.getById(task.getMerchantId()).getName();
         boolean flag = taskService.save(task);
         if (flag) {
-            logsService.saveLog("添加任务","添加了\""+name+"\"的\""+task.getName()+"\"的任务");
+            logsService.saveLog("添加任务", "添加了\"" + name + "\"的\"" + task.getName() + "\"的任务");
             return R.success("添加成功");
         } else {
             return R.error("添加失败");
@@ -182,15 +187,16 @@ public class TaskController {
 
     /**
      * 用户接任务后对任务数进行更新
+     *
      * @param condition
-     * @Author 看客
      * @return
+     * @Author 看客
      */
     @PutMapping("/pickTask")
-    public R<String> updateTask(@RequestBody(required = false) Condition condition){
+    public R<String> updateTask(@RequestBody(required = false) Condition condition) {
         Task task = taskService.getById(condition.getId());
-        task.setCompleted(task.getCompleted()+1);
-        task.setTaskLeft(task.getTaskLeft()-1);
+        task.setCompleted(task.getCompleted() + 1);
+        task.setTaskLeft(task.getTaskLeft() - 1);
         boolean flag = taskService.updateById(task);
         if (flag) {
             return R.success("更新成功");
@@ -200,37 +206,37 @@ public class TaskController {
     }
 
     @GetMapping("/getTaskUser")
-    public R<Page> getTaskUser(Integer offset, Integer limit,Long taskId,String tel){
+    public R<Page> getTaskUser(Integer offset, Integer limit, Long taskId, String tel) {
         //分页构造器
-        Page<Orders> pageSearch = new Page<>(offset,limit);
+        Page<Orders> pageSearch = new Page<>(offset, limit);
 
         LambdaQueryWrapper<Orders> mLqw = new LambdaQueryWrapper<>();
         //添加过滤条件
-        mLqw.eq(Orders::getTaskId,taskId);
+        mLqw.eq(Orders::getTaskId, taskId);
 
         //添加排序条件
         mLqw.orderByDesc(Orders::getCreateTime);
 
-        if (tel != null){
+        if (tel != null) {
             //如果要通过手机号进行搜索，则先获取该任务的所有接单者
             List<Orders> ordersListNotPage = ordersService.list(mLqw);
-            ordersService.page(pageSearch,mLqw);
+            ordersService.page(pageSearch, mLqw);
             //用一个集合存储所有满足手机号的订单
             ArrayList<Orders> ordersList = new ArrayList<>();
-            for(Orders o : ordersListNotPage){
+            for (Orders o : ordersListNotPage) {
                 //获取该订单对应的用户id
                 Long userId = o.getUserId();
                 //获取该用户的手机号
                 String userTel = userService.getById(userId).getTel();
                 //如果要搜索的手机号是该用户的手机号的一部分，则放入到ordersList集合中
-                if (userTel.contains(tel)){
+                if (userTel.contains(tel)) {
                     ordersList.add(o);
                 }
             }
             //循环结束后，ordersList存储的即为满足搜索条件的手机号
             //用集合存储转为dto后的用户集合
             ArrayList<TaskUserDto> taskUserDtos = new ArrayList<>();
-            for(Orders o : ordersList){
+            for (Orders o : ordersList) {
                 //获取该订单对应的用户
                 User user = userService.getById(o.getUserId());
                 //转为dto
@@ -245,17 +251,17 @@ public class TaskController {
             int realLimit;
             //记录总的数据量
             int total = taskUserDtos.size();
-            if (taskUserDtos.size() < limit){
+            if (taskUserDtos.size() < limit) {
                 realLimit = taskUserDtos.size();
-            }else{
+            } else {
                 realLimit = limit;
             }
             for (int i = 0; i < realLimit; i++) {
                 //2 5
-                if (realLimit < limit){
+                if (realLimit < limit) {
                     realTaskUserDtos.add(taskUserDtos.get(i));
-                }else{
-                    realTaskUserDtos.add(taskUserDtos.get(i+(offset-1)*limit));
+                } else {
+                    realTaskUserDtos.add(taskUserDtos.get(i + (offset - 1) * limit));
                 }
             }
             Page page1 = PageConverter.INSTANCES.PageToPage(pageSearch);
@@ -263,7 +269,7 @@ public class TaskController {
             page1.setTotal(total);
             return R.success(page1);
         }
-        Page<Orders> page = ordersService.page(pageSearch,mLqw);
+        Page<Orders> page = ordersService.page(pageSearch, mLqw);
         List<Orders> records = page.getRecords();
         //用集合存储转为dto后的用户集合
         ArrayList<TaskUserDto> taskUserDtos = new ArrayList<>();
@@ -284,16 +290,18 @@ public class TaskController {
         page1.setRecords(taskUserDtos);
         return R.success(page1);
     }
+
     /**
      * 任务信息详情
+     *
      * @param id
      * @param userLng
      * @param userLat
-     * @Author 看客
      * @return
+     * @Author 看客
      */
     @GetMapping("/detail")
-    public R<TaskDetailDto> getTaskDetail(Integer id,BigDecimal userLng,BigDecimal userLat){
+    public R<TaskDetailDto> getTaskDetail(Integer id, BigDecimal userLng, BigDecimal userLat) {
         //通过任务编号查找被点击的任务
         Task task = taskService.getById(id);
         //获取任务所属商家的经纬度
@@ -321,6 +329,7 @@ public class TaskController {
     /**
      * 首页展示任务
      * 根据订单名字/商家名字 任务类型 任务要求 任务是否需要评价 平台类型排序
+     *
      * @param limit
      * @param offset
      * @param name
@@ -330,24 +339,24 @@ public class TaskController {
      * @param platform
      * @param userLng
      * @param userLat
-     * @Author 看客
      * @return
+     * @Author 看客
      */
     @GetMapping("/home/")
-    public R<Page> getByCondition(Integer limit, Integer offset,String name,String merchantName,Integer type,Integer constraint,Integer comment,Integer platform,BigDecimal userLng,BigDecimal userLat) {
+    public R<Page> getByCondition(Integer limit, Integer offset, String name, String merchantName, Integer type, Integer constraint, Integer comment, Integer platform, BigDecimal userLng, BigDecimal userLat) {
         Page<Task> taskPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Task> mLqw = new LambdaQueryWrapper<>();
         //获取所有商家
         List<Merchant> merchants = merchantService.list();
         //存储通过名字搜索后的商家
         List<Merchant> merchantsByFind = new ArrayList<>();
-        if (name != null){
-            for(Merchant m : merchants){
-                if (m.getName().equals(name)){
+        if (name != null) {
+            for (Merchant m : merchants) {
+                if (m.getName().equals(name)) {
                     merchantsByFind.add(m);
                 }
             }
-        }else{
+        } else {
             merchantsByFind = merchants;
         }
         //得到每个商家与用户的距离
@@ -372,35 +381,35 @@ public class TaskController {
                     mLqw2.eq(Task::getType, type);
                 }
                 //此处进行筛选评价和平台类型
-                if (comment != null){
-                    mLqw2.eq(Task::getComment,comment);
+                if (comment != null) {
+                    mLqw2.eq(Task::getComment, comment);
                 }
-                if (platform != null){
-                    mLqw2.eq(Task::getPlatform,platform);
+                if (platform != null) {
+                    mLqw2.eq(Task::getPlatform, platform);
                 }
                 //筛选出被启用的订单，即status == 1
-                mLqw2.eq(Task::getStatus,1);
+                mLqw2.eq(Task::getStatus, 1);
                 //查询所有符合条件的任务
                 List<Task> tasks = taskService.list(mLqw2);
                 //设置一个实际的任务集合
                 List<Task> tasksAc = new ArrayList<>();
                 //当用户搜索商家名字的时候，对符合条件的任务进行进一步的筛选
-                if (merchantsByFind != merchants){
-                    for(Task t : tasks){
-                        for(Merchant m : merchantsByFind){
+                if (merchantsByFind != merchants) {
+                    for (Task t : tasks) {
+                        for (Merchant m : merchantsByFind) {
                             //每个任务的所属商家id与搜索名字后的商家进行比对
-                            if (Objects.equals(t.getMerchantId(), m.getId())){
+                            if (Objects.equals(t.getMerchantId(), m.getId())) {
                                 //相同，则说明该任务是用户搜索后的商家发放的
                                 tasksAc.add(t);
                             }
                         }
                     }
-                }else{
+                } else {
                     tasksAc = tasks;
                 }
 //                taskService.page(taskPage, mLqw2);
                 //获取从近到远排序的商家
-                Set<Merchant> merchantsOrder = calculationOfConstraints(merchantsByFind, userLng,userLat);
+                Set<Merchant> merchantsOrder = calculationOfConstraints(merchantsByFind, userLng, userLat);
                 for (Merchant merchant : merchantsOrder) {
                     //获取商家id
                     Long id = merchant.getId();
@@ -412,14 +421,34 @@ public class TaskController {
                         }
                     }
                 }
-                List<HomeDto> homeDtoList = new ArrayList<>();
+                //该集合用以存放区别任务是否过期后的排序结果
+                List<Task> tasksByDetermineWhetherExpired = new ArrayList<>();
+                //用以存放过期的任务
+                List<Task> tasksExpired = new ArrayList<>();
+                //用以存放没过期的任务
+                List<Task> tasksNotExpired = new ArrayList<>();
                 for (Task record : taskList) {
+                    LocalDateTime now = LocalDateTime.now();
+                    if (record.getStartTime().isBefore(now) && record.getEndTime().isAfter(now)) {
+                        //如果 任务开始时间在 现在 之前， 任务结束时间在 现在 之后， 说明此时任务还未过期
+                        tasksNotExpired.add(record);
+                    } else {
+                        //反之，则过期
+                        tasksExpired.add(record);
+                    }
+                }
+                //将过期与没过期的任务统合到集合中得到 经过原本排序结果的任务 进一步筛选的结果
+                tasksByDetermineWhetherExpired.addAll(tasksNotExpired);
+                tasksByDetermineWhetherExpired.addAll(tasksExpired);
+
+                List<HomeDto> homeDtoList = new ArrayList<>();
+                for (Task record : tasksByDetermineWhetherExpired) {
                     if (record != null) {
                         HomeDto homeDto = HomeConverter.INSTANCES.TaskToHomeDto(record);
                         //获取商家
                         Merchant merchant = merchantService.getById(record.getMerchantId());
                         //获取商家名字
-                        if (merchantName == null){
+                        if (merchantName == null) {
                             merchantName = merchant.getName();
                         }
                         //获取商家照片
@@ -439,26 +468,26 @@ public class TaskController {
                 //如果少于五条数据则返回homeDtoList的全部 多于五条返回limit
                 int realLimit;
                 int total = homeDtoList.size();
-                if (homeDtoList.size() < limit){
+                if (homeDtoList.size() < limit) {
                     realLimit = homeDtoList.size();
-                }else{
+                } else {
                     realLimit = limit;
                 }
                 for (int i = 0; i < realLimit; i++) {
                     //2 5
-                    if (realLimit < limit){
+                    if (realLimit < limit) {
                         homeDtos.add(homeDtoList.get(i));
-                    }else{
-                        homeDtos.add(homeDtoList.get(i+(offset-1)*limit));
+                    } else {
+                        homeDtos.add(homeDtoList.get(i + (offset - 1) * limit));
                     }
                 }
                 Page page1 = PageConverter.INSTANCES.PageToPage(taskPage);
                 page1.setRecords(homeDtos);
                 page1.setTotal(total);
                 return R.success(page1);
-            }else if (constraint == 2){
+            } else if (constraint == 2) {
                 mLqw.orderByAsc(Task::getRebateA);
-            }else if (constraint == 3){
+            } else if (constraint == 3) {
                 mLqw.orderByDesc(Task::getCreateTime);
             }
         }
@@ -478,7 +507,7 @@ public class TaskController {
             mLqw.eq(Task::getPlatform, platform);
         }
         //筛选出被启用的订单，即status == 1
-        mLqw.eq(Task::getStatus,1);
+        mLqw.eq(Task::getStatus, 1);
 
         taskService.page(taskPage, mLqw);
         List<HomeDto> homes = new ArrayList<>();
@@ -487,75 +516,116 @@ public class TaskController {
         //设置一个实际的任务集合
         List<Task> tasksAc = new ArrayList<>();
         //当用户搜索商家名字的时候，对符合条件的任务进行进一步的筛选
-        if (merchantsByFind != merchants){
+        if (merchantsByFind != merchants) {
             //得到按条件筛选后的不分页的任务集合
             List<Task> taskList = taskService.list(mLqw);
-            for(Task t : taskList){
-                for(Merchant m : merchantsByFind){
+            for (Task t : taskList) {
+                for (Merchant m : merchantsByFind) {
                     //每个任务的所属商家id与搜索名字后的商家进行比对
-                    if (Objects.equals(t.getMerchantId(), m.getId())){
+                    if (Objects.equals(t.getMerchantId(), m.getId())) {
                         //相同，则说明该任务是用户搜索后的商家发放的
                         tasksAc.add(t);
                     }
                 }
             }
+            //该集合用以存放区别任务是否过期后的排序结果
+            List<Task> tasksByDetermineWhetherExpired = new ArrayList<>();
+            //用以存放过期的任务
+            List<Task> tasksExpired = new ArrayList<>();
+            //用以存放没过期的任务
+            List<Task> tasksNotExpired = new ArrayList<>();
+            for (Task record : tasksAc) {
+                LocalDateTime now = LocalDateTime.now();
+                if (record.getStartTime().isBefore(now) && record.getEndTime().isAfter(now)) {
+                    //如果 任务开始时间在 现在 之前， 任务结束时间在 现在 之后， 说明此时任务还未过期
+                    tasksNotExpired.add(record);
+                } else {
+                    //反之，则过期
+                    tasksExpired.add(record);
+                }
+            }
+            //将过期与没过期的任务统合到集合中得到 经过原本排序结果的任务 进一步筛选的结果
+            tasksByDetermineWhetherExpired.addAll(tasksNotExpired);
+            tasksByDetermineWhetherExpired.addAll(tasksExpired);
             //进行分页
             ArrayList<Task> tasksAcByPage = new ArrayList<>();
             //如果少于五条数据则返回homeDtoList的全部 多于五条返回limit
             int realLimit;
             //记录总的数据量
-            int total = tasksAc.size();
-            if (tasksAc.size() < limit){
-                realLimit = tasksAc.size();
-            }else{
+            int total = tasksByDetermineWhetherExpired.size();
+            if (tasksByDetermineWhetherExpired.size() < limit) {
+                realLimit = tasksByDetermineWhetherExpired.size();
+            } else {
                 realLimit = limit;
             }
             for (int i = 0; i < realLimit; i++) {
                 //2 5
-                if (realLimit < limit){
-                    tasksAcByPage.add(tasksAc.get(i));
-                }else{
-                    tasksAcByPage.add(tasksAc.get(i+(offset-1)*limit));
+                if (realLimit < limit) {
+                    tasksAcByPage.add(tasksByDetermineWhetherExpired.get(i));
+                } else {
+                    tasksAcByPage.add(tasksByDetermineWhetherExpired.get(i + (offset - 1) * limit));
                 }
             }
-            if (tasksAcByPage != null) {
-                for (Task record : tasksAcByPage) {
-                    if (record != null) {
-                        HomeDto homeDto = HomeConverter.INSTANCES.TaskToHomeDto(record);
-                        //获取任务对应的商家
-                        Merchant merchant = merchantService.getById(record.getMerchantId());
-                        //获取商家名字
-                        if (merchantName == null){
-                            merchantName = merchant.getName();
-                        }
-                        //获取商家图片
-                        String merchantPic = merchant.getPic();
-                        //获取商家与用户之间的距离
-                        BigDecimal distance = merchantBigDecimalMap.get(merchant);
-                        //设置进homeDto
-                        homeDto.setMerchantName(merchantName);
-                        homeDto.setUserToMerchantDistance(distance);
-                        homeDto.setMerchantPic(merchantPic);
-                        //添加进集合
-                        homes.add(homeDto);
+            for (Task record : tasksAcByPage) {
+                if (record != null) {
+                    HomeDto homeDto = HomeConverter.INSTANCES.TaskToHomeDto(record);
+                    //获取任务对应的商家
+                    Merchant merchant = merchantService.getById(record.getMerchantId());
+                    //获取商家名字
+                    if (merchantName == null) {
+                        merchantName = merchant.getName();
                     }
+                    //获取商家图片
+                    String merchantPic = merchant.getPic();
+                    //获取商家与用户之间的距离
+                    BigDecimal distance = merchantBigDecimalMap.get(merchant);
+                    //设置进homeDto
+                    homeDto.setMerchantName(merchantName);
+                    homeDto.setUserToMerchantDistance(distance);
+                    homeDto.setMerchantPic(merchantPic);
+                    //添加进集合
+                    homes.add(homeDto);
                 }
             }
             Page page1 = PageConverter.INSTANCES.PageToPage(taskPage);
             page1.setRecords(homes);
             page1.setTotal(total);
             return R.success(page1);
-        }else{
+        } else {
             tasksAc = records;
         }
+        //该集合用以存放区别任务是否过期后的排序结果
+        List<Task> tasksByDetermineWhetherExpired = new ArrayList<>();
         if (tasksAc != null) {
+            //用以存放过期的任务
+            List<Task> tasksExpired = new ArrayList<>();
+            //用以存放没过期的任务
+            List<Task> tasksNotExpired = new ArrayList<>();
             for (Task record : tasksAc) {
+                LocalDateTime now = LocalDateTime.now();
+                if (record.getStartTime().isBefore(now) && record.getEndTime().isAfter(now)) {
+                    //如果 任务开始时间在 现在 之前， 任务结束时间在 现在 之后， 说明此时任务还未过期
+                    tasksNotExpired.add(record);
+                } else {
+                    //反之，则过期
+                    tasksExpired.add(record);
+                }
+            }
+            //将过期与没过期的任务统合到集合中得到 经过原本排序结果的任务 进一步筛选的结果
+            tasksByDetermineWhetherExpired.addAll(tasksNotExpired);
+            tasksByDetermineWhetherExpired.addAll(tasksExpired);
+        } else {
+            tasksByDetermineWhetherExpired = null;
+        }
+
+        if (tasksByDetermineWhetherExpired != null) {
+            for (Task record : tasksByDetermineWhetherExpired) {
                 if (record != null) {
                     HomeDto homeDto = HomeConverter.INSTANCES.TaskToHomeDto(record);
                     //获取任务对应的商家
                     Merchant merchant = merchantService.getById(record.getMerchantId());
                     //获取商家名字
-                    if (merchantName == null){
+                    if (merchantName == null) {
                         merchantName = merchant.getName();
                     }
                     //获取商家图片
@@ -578,11 +648,12 @@ public class TaskController {
 
     /**
      * 给商家按距离远近排序 从近到远
+     *
      * @param merchants
      * @param userLng
      * @param userLat
-     * @Author 看客
      * @return
+     * @Author 看客
      */
     public Set<Merchant> calculationOfConstraints(List<Merchant> merchants, BigDecimal userLng, BigDecimal userLat) {
         //距离近
@@ -605,7 +676,7 @@ public class TaskController {
 
         //冒泡排序对 商家与用户之间的距离 从小到大排序
         BigDecimal temp;
-        for (int i = distanceList.size() - 1; i > 0 ; i--) {
+        for (int i = distanceList.size() - 1; i > 0; i--) {
             for (int j = 0; j < i; j++) {
                 if (distanceList.get(j).compareTo(distanceList.get(j + 1)) > 0) {
                     temp = distanceList.get(j);
@@ -633,12 +704,13 @@ public class TaskController {
 
     /**
      * 得到每个商家与用户之间的距离
+     *
      * @param merchants
      * @param userLng
      * @param userLat
      * @return
      */
-    public static Map<Merchant,BigDecimal> distanceToMerchant(List<Merchant> merchants,BigDecimal userLng,BigDecimal userLat){
+    public static Map<Merchant, BigDecimal> distanceToMerchant(List<Merchant> merchants, BigDecimal userLng, BigDecimal userLat) {
 
         Map<Merchant, BigDecimal> map = new HashMap<>();
 
@@ -649,14 +721,16 @@ public class TaskController {
             //得到商家与用户之间的距离
             BigDecimal distance = getDistance(userLng, userLat, merchantLng, merchantLat);
             //将商家和 商家与用户之间的距离 作为一对键值对存储起来
-            if (!distance.equals(BigDecimal.valueOf(-1))){
+            if (!distance.equals(BigDecimal.valueOf(-1))) {
                 map.put(merchant, distance);
             }
         }
         return map;
     }
+
     /**
      * 获取弧度
+     *
      * @param d
      * @return
      * @Author 看客
@@ -667,6 +741,7 @@ public class TaskController {
 
     /**
      * 分别传入两地经纬度得到距离
+     *
      * @param lng1
      * @param lat1
      * @param lng2
@@ -675,7 +750,7 @@ public class TaskController {
      * @Author 看客
      */
     public static BigDecimal getDistance(BigDecimal lng1, BigDecimal lat1, BigDecimal lng2, BigDecimal lat2) {
-        if (lng2 == null || lat2 == null){
+        if (lng2 == null || lat2 == null) {
             return BigDecimal.valueOf(-1);
         }
         BigDecimal radLat1 = rad(Double.parseDouble(String.valueOf(lat1)));
@@ -691,6 +766,4 @@ public class TaskController {
         double s2 = Math.round(Double.parseDouble(String.valueOf(s1.multiply(BigDecimal.valueOf(10000))))) / 10000;
         return BigDecimal.valueOf(s2);
     }
-
-
 }

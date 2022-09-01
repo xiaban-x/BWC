@@ -71,6 +71,12 @@ public class Task implements Serializable {
     //是否启用，0为禁用(默认)，1为启用
     private Integer status;
 
+    //任务开始时间
+    private LocalDateTime startTime;
+
+    //任务结束时间
+    private LocalDateTime endTime;
+
     //创建时间
     @TableField(fill = FieldFill.INSERT) //插入时填充字段
     private LocalDateTime createTime;
