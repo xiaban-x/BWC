@@ -246,7 +246,7 @@ public class OrdersController {
         if (orders.getStatus()==0||orders.getStatus()==3) {
             //更改订单状态为一审待审核
             orders.setStatus(2);
-
+            orders = ordersService.addExpiredTime(orders);
             ordersService.updateById(orders);
             return R.success("上传成功");
         }

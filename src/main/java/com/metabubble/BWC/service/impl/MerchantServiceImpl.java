@@ -21,10 +21,10 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant>
             String[] split = blacklist.split(",");
             for (String s : split) {
                 if (s.equals(merchantId)){
-                    return false;
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
 }
