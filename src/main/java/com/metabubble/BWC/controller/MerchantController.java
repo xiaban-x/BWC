@@ -2,7 +2,6 @@ package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.metabubble.BWC.common.Condition;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.MerchantConverter;
 import com.metabubble.BWC.dto.Imp.PageConverter;
@@ -11,13 +10,8 @@ import com.metabubble.BWC.entity.Merchant;
 import com.metabubble.BWC.service.ConfigService;
 import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
-import com.sun.deploy.net.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
