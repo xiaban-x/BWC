@@ -11,11 +11,17 @@ import com.metabubble.BWC.entity.Merchant;
 import com.metabubble.BWC.service.ConfigService;
 import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.MerchantService;
+import com.sun.deploy.net.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -240,6 +246,37 @@ public class MerchantController {
         }
         System.out.println(res);
         return res;
+    }
+
+    @GetMapping("/getLocation")
+    public String getTXCityCodeByIp(HttpServletRequest request) {
+        String clientIp = getClientIp(request);
+        String key = configService.getById(10).getContent();
+        String urlString = "https://apis.map.qq.com/ws/location/v1/ip?ip="+clientIp+"&key="+ key;
+        String res = "";
+        try {
+            URL url = new URL(urlString);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection)url.openConnection();
+            java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(),"UTF-8"));
+            String line;
+            while ((line = in.readLine()) != null) {
+                res += line+"\n";
+            }
+            in.close();
+        } catch (Exception e) {
+            System.out.println("error in wapaction,and e is " + e.getMessage());
+        }
+        System.out.println(res);
+        return res;
+    }
+
+    public String getClientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff == null) {
+            return request.getRemoteAddr();
+        } else {
+            return xff.contains(",") ? xff.split(",")[0] : xff;
+        }
     }
 }
 
