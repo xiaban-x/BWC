@@ -26,6 +26,7 @@ public class TeamMsgController {
      * 获取团队信息
      * @param offset
      * @param limit
+     * @author leitianyu999
      * @return
      */
     @GetMapping

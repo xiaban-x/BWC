@@ -143,6 +143,7 @@ public class UserController {
      * 管理端管理员封禁用户账号
      * @param id    用户id
      * @param reason    封禁理由
+     * @author leitianyu999
      * @return
      */
     @DeleteMapping("/ban")
@@ -160,6 +161,7 @@ public class UserController {
      * 管理端管理员解封用户账号
      * @param id
      * @param reason
+     * @author leitianyu999
      * @return
      */
     @PutMapping("/unban")

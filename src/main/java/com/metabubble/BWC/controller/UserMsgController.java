@@ -27,6 +27,7 @@ public class UserMsgController {
      * 获取用户信息
      * @param offset
      * @param limit
+     * @author leitianyu999
      * @return
      */
     @GetMapping

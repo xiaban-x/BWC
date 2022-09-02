@@ -45,11 +45,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     @Transactional
     public void cashback(Orders orders) {
+        //获取用户id
         Long userId = orders.getUserId();
+        //获取返现金额
         BigDecimal rebate = orders.getRebate();
         User user = this.getById(userId);
+        //返现金额加入
         user.setCashableAmount(user.getCashableAmount().add(rebate));
+        //节约金额加入
         user.setSavedAmount(user.getSavedAmount().add(rebate));
+        //添加返现信息
         userMsgService.addUserCashback(orders);
         this.updateById(user);
     }
@@ -68,7 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             //判断是否过期
             boolean after = byId.getMembershipExpTime().isAfter(LocalDateTime.now());
             //更改会员等级为0
-            if (after==false){
+            if (!after){
 
                 if (byId.getGrade()==1) {
                     //更改会员等级为0
@@ -96,12 +101,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     }
 
+    /**
+     * 邀请码生成
+     * @author leitianyu999
+     * @return
+     */
     @Override
     public String createUUID() {
         String s = UUID.randomUUID().toString();
         return s;
     }
 
+
+    /**
+     * 检查手机号是否注册
+     * @param mobile
+     * @author leitianyu999
+     * @return
+     */
     @Override
     public Boolean findUser(String mobile) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
@@ -116,6 +133,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
     }
 
+    /**
+     * 检查账号是否封禁
+     * @param mobile
+     * @author leitianyu999
+     * @return
+     */
     @Override
     public Map<String,String> findStatus(String mobile) {
         Map<String,String> map = new HashMap<>();
@@ -139,6 +162,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     }
 
+
+    /**
+     * 检查账号是否封禁
+     * @param id
+     * @author leitianyu999
+     * @return
+     */
     @Override
     public Map<String, String> findStatus(Long id) {
         Map<String,String> map = new HashMap<>();

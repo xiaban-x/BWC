@@ -107,6 +107,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     /**
      * 创建团队表
      * @param user 用户对象
+     * @author leitianyu999
      */
     @Override
     public void save(User user) {
@@ -120,6 +121,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     /**
      * 团队添加上一级和上二级
      * @param user
+     * @author leitianyu999
      */
     @Override
     public void addTeamTop(User user,User topUser) {
