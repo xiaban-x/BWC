@@ -15,7 +15,13 @@ import org.springframework.stereotype.Service;
 public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
         implements TeamMsgService {
 
-
+    /**
+     * //添加上下级类信息
+     * @param id
+     * @param tel
+     * @param msg
+     * @author leitianyu999
+     */
     @Override
     public void add(Long id,String tel , String msg) {
         String phone = MobileUtils.blurPhone(tel);
@@ -27,6 +33,12 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
         this.save(teamMsg);
     }
 
+    /**
+     * 添加提现信息
+     * @param id
+     * @param amount
+     * @author leitianyu999
+     */
     @Override
     public void addWithdrawals(Long id, String amount) {
         TeamMsg teamMsg = new TeamMsg();
@@ -36,6 +48,12 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
         this.save(teamMsg);
     }
 
+    /**
+     * 添加充值信息
+     * @param id
+     * @param amount
+     * @author leitianyu999
+     */
     @Override
     public void addRecharge(Long id, String amount) {
         TeamMsg teamMsg = new TeamMsg();
@@ -45,6 +63,13 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
         this.save(teamMsg);
     }
 
+    /**
+     * 添加团队返现信息
+     * @param id
+     * @param tel
+     * @param amount
+     * @author leitianyu999
+     */
     @Override
     public void addCashback(Long id, String tel, String amount) {
         String phone = MobileUtils.blurPhone(tel);

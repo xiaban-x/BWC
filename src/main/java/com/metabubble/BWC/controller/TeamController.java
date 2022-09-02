@@ -34,6 +34,7 @@ public class TeamController {
 
     /**
      * 获取团队信息
+     * @author leitianyu999
      * @return
      */
     @GetMapping

@@ -61,6 +61,12 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         throw new CustomException("订单状态错误");
     }
 
+    /**
+     * 查询订单时跟新任务状态
+     * @param orders
+     * @author leitianyu999
+     * @return
+     */
     @Override
     public Orders updateStatusFormExpiredTimeAndReturn(Orders orders) {
         if (orders.getStatus()==1||orders.getStatus()==4||orders.getStatus()==6||orders.getStatus()==7||orders.getStatus()==8){

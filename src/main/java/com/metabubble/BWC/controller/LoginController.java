@@ -60,6 +60,7 @@ public class LoginController {
      * @param type      验证码用途
      * @param imgCode   图形验证码
      * @param request
+     * @author leitianyu999
      * @return
      */
     @PostMapping("/sendMsg")
@@ -218,6 +219,7 @@ public class LoginController {
      * @param contents  手机验证码
      * @param type      登录方式
      * @param request
+     * @author leitianyu999
      * @return
      */
     @PostMapping()
@@ -353,6 +355,7 @@ public class LoginController {
      * @param contents  手机验证码
      * @param password  新密码
      * @param request
+     * @author leitianyu999
      * @return
      */
     @PostMapping("/reset")
@@ -425,6 +428,7 @@ public class LoginController {
      * @param contents
      * @param request
      * @param response
+     * @author leitianyu999
      * @return
      */
     @PutMapping("/resetfirst")
@@ -500,6 +504,7 @@ public class LoginController {
      * @param contents  手机号验证码
      * @param request
      * @param response
+     * @author leitianyu999
      * @return
      */
     @PutMapping("/resetsecond")
@@ -594,6 +599,7 @@ public class LoginController {
      * @param contents  手机验证码
      * @param password  密码
      * @param request
+     * @author leitianyu999
      * @return
      */
     @PostMapping("/register")
@@ -643,6 +649,7 @@ public class LoginController {
      * 用户退出登录
      * author leitianyu999
      * @param request session中的管理员信息
+     * @author leitianyu999
      * @return 返回退出信息
      */
     @DeleteMapping("/logout")
