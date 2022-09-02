@@ -2,7 +2,6 @@ package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.metabubble.BWC.common.Condition;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.MerchantConverter;
 import com.metabubble.BWC.dto.Imp.PageConverter;
@@ -16,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -240,6 +240,37 @@ public class MerchantController {
         }
         System.out.println(res);
         return res;
+    }
+
+    @GetMapping("/getLocation")
+    public String getTXCityCodeByIp(HttpServletRequest request) {
+        String clientIp = getClientIp(request);
+        String key = configService.getById(10).getContent();
+        String urlString = "https://apis.map.qq.com/ws/location/v1/ip?ip="+clientIp+"&key="+ key;
+        String res = "";
+        try {
+            URL url = new URL(urlString);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection)url.openConnection();
+            java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(),"UTF-8"));
+            String line;
+            while ((line = in.readLine()) != null) {
+                res += line+"\n";
+            }
+            in.close();
+        } catch (Exception e) {
+            System.out.println("error in wapaction,and e is " + e.getMessage());
+        }
+        System.out.println(res);
+        return res;
+    }
+
+    public String getClientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff == null) {
+            return request.getRemoteAddr();
+        } else {
+            return xff.contains(",") ? xff.split(",")[0] : xff;
+        }
     }
 }
 

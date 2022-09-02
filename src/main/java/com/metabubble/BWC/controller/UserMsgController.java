@@ -27,6 +27,7 @@ public class UserMsgController {
      * 获取用户信息
      * @param offset
      * @param limit
+     * @author leitianyu999
      * @return
      */
     @GetMapping
@@ -46,6 +47,32 @@ public class UserMsgController {
 
         return R.success(page);
 
+    }
+
+    /**
+     * 管理端根据id获取用户明细
+     * @param id
+     * @param offset
+     * @param limit
+     * @param type
+     * @author leitianyu999
+     * @return
+     */
+    @GetMapping("/admin")
+    public R<Page> Page(Long id, int offset, int limit , int type){
+
+        Page<UserMsg> page =new Page<>(offset,limit);
+
+        LambdaQueryWrapper<UserMsg> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserMsg::getUserId,id);
+        queryWrapper.orderByDesc(UserMsg::getCreateTime);
+        if (type!=3){
+            queryWrapper.eq(UserMsg::getType,type);
+        }
+
+        userMsgService.page(page,queryWrapper);
+
+        return R.success(page);
     }
 
 

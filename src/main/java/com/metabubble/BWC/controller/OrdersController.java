@@ -160,7 +160,12 @@ public class OrdersController {
                 return R.error("您进入了该商家的黑名单，不可接取此任务");
             }
             if (!taskService.checkOrders(userId,task)){
-                return R.error("用户今日已接过此任务");
+                return R.error("用户"+task.getTimeInterval()+"日内已接过此任务");
+            }
+            if (taskService.checkTime(task)){
+                task.setStatus(0);
+                taskService.updateById(task);
+                return R.error("该任务不在可接取时间范围！");
             }
             //更新任务数量
             taskService.updateAmount(taskId);
@@ -246,7 +251,7 @@ public class OrdersController {
         if (orders.getStatus()==0||orders.getStatus()==3) {
             //更改订单状态为一审待审核
             orders.setStatus(2);
-
+            orders = ordersService.addExpiredTime(orders);
             ordersService.updateById(orders);
             return R.success("上传成功");
         }

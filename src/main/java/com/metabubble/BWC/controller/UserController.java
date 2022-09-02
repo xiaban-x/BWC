@@ -7,8 +7,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
+import com.metabubble.BWC.dto.Imp.PageConverter;
 import com.metabubble.BWC.dto.Imp.UserConverter;
+import com.metabubble.BWC.dto.UserDo;
 import com.metabubble.BWC.dto.UserDto;
+import com.metabubble.BWC.entity.Team;
 import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.LogsService;
 import com.metabubble.BWC.service.TeamService;
@@ -25,7 +28,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
@@ -86,9 +91,27 @@ public class UserController {
         queryWrapper.orderByDesc(User::getCreateTime);
 
         userService.page(pageSearch,queryWrapper);
+        List<User> records = pageSearch.getRecords();
+        List<UserDo> collect = records.stream().map(item -> {
+
+                Long id = item.getId();
+                LambdaQueryWrapper<Team> queryWrapper1 = new LambdaQueryWrapper<>();
+                queryWrapper1.eq(Team::getUserId, id);
+                Team team = teamService.getOne(queryWrapper1);
+                UserDo userDo = UserConverter.INSTANCES.UserToUserDo(item);
+                if (team.getUpUser01Id()!=null) {
+                    User upUser = userService.getById(team.getUpUser01Id());
+                    userDo.setUpTel(upUser.getTel());
+                }
+                return userDo;
+
+        }).collect(Collectors.toList());
+
+        Page page = PageConverter.INSTANCES.PageToPage(pageSearch);
+        page.setRecords(collect);
 
 
-        return R.success(pageSearch);
+        return R.success(page);
 
     }
 
@@ -143,6 +166,7 @@ public class UserController {
      * 管理端管理员封禁用户账号
      * @param id    用户id
      * @param reason    封禁理由
+     * @author leitianyu999
      * @return
      */
     @DeleteMapping("/ban")
@@ -160,6 +184,7 @@ public class UserController {
      * 管理端管理员解封用户账号
      * @param id
      * @param reason
+     * @author leitianyu999
      * @return
      */
     @PutMapping("/unban")

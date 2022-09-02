@@ -26,6 +26,7 @@ public class TeamMsgController {
      * 获取团队信息
      * @param offset
      * @param limit
+     * @author leitianyu999
      * @return
      */
     @GetMapping
@@ -50,7 +51,31 @@ public class TeamMsgController {
 
     }
 
+    /**
+     * 管理端根据用户id查询团队明细
+     * @param id
+     * @param offset
+     * @param limit
+     * @param type
+     * @return
+     */
+    @GetMapping("/admin")
+    public R<Page> Page(Long id, int offset, int limit ,int type){
 
+
+        Page<TeamMsg> page =new Page<>(offset,limit);
+
+        LambdaQueryWrapper<TeamMsg> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TeamMsg::getUserId,id);
+        queryWrapper.orderByDesc(TeamMsg::getCreateTime);
+        if (type!=4){
+            queryWrapper.eq(TeamMsg::getType,type);
+        }
+
+        teamMsgService.page(page,queryWrapper);
+
+        return R.success(page);
+    }
 
 
 

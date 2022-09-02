@@ -11,8 +11,13 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant>
         implements MerchantService {
 
 
-
-
+    /**
+     * 检查用户是否在黑名单中
+     * @param tel
+     * @param merchantId
+     * @author leitianyu999
+     * @return
+     */
     @Override
     public Boolean checkBlackList(String tel, Long merchantId) {
         Merchant merchant = this.getById(merchantId);
@@ -21,10 +26,10 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant>
             String[] split = blacklist.split(",");
             for (String s : split) {
                 if (s.equals(merchantId)){
-                    return false;
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
 }
