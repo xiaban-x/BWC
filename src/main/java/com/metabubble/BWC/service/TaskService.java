@@ -14,4 +14,6 @@ public interface TaskService extends IService<Task> {
     public Boolean checkOrders(Long userId,Task task);
     //完成任务后任务完成数量加一
     public void addCompleted(Orders orders);
+    //检查任务是否在可接取时间
+    public Boolean checkTime(Task task);
 }

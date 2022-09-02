@@ -111,4 +111,17 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         task.setCompleted(addAndGet);
         this.updateById(task);
     }
+
+    @Override
+    public Boolean checkTime(Task task) {
+        LocalDateTime startTime = task.getStartTime();
+        LocalDateTime endTime = task.getEndTime();
+        LocalDateTime now = LocalDateTime.now();
+        boolean after = now.isAfter(startTime);
+        boolean before = now.isBefore(endTime);
+        if (after&&before){
+            return false;
+        }
+        return true;
+    }
 }
