@@ -1,6 +1,7 @@
 package com.metabubble.BWC.dto.Imp;
 
 import com.metabubble.BWC.dto.TaskUserDto;
+import com.metabubble.BWC.dto.UserDo;
 import com.metabubble.BWC.dto.UserDto;
 import com.metabubble.BWC.entity.User;
 import org.mapstruct.Mapper;
@@ -34,5 +35,8 @@ public abstract class UserConverter {
      * @return
      */
     public abstract TaskUserDto UserToTaskUserDto(User user);
+
+
+    public abstract UserDo UserToUserDo(User user);
 }
 
