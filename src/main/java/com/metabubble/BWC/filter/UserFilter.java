@@ -169,6 +169,18 @@ public class UserFilter implements Filter {
                 }
             }
 
+            if (requestURI.equals("/teamMsg/admin")) {
+                if (request.getSession().getAttribute("admin") == null) {
+                    throw new CustomException("无权限访问");
+                }
+
+                // 为管理员登录，放行
+                filterChain.doFilter(request, response);
+                BaseContext.remove();
+                return;
+
+            }
+
             // 判断用户登录状态
             if (request.getSession().getAttribute("user") != null) {
                 log.info("用户已登录");
@@ -219,6 +231,18 @@ public class UserFilter implements Filter {
 
         // 不需要处理
         if (request.getSession().getAttribute("user") == null) {
+            // 如果管理员也未登录
+            if (request.getSession().getAttribute("admin") == null) {
+                // 访问登录接口
+                if (requestURI.equals("/admin/login")) {
+                    filterChain.doFilter(request, response);
+                    BaseContext.remove();
+                    return;
+                }
+                throw new CustomException("无权限访问");
+            }
+
+            // 管理员已登录
             filterChain.doFilter(request, response);
             BaseContext.remove();
             return;

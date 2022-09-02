@@ -70,8 +70,8 @@ public class AdminFilter implements Filter {
                 "/task",
                 "/task/",
                 "/recruitment/reject",
-                "/recruitment/pass",
-                "/recruitment"
+                "/recruitment/pass"
+//                "/recruitment"
         };
 
         // type 为 0
@@ -87,6 +87,12 @@ public class AdminFilter implements Filter {
         // 需要处理
         if (check1) {
             Long adminId = (Long) request.getSession().getAttribute("admin");
+
+            // 判断否登录
+            if (adminId == null) {
+                throw new CustomException("无权限访问");
+            }
+
             BaseContext.setCurrentId(adminId);
             Admin admin = adminService.getById(adminId);
 
@@ -112,6 +118,12 @@ public class AdminFilter implements Filter {
                 }
             }
             Long adminId = (Long) request.getSession().getAttribute("admin");
+
+            // 判断否登录
+            if (adminId == null) {
+                throw new CustomException("无权限访问");
+            }
+
             BaseContext.setCurrentId(adminId);
             Admin admin = adminService.getById(adminId);
 
@@ -126,6 +138,12 @@ public class AdminFilter implements Filter {
 
         if (check3) {
             Long adminId = (Long) request.getSession().getAttribute("admin");
+
+            // 判断否登录
+            if (adminId == null) {
+                throw new CustomException("无权限访问");
+            }
+
             BaseContext.setCurrentId(adminId);
             Admin admin = adminService.getById(adminId);
 

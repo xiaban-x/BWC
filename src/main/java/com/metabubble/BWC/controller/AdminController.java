@@ -187,7 +187,7 @@ public class AdminController {
         password = DigestUtils.md5DigestAsHex(password.getBytes());
         admin.setPassword(password);
 
-        if (admin.getType() != 0 || admin.getType() != 1 || admin.getType() != 2) {
+        if (admin.getType() != 0 && admin.getType() != 1 && admin.getType() != 2) {
             return R.error("信息错误");
         }
 
@@ -266,7 +266,10 @@ public class AdminController {
         // 管理员更改日志
         logsService.saveLog("修改管理员", "修改 “ " + admin.getName() + " ”管理员的基本信息");
 
-        if (admin.getType() != 0 || admin.getType() != 1 || admin.getType() != 2) {
+        boolean check1 = admin.getType().equals(0);
+        boolean check2 = admin.getType().equals(1);
+        boolean check3 = admin.getType().equals(2);
+        if (check1 && check2 && check3) {
             return R.error("信息错误");
         }
 
