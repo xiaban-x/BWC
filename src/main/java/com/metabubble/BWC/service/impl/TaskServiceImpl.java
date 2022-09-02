@@ -51,6 +51,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
     /**
      * 任务数量减一
      * @param id
+     * @author leitianyu999
      */
     @Override
     public void updateAmount(Long id) {
@@ -69,6 +70,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
      * 查询用户当天是否接取过同一任务
      * @param userId 用户id
      * @param task 任务对象
+     * @author leitianyu999
      * @return
      */
     @Override
@@ -102,7 +104,12 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         }
     }
 
-    //完成任务后任务完成数量加一
+
+    /**
+     * 完成任务后任务完成数量加一
+     * @author leitianyu999
+     * @param orders
+     */
     @Override
     public void addCompleted(Orders orders) {
         Task task = this.getById(orders.getTaskId());
@@ -112,6 +119,12 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         this.updateById(task);
     }
 
+    /**
+     * 检查任务是否在可接取时间
+     * @param task
+     * @author leitianyu999
+     * @return
+     */
     @Override
     public Boolean checkTime(Task task) {
         LocalDateTime startTime = task.getStartTime();
