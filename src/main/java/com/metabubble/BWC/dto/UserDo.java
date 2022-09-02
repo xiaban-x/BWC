@@ -6,8 +6,7 @@ import lombok.Data;
 @Data
 public class UserDo extends User {
 
-    private String upTel01;
+    private String upTel;
 
 
-    private String upTel02;
 }

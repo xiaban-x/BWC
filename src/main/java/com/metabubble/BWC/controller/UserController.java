@@ -100,12 +100,8 @@ public class UserController {
                 Team team = teamService.getOne(queryWrapper1);
                 UserDo userDo = UserConverter.INSTANCES.UserToUserDo(item);
                 if (team.getUpUser01Id()!=null) {
-                    User upUser01 = userService.getById(team.getUpUser01Id());
-                    userDo.setUpTel01(upUser01.getTel());
-                    if (team.getUpUser02Id()!=null) {
-                        User upUser02 = userService.getById(team.getUpUser01Id());
-                        userDo.setUpTel02(upUser02.getTel());
-                    }
+                    User upUser = userService.getById(team.getUpUser01Id());
+                    userDo.setUpTel(upUser.getTel());
                 }
                 return userDo;
 
