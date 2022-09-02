@@ -3,6 +3,7 @@ package com.metabubble.BWC.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 商家任务
@@ -18,6 +19,9 @@ public class TaskDto {
 
     //商家名字
     private String merchantName;
+
+    //商家图片
+    private String pic;
 
     //任务名称
     private String name;
@@ -60,4 +64,13 @@ public class TaskDto {
 
     //是否启用，0为禁用(默认)，1为启用
     private Integer status;
+
+    //任务开始时间
+    private LocalDateTime startTime;
+
+    //任务结束时间
+    private LocalDateTime endTime;
+
+    //任务创建时间
+    private LocalDateTime createTime;
 }

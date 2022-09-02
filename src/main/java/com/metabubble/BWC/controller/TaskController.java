@@ -54,7 +54,7 @@ public class TaskController {
      * @Author 看客
      */
     @GetMapping
-    public R<Page> getAll(Integer offset, Integer limit, String taskName, String merchantName, Integer status, Integer platform) {
+    public R<Page> getAll(Integer offset, Integer limit, String taskName, String merchantName, Integer status, Integer platform,Integer merchantId) {
 
         //分页构造器
         Page<Task> pageSearch = new Page<>(offset, limit);
@@ -69,7 +69,9 @@ public class TaskController {
         if (platform != null) {
             mLqw.eq(Task::getPlatform, platform);
         }
-
+        if (merchantId != null){
+            mLqw.eq(Task::getMerchantId,merchantId);
+        }
         //添加排序条件
         mLqw.orderByDesc(Task::getCreateTime);
         Page<Task> page = taskService.page(pageSearch, mLqw);
@@ -95,6 +97,9 @@ public class TaskController {
                         taskDto.setMerchantName(merchantName1);
                         taskDtos.add(taskDto);
                     }
+                    //获取商家照片
+                    String pic = merchant.getPic();
+                    taskDto.setPic(pic);
                 }
             }
         }
