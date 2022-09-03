@@ -48,4 +48,7 @@ public class TaskDetailDto {
     //任务备注
     private String remark;
 
+    //任务链接
+    private String link;
+
 }

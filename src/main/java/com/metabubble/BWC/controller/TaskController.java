@@ -70,7 +70,7 @@ public class TaskController {
             mLqw.eq(Task::getPlatform, platform);
         }
         if (merchantId != null){
-            mLqw.eq(Task::getMerchantId,merchantId);
+            mLqw.like(Task::getMerchantId,merchantId);
         }
         //添加排序条件
         mLqw.orderByDesc(Task::getCreateTime);
@@ -100,6 +100,9 @@ public class TaskController {
                     //获取商家照片
                     String pic = merchant.getPic();
                     taskDto.setPic(pic);
+                    //获取商家电话
+                    String tel = merchant.getTel();
+                    taskDto.setTel(tel);
                 }
             }
         }
@@ -321,13 +324,15 @@ public class TaskController {
         String merchantName = merchant.getName();
         //获取商家照片
         String merchantPic = merchant.getPic();
+        //获取商家链接
+        String link = merchant.getLink();
         TaskDetailDto taskDetailDto = TaskDetailConverter.INSTANCES.TaskToTaskDetailDto(task);
         //设置进TaskDetailDto
         taskDetailDto.setMerchantName(merchantName);
         taskDetailDto.setMerchantAddress(merchantAddress);
         taskDetailDto.setUserToMerchantDistance(userToMerchantDistance);
         taskDetailDto.setMerchantPic(merchantPic);
-
+        taskDetailDto.setLink(link);
         return R.success(taskDetailDto);
     }
 
