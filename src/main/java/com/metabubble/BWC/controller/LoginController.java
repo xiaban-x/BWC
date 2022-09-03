@@ -222,7 +222,7 @@ public class LoginController {
      * @author leitianyu999
      * @return
      */
-    @PostMapping("/")
+    @PostMapping()
     public R<UserDto> login(String mobile,String password,String contents,String type, HttpServletRequest request,HttpServletResponse response){
         // 判断请求参数是否正确
         if (StringUtils.isBlank(mobile)) {
