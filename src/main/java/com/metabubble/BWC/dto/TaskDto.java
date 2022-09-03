@@ -23,6 +23,9 @@ public class TaskDto {
     //商家图片
     private String pic;
 
+    //商家电话
+    private String tel;
+
     //任务名称
     private String name;
 
@@ -43,6 +46,9 @@ public class TaskDto {
 
     //任务剩余量
     private Integer taskLeft;
+
+    //任务时间间隔
+    private Integer timeInterval;
 
     //非会员最低消费
     private BigDecimal minConsumptionA;
