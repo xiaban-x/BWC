@@ -77,6 +77,7 @@ public class UserFilter implements Filter {
                 "/login/reset",
                 "/common/checkCodeGen",
                 "/decoration/type",
+                "/decoration/{id}",
                 "/task/home/",
                 "/task/detail",
                 "/merchant/getAddress",
@@ -121,6 +122,19 @@ public class UserFilter implements Filter {
 
         // 登录与否都可放行
         if (check1) {
+
+            if (requestURI.equals("/decoration/{id}") && method.equals("DELETE")) {
+                if (request.getSession().getAttribute("admin") != null) {
+                    // 管理员已登录
+
+                    filterChain.doFilter(request, response);
+                    BaseContext.remove();
+                    return;
+                }
+                // 管理员未登录
+                throw new CustomException("无权限修改");
+            }
+
             log.info("登录与否都可放行的路径 : {}", requestURI);
 
             filterChain.doFilter(request, response);
