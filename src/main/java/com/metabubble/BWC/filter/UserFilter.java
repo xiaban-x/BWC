@@ -248,6 +248,15 @@ public class UserFilter implements Filter {
             return;
         }
 
+        if (request.getSession().getAttribute("admin") == null) {
+            // 访问登录接口
+            if (requestURI.equals("/admin/login")) {
+                filterChain.doFilter(request, response);
+                BaseContext.remove();
+                return;
+            }
+        }
+
         throw new CustomException("无权限访问");
     }
 
