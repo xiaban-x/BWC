@@ -90,7 +90,8 @@ public class UserFilter implements Filter {
 
         // 用户未登录才能放行的请求路径
         String[] urls2 = new String[]{
-                "/login"
+                "/login",
+                "/login/register"
         };
 
         // 用户登录后才能放行的请求路径
