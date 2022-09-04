@@ -51,8 +51,9 @@ public class TeamMsgController {
         if (type!=2){
             queryWrapper.eq(TeamMsg::getType,type);
         }else {
-            queryWrapper.eq(TeamMsg::getType,0);
-            queryWrapper.or().eq(TeamMsg::getType,1);
+            queryWrapper.and(teamMsgLambdaQueryWrapper -> {
+                teamMsgLambdaQueryWrapper.eq(TeamMsg::getType,0).or().eq(TeamMsg::getType,1);
+            });
         }
 
         teamMsgService.page(page,queryWrapper);
