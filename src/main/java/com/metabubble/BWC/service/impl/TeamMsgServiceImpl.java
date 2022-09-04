@@ -24,11 +24,10 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
      */
     @Override
     public void add(Long id,String tel , String msg) {
-        String phone = MobileUtils.blurPhone(tel);
         TeamMsg teamMsg = new TeamMsg();
         teamMsg.setType(1);
         teamMsg.setUserId(id);
-        teamMsg.setDownPhone(phone);
+        teamMsg.setDownPhone(tel);
         teamMsg.setMsg(msg);
         this.save(teamMsg);
     }
@@ -72,11 +71,10 @@ public class TeamMsgServiceImpl extends ServiceImpl<TeamMsgMapper, TeamMsg>
      */
     @Override
     public void addCashback(Long id, String tel, String amount) {
-        String phone = MobileUtils.blurPhone(tel);
         TeamMsg teamMsg = new TeamMsg();
         teamMsg.setType(0);
         teamMsg.setUserId(id);
-        teamMsg.setDownPhone(phone);
+        teamMsg.setDownPhone(tel);
         teamMsg.setMsg(amount);
         this.save(teamMsg);
     }
