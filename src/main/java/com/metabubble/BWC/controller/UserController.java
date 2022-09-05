@@ -1,7 +1,6 @@
 package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
@@ -20,7 +19,6 @@ import com.metabubble.BWC.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
@@ -343,4 +340,38 @@ public class UserController {
         return R.success("success");
     }
 
+
+    @PutMapping("/user/alipay")
+    public R<String> updateAboutAlipay(String contents, String aliPayId, String aliPayName){
+
+
+        if (StringUtils.isBlank(aliPayId)||StringUtils.isBlank(aliPayName)){
+            return R.error("缺少必要的参数");
+        }
+
+        Long id = BaseContext.getCurrentId();
+        User user = userService.getById(id);
+
+
+        String mobileKey = "reset_mobile_"+user.getTel();// 存储到redis中的验证码的key
+
+
+        // 校验短信验证码
+        String code = (String) redisTemplate.opsForValue().get(mobileKey);
+        if (code == null) {
+            return R.error("当前验证码已失效，请获取最新验证码后再进行此操作");
+        } else if (!code.equals(contents)) {
+            return R.error("您输入的验证码不正确，请重新输入（不用重新获取）");
+        }
+
+
+        // 删除缓存的key
+        redisTemplate.delete(mobileKey);
+
+
+        user.setAliPayId(aliPayId);
+        user.setAliPayName(aliPayName);
+        userService.updateById(user);
+        return R.success("修改成功");
+    }
 }

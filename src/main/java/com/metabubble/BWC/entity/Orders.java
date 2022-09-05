@@ -25,6 +25,9 @@ public class Orders implements Serializable {
     //商家id
     private Long merchantId;
 
+    //商家名称
+    private String merchantName;
+
     //任务id
     private Long taskId;
 

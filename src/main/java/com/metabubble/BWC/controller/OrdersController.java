@@ -74,7 +74,7 @@ public class OrdersController {
         //条件构造器
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper();
         queryWrapper.eq(!String.valueOf(id).equals(""),Orders::getUserId,id);
-        if (!(status.size()==1&&!status.get(0).equals("9"))) {
+        if (!(status.size()==1&&status.get(0).equals("9"))) {
             if (status.size()!=0&&status!=null) {
                 queryWrapper.and(ordersLambdaQueryWrapper -> {
                     for (String o : status) {
@@ -95,7 +95,6 @@ public class OrdersController {
             OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(orders);
             Merchant merchant = merchantService.getById(merchantId);
             ordersListDto.setMerchantPic(merchant.getPic());
-            ordersListDto.setMerchantName(merchant.getName());
             return ordersListDto;
         }).collect(Collectors.toList());
 
@@ -182,6 +181,7 @@ public class OrdersController {
             Merchant merchant = merchantService.getById(task.getMerchantId());
             //添加商家id
             orders.setMerchantId(merchant.getId());
+            orders.setMerchantName(merchant.getName());
             //查询用户是否为会员
             Boolean aBoolean = userService.checkGrade(userId);
             if (aBoolean){

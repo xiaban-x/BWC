@@ -129,14 +129,14 @@ public class LoginController {
                 }
                 modelCode = "";
                 break;
-            case "resetphone"://发送重置手机号的验证码
+            case "resetphone"://发送更改手机号第一步的验证码
                 //判断手机号是否注册
                 if (status==null){
                     return R.error("当前手机号未注册，请先注册");
                 }
                 modelCode = "";
                 break;
-            case "addphone":
+            case "addphone"://发送更改手机号第二步的验证码
                 //判断手机号是否注册
                 if (normal!=null){
                     return R.error("当前手机号已注册");
