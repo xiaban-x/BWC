@@ -431,11 +431,12 @@ public class OrdersController {
             if (team.getUpUser02Id()!=null){
                 teamService.cashbackForUserFromSecond(team.getUpUser02Id(),user.getTel());
             }
+            Long admin = BaseContext.getCurrentId();
             //添加审核人id
-            orders.setReviewerIdB(BaseContext.getCurrentId());
+            orders.setReviewerIdB(admin);
             //更新订单状态
             ordersService.updateById(orders);
-            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”通过"+orders.getUserId()+"用户二审");
+            logsService.saveLog("订单审核","管理员”"+admin+"”通过"+orders.getUserId()+"用户二审");
             return R.success("二审成功");
         }
         return R.error("订单状态错误");
