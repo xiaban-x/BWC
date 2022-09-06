@@ -1,12 +1,10 @@
 package com.metabubble.BWC.filter;
 
 import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.CustomException;
 import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
-import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.UserService;
 import com.metabubble.BWC.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +25,7 @@ import java.io.IOException;
 @Order(10)
 @WebFilter(filterName = "userFilter", urlPatterns = "/*")
 @Slf4j
-public class UserFilter implements Filter {
+public class C_UserFilter implements Filter {
 
     //路径匹配器，支持通配符
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();

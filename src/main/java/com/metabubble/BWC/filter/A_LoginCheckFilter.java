@@ -4,8 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
-import com.metabubble.BWC.utils.CookieUtils;
-import com.sun.webkit.network.CookieManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -13,7 +11,6 @@ import org.springframework.util.AntPathMatcher;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -26,8 +23,7 @@ import java.io.IOException;
 @Order(1)   // @Order用于多个过滤器时定义执行顺序，值越小越先执行
 @WebFilter(filterName = "loginCheckFilter",urlPatterns = "/*")
 @Slf4j
-public class LoginCheckFilter implements Filter {
-
+public class A_LoginCheckFilter implements Filter {
     //路径匹配器，支持通配符
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 

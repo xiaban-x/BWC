@@ -23,7 +23,7 @@ import java.io.IOException;
 @Order(5)
 @WebFilter(filterName = "adminFilter", urlPatterns = "/*")
 @Slf4j
-public class AdminFilter implements Filter {
+public class B_AdminFilter implements Filter {
 
     //路径匹配器，支持通配符
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
@@ -117,7 +117,9 @@ public class AdminFilter implements Filter {
                     return;
                 }
             }
+
             Long adminId = (Long) request.getSession().getAttribute("admin");
+            BaseContext.setCurrentId(adminId);
 
             // 判断否登录
             if (adminId == null) {
