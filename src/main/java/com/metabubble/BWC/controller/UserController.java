@@ -122,7 +122,7 @@ public class UserController {
     public R<String> update(@RequestBody User user){
 
         userService.updateById(user);
-        logsService.saveLog("修改用户", "管理员“"+BaseContext.getCurrentId()+"”修改了"+user.getName()+"的基本信息");
+        logsService.saveLog("修改用户", "管理员“"+BaseContext.getCurrentId()+"”修改了"+user.getId()+"的基本信息");
         return R.success("修改成功");
 
     }
