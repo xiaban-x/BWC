@@ -114,9 +114,14 @@ public class OrdersController {
     public R<OrdersDto> selectByOrdersId(int id){
         Orders orders = ordersService.getById(id);
         Task task = taskService.getById(orders.getTaskId());
+        Merchant merchant = merchantService.getById(orders.getMerchantId());
         OrdersDto ordersDto = OrdersConverter.INSTANCES.OrdersToMerOrdersDto(orders);
         ordersDto.setRequirement(task.getRequirement());
         ordersDto.setRemark(task.getRemark());
+        if (merchant!=null){
+            ordersDto.setPic(merchant.getPic());
+            ordersDto.setShowAddress(merchant.getShowAddress());
+        }
         return R.success(ordersDto);
     }
 
@@ -222,7 +227,7 @@ public class OrdersController {
     @PutMapping("/user/firstaudit")
     public R<String> firstAudit(@RequestBody Orders orders){
         //判断PicOrder是否为空
-        if (orders.getPicOrder()==null){
+        if (orders.getPicOrder1()==null&&orders.getPicOrder2()==null){
             return R.error("无订单截图");
         }
         //判断Amount是否为空
