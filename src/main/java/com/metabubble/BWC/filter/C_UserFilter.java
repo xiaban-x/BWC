@@ -83,7 +83,9 @@ public class C_UserFilter implements Filter {
                 // 新增
                 "/common/upload",
                 "/config/getContents/{id}",
-                "/photo/{filename}"
+                "/photo/{filename}",
+                "/cusservice"
+
         };
 
         // 用户未登录才能放行的请求路径
@@ -107,7 +109,6 @@ public class C_UserFilter implements Filter {
                 // 以下为自行整理
                 "/financeList/insertRechargeInfo",
                 "/financeList/insertCashableInfo",
-                "/cusservice",
                 "/task/pickTask",
                 // 新增
                 "/decoration/**",
