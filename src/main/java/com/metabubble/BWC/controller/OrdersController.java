@@ -388,6 +388,7 @@ public class OrdersController {
             ordersDo.setTask(task);
             ordersDo.setShowAddress(merchant.getShowAddress());
             ordersDo.setTel(byId.getTel());
+            ordersDo.setName(byId.getName());
 
             return ordersDo;
         }).collect(Collectors.toList());
