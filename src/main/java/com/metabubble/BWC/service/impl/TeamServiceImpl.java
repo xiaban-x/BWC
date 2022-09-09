@@ -2,6 +2,8 @@ package com.metabubble.BWC.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.metabubble.BWC.common.BaseContext;
+import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.entity.Orders;
 import com.metabubble.BWC.entity.Team;
@@ -116,6 +118,30 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         team.setDownUser02Amount(0);
         team.setUserId(user.getId());
         this.save(team);
+    }
+
+    @Override
+    public void save(User user, String invitation) {
+        Team team = new Team();
+        team.setDownUser01Amount(0);
+        team.setDownUser02Amount(0);
+        team.setUserId(user.getId());
+        this.save(team);
+
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        //添加验证码对比
+        queryWrapper.eq(User::getDownId,invitation);
+        //查询上级对象
+        User userFirst = userService.getOne(queryWrapper);
+        //判断是否有上级对象
+        if (userFirst!=null){
+            //团队添加上级
+            this.addTeamTop(user,userFirst);
+            //用户添加上级邀请码
+            user.setUpId(invitation);
+            userService.updateById(user);
+        }
+
     }
 
     /**

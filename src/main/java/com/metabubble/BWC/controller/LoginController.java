@@ -604,7 +604,7 @@ public class LoginController {
      */
     @PostMapping("/register")
     @Transactional
-    public R<String> register(String mobile, String contents,String name, String password,HttpServletRequest request){
+    public R<String> register(String mobile, String contents,String name, String invitation, String password,HttpServletRequest request){
 
         if (StringUtils.isBlank(mobile) || StringUtils.isBlank(contents) || StringUtils.isBlank(password)) {
             return R.error("缺少必要的参数");
@@ -640,7 +640,11 @@ public class LoginController {
         user.setName(name);
         user.setDownId(userService.createUUID());
         userService.save(user);
-        teamService.save(user);
+        if (!StringUtils.isBlank(invitation)) {
+            teamService.save(user,invitation);
+        }else {
+            teamService.save(user);
+        }
         return R.success("创建用户成功");
     }
 

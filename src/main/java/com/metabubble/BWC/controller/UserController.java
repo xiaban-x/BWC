@@ -279,11 +279,11 @@ public class UserController {
     @Transactional
     public R<String> addTeam(String invitation){
         Long id = BaseContext.getCurrentId();
-        User user = (User) redisTemplate.opsForValue().get(userKey+id);
-        if (user==null){
-            //查询用户对象
-            user = userService.getById(id);
-        }
+//        User user = (User) redisTemplate.opsForValue().get(userKey+id);
+//        if (user==null){
+//            //查询用户对象
+        User user = userService.getById(id);
+//        }
         //判断邀请码是否为用户本身邀请码
         if (user.getDownId().equals(invitation)){
             return R.error("邀请码错误");
@@ -306,7 +306,7 @@ public class UserController {
             //用户添加上级邀请码
             user.setUpId(invitation);
             userService.updateById(user);
-            redisTemplate.delete(userKey+id);
+//            redisTemplate.delete(userKey+id);
             return R.success("添加成功");
         }
         return R.error("已填写邀请码");

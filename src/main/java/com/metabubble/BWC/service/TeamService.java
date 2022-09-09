@@ -13,6 +13,8 @@ public interface TeamService extends IService<Team> {
     public void cashbackForUserFromSecond(Long id,String tel);
     //创建团队表
     public void save(User user);
+    //创建团队表并添加上级
+    public void save(User user,String invitation);
     //团队添加上一级和上二级
     public void addTeamTop(User user,User topUser);
 }
