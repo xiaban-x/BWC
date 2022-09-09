@@ -90,11 +90,19 @@ public class OrdersController {
         ordersService.page(pageSearch,queryWrapper);
 
         List<OrdersListDto> collect = pageSearch.getRecords().stream().map(item -> {
-            Orders orders = ordersService.updateStatusFormExpiredTimeAndReturn(item);
-            Long merchantId = orders.getMerchantId();
-            OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(orders);
+            if (item.getStatus()==0||item.getStatus()==2||item.getStatus()==5) {
+                //更新状态
+                item = ordersService.updateStatusFormExpiredTimeAndReturn(item);
+            }
+
+            Long merchantId = item.getMerchantId();
+
+            OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(item);
+
             Merchant merchant = merchantService.getById(merchantId);
+
             ordersListDto.setMerchantPic(merchant.getPic());
+
             return ordersListDto;
         }).collect(Collectors.toList());
 
@@ -363,10 +371,24 @@ public class OrdersController {
 
         List<Orders> records = page.getRecords();
         List<OrdersDo> collect = records.stream().map(item -> {
+            if (item.getStatus()==0||item.getStatus()==2||item.getStatus()==5) {
+                //更新状态
+                item = ordersService.updateStatusFormExpiredTimeAndReturn(item);
+            }
+
+            Long taskId = item.getTaskId();
+            Long merchantId = item.getMerchantId();
             Long userId = item.getUserId();
+            Task task = taskService.getById(taskId);
+            Merchant merchant = merchantService.getById(merchantId);
             User byId = userService.getById(userId);
+
             OrdersDo ordersDo = OrdersConverter.INSTANCES.OrdersToOrdersDo(item);
+
+            ordersDo.setTask(task);
+            ordersDo.setShowAddress(merchant.getShowAddress());
             ordersDo.setTel(byId.getTel());
+
             return ordersDo;
         }).collect(Collectors.toList());
 
