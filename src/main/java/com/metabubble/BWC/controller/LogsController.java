@@ -35,7 +35,7 @@ public class LogsController {
      * @author 晴天小杰
      */
     @GetMapping("/page")
-    public R<Page> page(int offset, int limit, String adminName, String name, String content) {
+    public R<Page> page(int offset, int limit, String adminName, String name, String content, String beginTime, String endTime) {
         //构造分页查询器
         Page<Logs> pageInfo = new Page<>(offset, limit);
         //构造条件构造器
@@ -49,6 +49,13 @@ public class LogsController {
         queryWrapperLogs.like(name != null ,Logs::getName, name);
         //内容
         queryWrapperLogs.like(content != null ,Logs::getContent, content);
+
+        //查询时间
+//        QueryWrapper<Logs> queryWrapper = new QueryWrapper<>();
+//        LambdaQueryWrapper<Logs> lambdaQueryWrapper = queryWrapper.lambda().ge(Func.isNotEmpty(goods.getStartTime()),Goods::getCreateTime, goods.getStartTime());
+//        ambdaQueryWrapper = lambdaQueryWrapper.le(Func.isNotEmpty(goods.getEndTime()),Goods::getCreateTime, goods.getEndTime());
+        queryWrapperLogs.ge(Logs::getCreateTime,beginTime); //大于等于创建时间
+        queryWrapperLogs.le(Logs::getCreateTime,endTime); //小于等于创建时间
 
         //执行查询 传入分页数据
         Page<Logs> page = logService.page(pageInfo, queryWrapperLogs);
