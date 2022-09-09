@@ -90,11 +90,19 @@ public class OrdersController {
         ordersService.page(pageSearch,queryWrapper);
 
         List<OrdersListDto> collect = pageSearch.getRecords().stream().map(item -> {
-            Orders orders = ordersService.updateStatusFormExpiredTimeAndReturn(item);
-            Long merchantId = orders.getMerchantId();
-            OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(orders);
+            if (item.getStatus()==0||item.getStatus()==2||item.getStatus()==5) {
+                //更新状态
+                item = ordersService.updateStatusFormExpiredTimeAndReturn(item);
+            }
+
+            Long merchantId = item.getMerchantId();
+
+            OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(item);
+
             Merchant merchant = merchantService.getById(merchantId);
+
             ordersListDto.setMerchantPic(merchant.getPic());
+
             return ordersListDto;
         }).collect(Collectors.toList());
 
@@ -114,9 +122,14 @@ public class OrdersController {
     public R<OrdersDto> selectByOrdersId(int id){
         Orders orders = ordersService.getById(id);
         Task task = taskService.getById(orders.getTaskId());
+        Merchant merchant = merchantService.getById(orders.getMerchantId());
         OrdersDto ordersDto = OrdersConverter.INSTANCES.OrdersToMerOrdersDto(orders);
         ordersDto.setRequirement(task.getRequirement());
         ordersDto.setRemark(task.getRemark());
+        if (merchant!=null){
+            ordersDto.setPic(merchant.getPic());
+            ordersDto.setShowAddress(merchant.getShowAddress());
+        }
         return R.success(ordersDto);
     }
 
@@ -222,7 +235,7 @@ public class OrdersController {
     @PutMapping("/user/firstaudit")
     public R<String> firstAudit(@RequestBody Orders orders){
         //判断PicOrder是否为空
-        if (orders.getPicOrder()==null){
+        if (orders.getPicOrder1()==null&&orders.getPicOrder2()==null){
             return R.error("无订单截图");
         }
         //判断Amount是否为空
@@ -358,10 +371,25 @@ public class OrdersController {
 
         List<Orders> records = page.getRecords();
         List<OrdersDo> collect = records.stream().map(item -> {
+            if (item.getStatus()==0||item.getStatus()==2||item.getStatus()==5) {
+                //更新状态
+                item = ordersService.updateStatusFormExpiredTimeAndReturn(item);
+            }
+
+            Long taskId = item.getTaskId();
+            Long merchantId = item.getMerchantId();
             Long userId = item.getUserId();
+            Task task = taskService.getById(taskId);
+            Merchant merchant = merchantService.getById(merchantId);
             User byId = userService.getById(userId);
+
             OrdersDo ordersDo = OrdersConverter.INSTANCES.OrdersToOrdersDo(item);
+
+            ordersDo.setTask(task);
+            ordersDo.setShowAddress(merchant.getShowAddress());
             ordersDo.setTel(byId.getTel());
+            ordersDo.setName(byId.getName());
+
             return ordersDo;
         }).collect(Collectors.toList());
 
