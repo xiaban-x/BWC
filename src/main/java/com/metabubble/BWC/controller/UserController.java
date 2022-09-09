@@ -204,11 +204,11 @@ public class UserController {
     @GetMapping("/getuser")
     public R<UserDto> getByIdForUser(HttpServletResponse response, HttpServletRequest request){
         Long id = BaseContext.getCurrentId();
-        User o = (User) redisTemplate.opsForValue().get(userKey+id);
-        if (o!=null){
-            UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(o);
-            return R.success(userDto);
-        }
+//        User o = (User) redisTemplate.opsForValue().get(userKey+id);
+//        if (o!=null){
+//            UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(o);
+//            return R.success(userDto);
+//        }
         //条件构造器
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
         //添加用户id比对
@@ -341,6 +341,13 @@ public class UserController {
     }
 
 
+    /**
+     * 修改关于支付宝的数据
+     * @param contents
+     * @param aliPayId
+     * @param aliPayName
+     * @return
+     */
     @PutMapping("/user/alipay")
     public R<String> updateAboutAlipay(String contents, String aliPayId, String aliPayName){
 

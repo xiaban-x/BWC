@@ -120,6 +120,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         this.save(team);
     }
 
+    /**
+     * 创建团队表同时添加上级用户
+     * @param user
+     * @param invitation
+     */
     @Override
     public void save(User user, String invitation) {
         Team team = new Team();
