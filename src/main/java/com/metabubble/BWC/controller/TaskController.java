@@ -636,6 +636,7 @@ public class TaskController {
                     Merchant merchant = merchantService.getById(record.getMerchantId());
                     //获取商家名字
                     merchantName = merchant.getName();
+
                     //获取商家图片
                     String merchantPic = merchant.getPic();
                     //获取商家与用户之间的距离
