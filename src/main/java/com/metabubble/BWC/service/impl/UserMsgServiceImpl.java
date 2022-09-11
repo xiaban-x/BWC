@@ -18,7 +18,7 @@ public class UserMsgServiceImpl extends ServiceImpl<UserMsgMapper, UserMsg>
     public void addUserCashback(Orders orders) {
         UserMsg userMsg = new UserMsg();
         userMsg.setUserId(orders.getUserId());
-        String cashbackMsg = "任务"+orders.getId()+"返现"+orders.getRebate();
+        String cashbackMsg = orders.getTaskName()+"返现"+orders.getRebate();
         userMsg.setType(2);
         userMsg.setMsg(cashbackMsg);
         this.save(userMsg);
