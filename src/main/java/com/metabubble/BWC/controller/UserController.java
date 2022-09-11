@@ -204,11 +204,11 @@ public class UserController {
     @GetMapping("/getuser")
     public R<UserDto> getByIdForUser(HttpServletResponse response, HttpServletRequest request){
         Long id = BaseContext.getCurrentId();
-        User o = (User) redisTemplate.opsForValue().get(userKey+id);
-        if (o!=null){
-            UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(o);
-            return R.success(userDto);
-        }
+//        User o = (User) redisTemplate.opsForValue().get(userKey+id);
+//        if (o!=null){
+//            UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(o);
+//            return R.success(userDto);
+//        }
         //条件构造器
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
         //添加用户id比对
@@ -279,11 +279,11 @@ public class UserController {
     @Transactional
     public R<String> addTeam(String invitation){
         Long id = BaseContext.getCurrentId();
-        User user = (User) redisTemplate.opsForValue().get(userKey+id);
-        if (user==null){
-            //查询用户对象
-            user = userService.getById(id);
-        }
+//        User user = (User) redisTemplate.opsForValue().get(userKey+id);
+//        if (user==null){
+//            //查询用户对象
+        User user = userService.getById(id);
+//        }
         //判断邀请码是否为用户本身邀请码
         if (user.getDownId().equals(invitation)){
             return R.error("邀请码错误");
@@ -306,7 +306,7 @@ public class UserController {
             //用户添加上级邀请码
             user.setUpId(invitation);
             userService.updateById(user);
-            redisTemplate.delete(userKey+id);
+//            redisTemplate.delete(userKey+id);
             return R.success("添加成功");
         }
         return R.error("已填写邀请码");
@@ -341,6 +341,13 @@ public class UserController {
     }
 
 
+    /**
+     * 修改关于支付宝的数据
+     * @param contents
+     * @param aliPayId
+     * @param aliPayName
+     * @return
+     */
     @PutMapping("/user/alipay")
     public R<String> updateAboutAlipay(String contents, String aliPayId, String aliPayName){
 
