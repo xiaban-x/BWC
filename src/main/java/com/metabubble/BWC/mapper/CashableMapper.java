@@ -22,7 +22,8 @@ public interface CashableMapper extends BaseMapper<Cashable> {
             " FROM cashable" +
             " JOIN user" +
             " on cashable.user_id=user.id" +
-            " ${ew.customSqlSegment}")
+            " ${ew.customSqlSegment}" +
+            " ORDER BY cashable.create_time DESC")
     IPage<CashableDto> dto(Page<CashableDto> page, @Param(Constants.WRAPPER) QueryWrapper<Object> wrapper);
 
 }

@@ -372,6 +372,7 @@ public class RechargeController {
                 wrapper.ge("create_time", beginTime).and(c -> c.le("create_time", finalEndTime))
                         .and(c -> c.eq("status",2));
             }
+            wrapper.orderByDesc("create_time");
             //执行分页查询
             rechargeService.page(pageInfo, wrapper);
             //联表查询
