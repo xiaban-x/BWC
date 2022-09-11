@@ -235,7 +235,7 @@ public class OrdersController {
     @PutMapping("/user/firstaudit")
     public R<String> firstAudit(@RequestBody Orders orders){
         //判断PicOrder是否为空
-        if (orders.getPicOrder1()==null&&orders.getPicOrder2()==null){
+        if (StringUtils.isBlank(orders.getPicOrder1())&&StringUtils.isBlank(orders.getPicOrder2())){
             return R.error("无订单截图");
         }
         //判断Amount是否为空
