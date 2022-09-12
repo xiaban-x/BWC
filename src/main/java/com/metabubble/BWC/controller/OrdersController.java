@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -507,6 +508,22 @@ public class OrdersController {
             return R.success("更改成功");
         }
         return R.error("订单状态错误");
+    }
+
+
+    /**
+     * 修改订单过期时间
+     * @return
+     */
+    @PutMapping("/update")
+    @Transactional
+    public R<String> updateExpiredTime(@RequestBody Orders orders){
+        Orders orders1 = ordersService.getById(orders.getUserId());
+        Long id = BaseContext.getCurrentId();
+        //logsService.saveLog("修改订单过期时间","管理员”"+BaseContext.getCurrentId()+"将订单"+orders1.getId()+"过期时间"+orders1.getExpiredTime()+"修改为"+orders.getExpiredTime());
+        orders1.setExpiredTime(orders.getExpiredTime());
+        ordersService.updateById(orders1);
+        return R.success("修改成功");
     }
 
     /**
