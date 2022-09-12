@@ -518,7 +518,7 @@ public class OrdersController {
     @PutMapping("/update")
     @Transactional
     public R<String> updateExpiredTime(@RequestBody Orders orders){
-        Orders orders1 = ordersService.getById(orders.getUserId());
+        Orders orders1 = ordersService.getById(orders.getId());
         Long id = BaseContext.getCurrentId();
         //logsService.saveLog("修改订单过期时间","管理员”"+BaseContext.getCurrentId()+"将订单"+orders1.getId()+"过期时间"+orders1.getExpiredTime()+"修改为"+orders.getExpiredTime());
         orders1.setExpiredTime(orders.getExpiredTime());
