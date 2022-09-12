@@ -126,9 +126,9 @@ public class A_LoginCheckFilter implements Filter {
             return;
         }
         //4-1判断登录状态，如果已经登录直接放行
-        if (request.getSession().getAttribute("employee")!=null){
+        if (request.getSession().getAttribute("admin")!=null){
 
-            Long empId = (Long) request.getSession().getAttribute("employee");
+            Long empId = (Long) request.getSession().getAttribute("admin");
             BaseContext.setCurrentId(empId);
 
             filterChain.doFilter(request,response);
