@@ -121,6 +121,7 @@ public class AdminController {
         request.getSession().setAttribute("admin", adminMsg.getId());
         //登陆成功，session存入
         manageSession.getManageSession().put(admin+adminMsg.getId().toString(),session);
+        BaseContext.setCurrentId(adminMsg.getId());
 
         //Dto对象拷贝
         AdminDto adminDto = new AdminDto();
