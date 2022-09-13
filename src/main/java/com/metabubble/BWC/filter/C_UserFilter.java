@@ -258,6 +258,8 @@ public class C_UserFilter implements Filter {
             }
 
             // 管理员已登录
+            Long adminId = (Long) request.getSession().getAttribute("admin");
+            BaseContext.setCurrentId(adminId);
             filterChain.doFilter(request, response);
             BaseContext.remove();
             return;
