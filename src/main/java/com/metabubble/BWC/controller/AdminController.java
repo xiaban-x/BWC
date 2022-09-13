@@ -296,6 +296,12 @@ public class AdminController {
         return R.success("删除成功");
     }
 
+
+    @GetMapping
+    public R<Admin> getAdmin(){
+        return R.success(adminService.getById(BaseContext.getCurrentId()));
+    }
+
 }
 
 
