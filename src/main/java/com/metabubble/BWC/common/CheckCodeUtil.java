@@ -16,7 +16,7 @@ import java.util.Random;
  */
 public class CheckCodeUtil {
 
-    public static final String VERIFY_CODES = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static final String VERIFY_CODES = "123456789ABCDEFGHIJKLMNPQRSTUVWXYZ";
     private static Random random = new Random();
 
     /**

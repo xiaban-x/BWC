@@ -298,6 +298,10 @@ public class AdminController {
     }
 
 
+    /**
+     * 获取管理员信息
+     * @return
+     */
     @GetMapping
     public R<Admin> getAdmin(){
         return R.success(adminService.getById(BaseContext.getCurrentId()));
