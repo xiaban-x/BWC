@@ -58,6 +58,12 @@ public class Orders implements Serializable {
     //返现金额
     private BigDecimal rebate;
 
+    //团队返现上一级用户金额
+    private BigDecimal rebate01;
+
+    //团队返现上二级返现金额
+    private BigDecimal rebate02;
+
     //订单截图1
     private String picOrder1;
 

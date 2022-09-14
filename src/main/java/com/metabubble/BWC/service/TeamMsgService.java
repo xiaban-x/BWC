@@ -15,6 +15,4 @@ public interface TeamMsgService extends IService<TeamMsg> {
     public void addRecharge(Long id,String amount);
     //添加团队返现信息
     public void addCashback(Long id,String tel,String amount);
-
-
 }
