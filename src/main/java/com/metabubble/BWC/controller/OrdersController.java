@@ -542,18 +542,29 @@ public class OrdersController {
     @DeleteMapping("/overrule")
     @Transactional
     public R<String> overruleOrder(Long id, String reason){
+        //查询订单
         Orders orders = ordersService.getById(id);
+        //判断订单是否为二审通过
         if (orders!=null&&orders.getStatus()==6){
+            //更改为二审未通过
             orders.setStatus(5);
+            //添加理由
             orders.setReason(reason);
+            //获取用户
             User user = userService.getById(orders.getUserId());
+            //修改用户返现信息
             user.setCashableAmount(user.getCashableAmount().subtract(orders.getRebate()));
             user.setSavedAmount(user.getSavedAmount().subtract(orders.getRebate()));
+            //添加用户钱包信息
             userMsgService.overruleUserCashback(orders);
+            //团队返现驳回
             teamService.overruleCashback(orders,user);
+
             userService.updateById(user);
             ordersService.updateById(orders);
+            //记录日志
             logsService.saveLog("驳回订单","管理员”"+BaseContext.getCurrentId()+"将订单"+orders.getId()+"驳回");
+
             return R.success("驳回成功");
         }
         return R.error("订单信息有误，请重新确认");

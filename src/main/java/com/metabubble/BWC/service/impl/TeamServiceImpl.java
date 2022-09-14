@@ -208,30 +208,44 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         this.update(teamTop,queryWrapper2);
     }
 
+    /**
+     * 团队返现驳回
+     * @param orders
+     * @param user
+     */
     @Override
     public void overruleCashback(Orders orders, User user) {
+        //查询用户团队信息
         LambdaQueryWrapper<Team> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Team::getUserId,orders.getUserId());
         Team team = this.getOne(queryWrapper);
 
         Long upUser01Id = team.getUpUser01Id();
+        //是否有上一级用户
         if (upUser01Id!=null&&orders.getRebate01()!=null){
+            //查询上一级用户团队信息
             LambdaQueryWrapper<Team> queryWrapper1 = new LambdaQueryWrapper<>();
             queryWrapper1.eq(Team::getUserId,upUser01Id);
             Team teamTop = this.getOne(queryWrapper1);
+            //修改上一级团队返现信息
             teamTop.setTotalWithdrawnAmount(teamTop.getTotalWithdrawnAmount().subtract(orders.getRebate01()));
             this.update(teamTop,queryWrapper1);
+            //记录信息
             teamMsgService.addCashback(upUser01Id,user.getTel(),"一级成员订单返现驳回"+orders.getRebate01());
             userMsgService.overruleCashback(upUser01Id,user.getTel(),orders.getRebate01().toString());
+
             Long upUser02Id = team.getUpUser02Id();
 
-
+            //查询是否有上二级用户
             if (upUser02Id!=null&&orders.getRebate02()!=null){
+                //查询上二级用户团队信息
                 LambdaQueryWrapper<Team> queryWrapper2 = new LambdaQueryWrapper<>();
                 queryWrapper2.eq(Team::getUserId,upUser02Id);
                 Team teamTopTop = this.getOne(queryWrapper2);
+                //修改上二级团队信息
                 teamTopTop.setTotalWithdrawnAmount(teamTopTop.getTotalWithdrawnAmount().subtract(orders.getRebate02()));
                 this.update(teamTopTop,queryWrapper2);
+                //记录日志
                 teamMsgService.addCashback(upUser02Id,user.getTel(),"二级成员订单返现驳回"+orders.getRebate02());
                 userMsgService.overruleCashback(upUser02Id,user.getTel(),orders.getRebate02().toString());
             }
