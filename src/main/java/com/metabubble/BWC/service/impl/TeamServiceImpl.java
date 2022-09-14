@@ -132,6 +132,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * 创建团队表同时添加上级用户
      * @param user
      * @param invitation
+     * @author leitianyu999
      */
     @Override
     public void save(User user, String invitation) {
@@ -212,6 +213,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * 团队返现驳回
      * @param orders
      * @param user
+     * @author leitianyu999
      */
     @Override
     public void overruleCashback(Orders orders, User user) {
