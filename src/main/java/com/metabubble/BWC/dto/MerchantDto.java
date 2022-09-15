@@ -2,6 +2,8 @@ package com.metabubble.BWC.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 
 /**
  * Merchant的Dto
@@ -41,4 +43,7 @@ public class MerchantDto {
 
     //店铺黑名单
     private String blacklist;
+
+    //商家创建时间
+    private LocalDateTime createTime;
 }

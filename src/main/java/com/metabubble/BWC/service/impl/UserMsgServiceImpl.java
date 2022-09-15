@@ -53,4 +53,25 @@ public class UserMsgServiceImpl extends ServiceImpl<UserMsgMapper, UserMsg>
         userMsg.setMsg(cashbackMsg);
         this.save(userMsg);
     }
+
+    @Override
+    public void overruleUserCashback(Orders orders) {
+        UserMsg userMsg = new UserMsg();
+        userMsg.setUserId(orders.getUserId());
+        String cashbackMsg = "商家因"+orders.getReason()+"驳回了任务"+orders.getTaskName()+"的返现金额"+orders.getRebate();
+        userMsg.setType(2);
+        userMsg.setMsg(cashbackMsg);
+        this.save(userMsg);
+    }
+
+    @Override
+    public void overruleCashback(Long id, String tel, String amount) {
+        UserMsg userMsg = new UserMsg();
+        userMsg.setUserId(id);
+        userMsg.setType(2);
+        String s = MobileUtils.blurPhone(tel);
+        String cashbackMsg = "用户"+s+"返现金额"+amount+"被驳回";
+        userMsg.setMsg(cashbackMsg);
+        this.save(userMsg);
+    }
 }

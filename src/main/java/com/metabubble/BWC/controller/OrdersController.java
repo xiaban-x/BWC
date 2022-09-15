@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ public class OrdersController {
     private ManageSession manageSession;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private UserMsgService userMsgService;
 
     String normal = "normal";
     String right = "right";
@@ -120,6 +123,7 @@ public class OrdersController {
      * @author leitianyu999
      */
     @GetMapping("/user")
+    @Transactional
     public R<OrdersDto> selectByOrdersId(int id){
         Orders orders = ordersService.getById(id);
         Task task = taskService.getById(orders.getTaskId());
@@ -408,9 +412,27 @@ public class OrdersController {
      * @author leitianyu999
      */
     @GetMapping
-    public R<Orders> get(int id){
-        Orders byId = ordersService.getById(id);
-        return R.success(byId);
+    public R<OrdersDo> get(int id){
+        Orders item = ordersService.getById(id);
+        if (item.getStatus()==0||item.getStatus()==2||item.getStatus()==5) {
+            //更新状态
+            item = ordersService.updateStatusFormExpiredTimeAndReturn(item);
+        }
+
+        Long taskId = item.getTaskId();
+        Long merchantId = item.getMerchantId();
+        Long userId = item.getUserId();
+        Task task = taskService.getById(taskId);
+        Merchant merchant = merchantService.getById(merchantId);
+        User byId = userService.getById(userId);
+
+        OrdersDo ordersDo = OrdersConverter.INSTANCES.OrdersToOrdersDo(item);
+
+        ordersDo.setTask(task);
+        ordersDo.setShowAddress(merchant.getShowAddress());
+        ordersDo.setTel(byId.getTel());
+        ordersDo.setName(byId.getName());
+        return R.success(ordersDo);
     }
 
     /**
@@ -454,11 +476,13 @@ public class OrdersController {
             User user = userService.getById(orders.getUserId());
             //给上一级返现
             if (team.getUpUser01Id()!=null) {
-                teamService.cashbackForUserFromFirst(team.getUpUser01Id(),user.getTel());
+                BigDecimal bigDecimal01 = teamService.cashbackForUserFromFirst(team.getUpUser01Id(), user.getTel());
+                orders.setRebate01(bigDecimal01);
             }
             //给上二级返现
             if (team.getUpUser02Id()!=null){
-                teamService.cashbackForUserFromSecond(team.getUpUser02Id(),user.getTel());
+                BigDecimal bigDecimal02 = teamService.cashbackForUserFromSecond(team.getUpUser02Id(), user.getTel());
+                orders.setRebate02(bigDecimal02);
             }
             Long admin = BaseContext.getCurrentId();
             //添加审核人id
@@ -473,9 +497,6 @@ public class OrdersController {
 
 
 
-
-
-
     /**
      * 后台审核不通过
      * @param orders
@@ -483,6 +504,7 @@ public class OrdersController {
      * @author leitianyu999
      */
     @PutMapping("audit")
+    @Transactional
     public R<String> auditFailed(@RequestBody Orders orders){
         Orders orders1 = ordersService.getById(orders);
         //待一审
@@ -512,8 +534,48 @@ public class OrdersController {
 
 
     /**
+     * 驳回二审通过订单
+     * @param id
+     * @param reason
+     * @return
+     * @author leitianyu999
+     */
+    @DeleteMapping("/overrule")
+    @Transactional
+    public R<String> overruleOrder(Long id, String reason){
+        //查询订单
+        Orders orders = ordersService.getById(id);
+        //判断订单是否为二审通过
+        if (orders!=null&&orders.getStatus()==6){
+            //更改为二审未通过
+            orders.setStatus(5);
+            //添加理由
+            orders.setReason(reason);
+            //获取用户
+            User user = userService.getById(orders.getUserId());
+            //修改用户返现信息
+            user.setCashableAmount(user.getCashableAmount().subtract(orders.getRebate()));
+            user.setSavedAmount(user.getSavedAmount().subtract(orders.getRebate()));
+            //添加用户钱包信息
+            userMsgService.overruleUserCashback(orders);
+            //团队返现驳回
+            teamService.overruleCashback(orders,user);
+
+            userService.updateById(user);
+            ordersService.updateById(orders);
+            //记录日志
+            logsService.saveLog("驳回订单","管理员”"+BaseContext.getCurrentId()+"将订单"+orders.getId()+"驳回");
+
+            return R.success("驳回成功");
+        }
+        return R.error("订单信息有误，请重新确认");
+    }
+
+
+    /**
      * 修改订单过期时间
      * @return
+     * @author leitianyu999
      */
     @PutMapping("/update")
     @Transactional
@@ -523,6 +585,7 @@ public class OrdersController {
         logsService.saveLog("修改订单过期时间","管理员”"+BaseContext.getCurrentId()+"将订单"+orders1.getId()+"过期时间"+orders1.getExpiredTime()+"修改为"+orders.getExpiredTime());
         orders1.setExpiredTime(orders.getExpiredTime());
         ordersService.updateById(orders1);
+        ordersService.updateStatusFormExpiredTimeAndReturn(orders1);
         return R.success("修改成功");
     }
 
