@@ -69,7 +69,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
      */
     @Override
     public Orders updateStatusFormExpiredTimeAndReturn(Orders orders) {
-        if (orders.getStatus()==1||orders.getStatus()==4||orders.getStatus()==6||orders.getStatus()==7||orders.getStatus()==8){
+        if (orders.getStatus()==1||orders.getStatus()==4||orders.getStatus()==6||orders.getStatus()==7){
             return orders;
         }
         LocalDateTime expiredTime = orders.getExpiredTime();
@@ -77,6 +77,24 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         if (orders.getStatus()==0||orders.getStatus()==3){
             if (now.isAfter(expiredTime)) {
                 orders.setStatus(8);
+                this.updateById(orders);
+                return orders;
+            }
+            return orders;
+        }
+        if (orders.getStatus()==8){
+            if (!now.isAfter(expiredTime)) {
+                if (orders.getPicComment()!=null){
+                    orders.setStatus(5);
+                    this.updateById(orders);
+                    return orders;
+                }
+                if (orders.getPicOrder1()!=null||orders.getPicOrder2()!=null){
+                    orders.setStatus(2);
+                    this.updateById(orders);
+                    return orders;
+                }
+                orders.setStatus(0);
                 this.updateById(orders);
                 return orders;
             }

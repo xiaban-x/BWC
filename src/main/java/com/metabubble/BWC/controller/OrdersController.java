@@ -585,6 +585,7 @@ public class OrdersController {
         logsService.saveLog("修改订单过期时间","管理员”"+BaseContext.getCurrentId()+"将订单"+orders1.getId()+"过期时间"+orders1.getExpiredTime()+"修改为"+orders.getExpiredTime());
         orders1.setExpiredTime(orders.getExpiredTime());
         ordersService.updateById(orders1);
+        ordersService.updateStatusFormExpiredTimeAndReturn(orders1);
         return R.success("修改成功");
     }
 
