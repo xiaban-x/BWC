@@ -7,9 +7,6 @@ import java.math.BigDecimal;
 @Data
 public class RDto {
 
-    //微信充值金额
-    private BigDecimal wxAmount;
-
     //支付宝充值金额
     private BigDecimal zfbAmount;
 
