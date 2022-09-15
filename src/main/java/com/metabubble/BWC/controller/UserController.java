@@ -263,6 +263,7 @@ public class UserController {
                     return R.error("您的账号已被封禁，理由是："+user.getReason());
                 }
             }
+            userService.checkGrade(user.getId());
 
             UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
             //redisTemplate.opsForValue().set(userKey+id,user,24, TimeUnit.HOURS);
