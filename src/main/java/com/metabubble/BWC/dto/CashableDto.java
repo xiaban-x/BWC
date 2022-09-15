@@ -9,6 +9,13 @@ import java.time.LocalDateTime;
 
 @Data
 public class CashableDto {
+
+    //手机号
+    private String tel;
+
+    //用户状态：0是正常，1是封禁
+    private Integer userStatus;
+
     //支付宝ID
     private String aliPayId;
 
@@ -27,12 +34,21 @@ public class CashableDto {
     //用户id
     private Long userId;
 
+    //管理员id
+    private Long adminId;
+
 
     //转账订单号
     private Long tradeNo;
 
     //提现金额
     private BigDecimal cashableAmount;
+
+    //已提现金额
+    private BigDecimal withdrawnAmount;
+
+    //余额
+    private BigDecimal currentAmount;
 
     //提现类型 1,支付宝(默认) 2，微信
     private Integer payType;

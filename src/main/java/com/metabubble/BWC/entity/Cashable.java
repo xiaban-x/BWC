@@ -21,6 +21,9 @@ public class Cashable {
     //用户id
     private Long userId;
 
+    //用户id
+    private Long adminId;
+
     //转账订单号
     private Long tradeNo;
 

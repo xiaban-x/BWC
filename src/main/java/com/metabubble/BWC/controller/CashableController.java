@@ -8,9 +8,11 @@ import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.CDto;
 import com.metabubble.BWC.dto.CashableDto;
+import com.metabubble.BWC.dto.RechargeDto;
 import com.metabubble.BWC.entity.*;
 import com.metabubble.BWC.service.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -117,7 +121,7 @@ public class CashableController {
      */
 //提现管理
     @GetMapping("/getCashablePageInfo")
-    public R<IPage> Page(Integer Page, Integer PageSize, Integer chooseType,String zfbId,String zfbName
+    public R<IPage> Page(Integer Page, Integer PageSize, Integer chooseType,String zfbId,String tel
     ,String beginTime,String endTime) {
         //分页构造器
         QueryWrapper<Object> wrapper = new QueryWrapper<>();
@@ -131,8 +135,8 @@ public class CashableController {
         if (zfbId != null) {
             wrapper.and(c -> {c.like("user.ali_pay_id",zfbId);});
         }
-        if (zfbName != null) {
-            wrapper.and(c -> {c.like("user.ali_pay_name",zfbName);});
+        if (tel != null) {
+            wrapper.and(c -> {c.like("user.tel",tel);});
         }
         if (beginTime != null) {
             wrapper.and(c -> {c.ge("cashable.create_time",beginTime);});
@@ -141,8 +145,51 @@ public class CashableController {
             wrapper.and(c -> {c.le("cashable.create_time",endTime);});
         }
 
+
+        //取出所有用户的所有记录
         Page<CashableDto> cashableDtoPage = new Page<>(Page,PageSize);
         IPage<CashableDto> userPage = cashableService.select(cashableDtoPage,wrapper);
+
+
+        Set<Long> set = new HashSet<>();
+        List<CashableDto> records = userPage.getRecords();
+        for (CashableDto record : records) {
+            Long userId = record.getUserId();
+            set.add(userId);
+        }
+        Map<Long,BigDecimal> list0 = new HashMap<>();
+        for (Long aLong : set) {
+            User user = userService.getById(aLong);
+
+            QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("user_id",aLong);
+            Team team = teamService.getOne(queryWrapper);
+
+            BigDecimal total = team.getTotalWithdrawnAmount().add(user.getCashableAmount());
+            list0.put(aLong,total);
+        }
+
+        for (Long a: list0.keySet()
+             )
+        {System.out.println(a); }
+
+        List<CashableDto> list = records.stream().map((item) -> {
+            CashableDto cashableDto = new CashableDto();
+            BeanUtils.copyProperties(item, cashableDto);
+            for (Long key:list0.keySet()
+                 ) {
+                if (cashableDto.getUserId().equals(key)){
+                    cashableDto.setCurrentAmount(list0.get(key));
+                }else{
+                    continue;
+                }
+            }
+            return cashableDto;
+        }).collect(Collectors.toList());
+
+        userPage.setRecords(list);
+
+
         return  R.success(userPage);
 
 
@@ -153,7 +200,7 @@ public class CashableController {
      * 用户端提现信息增加与修改
      * author Kenlihankun
      * @Param amount 获取用户填写的可提现金额
-     * @Param  payType 获取用户选择的提现方式 1:支付宝(默认) 2:微信
+     * @Param  payType 获取用户选择的提现方式 1:支付宝(默认)
      * @return
      */
 
@@ -223,7 +270,7 @@ public class CashableController {
         BigDecimal total = cashableAmount.add(totalWithdrawAmount);
 
         //判断传入参数是否正确
-        if (payType.equals(1) || payType.equals(2)){
+        if (payType.equals(1)){
             //判断是否超过当天最大提现次数
             if (count_1.compareTo(maxTimes)<1){
                 if (amount.compareTo(cashableAmount)<1 && minA.compareTo(amount)<1 && amount.compareTo(zero)==1
@@ -357,6 +404,7 @@ public class CashableController {
             if (cashable!=null){
                 //判断是否为待转账状态
                 if (cashable.getStatus().equals(1)){
+                    cashable.setAdminId(adminId);
                     cashable.setWithdrawReason(withDrawReason);
                     cashable.setStatus(3);
                     cashableService.update(cashable, wrapper);
@@ -441,6 +489,8 @@ public class CashableController {
             if (cashable!=null){
                 //判断是否为待转账状态
                 if (cashable.getStatus().equals(1)){
+
+                    cashable.setAdminId(adminId);
                     cashable.setStatus(2);
                     cashableService.update(cashable,wrapper);
 
