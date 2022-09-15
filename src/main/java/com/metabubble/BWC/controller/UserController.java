@@ -10,6 +10,7 @@ import com.metabubble.BWC.dto.Imp.PageConverter;
 import com.metabubble.BWC.dto.Imp.UserConverter;
 import com.metabubble.BWC.dto.UserDo;
 import com.metabubble.BWC.dto.UserDto;
+import com.metabubble.BWC.entity.Recharge;
 import com.metabubble.BWC.entity.Team;
 import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.LogsService;
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -121,10 +124,26 @@ public class UserController {
     @PutMapping
     public R<String> update(@RequestBody User user){
 
-        if (user.getMembershipExpTime()!=null){
-
+        if (user.getId()==null){
+            return R.error("无用户id信息");
         }
 
+        if (user.getMembershipExpTime()!=null){
+            User user1 = userService.getById(user.getId());
+            if (user1==null){
+                return R.error("查无此用户");
+            }
+            Duration between = null;
+            if (user1.getMembershipExpTime()!=null) {
+                between = Duration.between(user1.getMembershipExpTime(), user.getMembershipExpTime());
+            }else {
+                between = Duration.between(LocalDateTime.now(), user.getMembershipExpTime());
+            }
+            long l = between.toDays();
+            Recharge recharge = new Recharge();
+            recharge.setUserId(user1.getId());
+            recharge.setDays(Integer.parseInt(String.valueOf(l)));
+        }
         userService.updateById(user);
         logsService.saveLog("修改用户", "管理员“"+BaseContext.getCurrentId()+"”修改了"+user.getId()+"的基本信息");
         return R.success("修改成功");
