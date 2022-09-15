@@ -173,6 +173,7 @@ public class C_UserFilter implements Filter {
                 // 判断是否为管理员登录，为管理员登录则放行
                 if (request.getSession().getAttribute("admin") != null) {
                     // 为管理员登录，放行
+                    BaseContext.setCurrentId((Long) request.getSession().getAttribute("admin"));
                     filterChain.doFilter(request, response);
                     BaseContext.remove();
                     return;
@@ -190,6 +191,7 @@ public class C_UserFilter implements Filter {
                 }
 
                 // 为管理员登录，放行
+                BaseContext.setCurrentId((Long) request.getSession().getAttribute("admin"));
                 filterChain.doFilter(request, response);
                 BaseContext.remove();
                 return;
