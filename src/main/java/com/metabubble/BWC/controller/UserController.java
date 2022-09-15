@@ -14,6 +14,7 @@ import com.metabubble.BWC.entity.Recharge;
 import com.metabubble.BWC.entity.Team;
 import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.LogsService;
+import com.metabubble.BWC.service.RechargeService;
 import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
 import com.metabubble.BWC.utils.CookieUtils;
@@ -47,6 +48,8 @@ public class UserController {
     private RedisTemplate redisTemplate;
     @Autowired
     private ManageSession manageSession;
+    @Autowired
+    private RechargeService rechargeService;
 
 
     String stringSession = "session";
@@ -143,8 +146,10 @@ public class UserController {
             Recharge recharge = new Recharge();
             recharge.setUserId(user1.getId());
             recharge.setDays(Integer.parseInt(String.valueOf(l)));
+            rechargeService.otherRecharge(recharge);
         }
         userService.updateById(user);
+        userService.checkGrade(user.getId());
         logsService.saveLog("修改用户", "管理员“"+BaseContext.getCurrentId()+"”修改了"+user.getId()+"的基本信息");
         return R.success("修改成功");
 
