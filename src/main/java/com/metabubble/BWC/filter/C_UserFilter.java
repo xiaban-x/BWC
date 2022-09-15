@@ -84,7 +84,8 @@ public class C_UserFilter implements Filter {
                 "/common/upload",
                 "/config/getContents/{id}",
                 "/photo/{filename}",
-                "/cusservice"
+                "/cusservice",
+                "/decoration/**"
 
         };
 
@@ -111,7 +112,6 @@ public class C_UserFilter implements Filter {
                 "/financeList/insertCashableInfo",
                 "/task/pickTask",
                 // 新增
-                "/decoration/**",
                 "/cusservice/**",
                 "/usermsg"
         };
@@ -123,10 +123,10 @@ public class C_UserFilter implements Filter {
         // 登录与否都可放行
         if (check1) {
 
-            if (requestURI.equals("/decoration/{id}") && method.equals("DELETE")) {
+            if (method.equals("DELETE") || requestURI.equals("/decoration")) {
                 if (request.getSession().getAttribute("admin") != null) {
                     // 管理员已登录
-
+                    BaseContext.setCurrentId((Long) request.getSession().getAttribute("admin"));
                     filterChain.doFilter(request, response);
                     BaseContext.remove();
                     return;
