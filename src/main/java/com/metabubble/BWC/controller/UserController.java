@@ -265,7 +265,12 @@ public class UserController {
             }
             userService.checkGrade(user.getId());
 
+            LambdaQueryWrapper<Team> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(Team::getUserId,user.getId());
+            Team team = teamService.getOne(lambdaQueryWrapper);
+
             UserDto userDto = UserConverter.INSTANCES.toUserRoleDto(user);
+            userDto.setCashableAmount(userDto.getCashableAmount().add(team.getTotalWithdrawnAmount()));
             //redisTemplate.opsForValue().set(userKey+id,user,24, TimeUnit.HOURS);
             return R.success(userDto);
         }
