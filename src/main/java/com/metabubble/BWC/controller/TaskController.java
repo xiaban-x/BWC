@@ -362,7 +362,7 @@ public class TaskController {
         List<Merchant> merchantsByFind = new ArrayList<>();
         if (name != null) {
             for (Merchant m : merchants) {
-                if (m.getName().equals(name)) {
+                if (m.getName().contains(name)) {
                     merchantsByFind.add(m);
                 }
             }
