@@ -9,8 +9,14 @@ import com.metabubble.BWC.dto.CashableDto;
 import com.metabubble.BWC.entity.Cashable;
 import com.metabubble.BWC.mapper.CashableMapper;
 import com.metabubble.BWC.service.CashableService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CashableServiceImpl extends ServiceImpl<CashableMapper, Cashable>

@@ -265,13 +265,37 @@ public class AdminController {
     @PutMapping
     public R<String> update(@RequestBody Admin admin) {
         // 管理员更改日志
-        logsService.saveLog("修改管理员", "修改 “ " + admin.getName() + " ”管理员的基本信息");
+        logsService.saveLog(adminService.getById(BaseContext.getCurrentId()).getName(), "修改 “ " + admin.getName() + " ”管理员的基本信息");
 
-        boolean check1 = admin.getType().equals(0);
-        boolean check2 = admin.getType().equals(1);
-        boolean check3 = admin.getType().equals(2);
-        if (check1 && check2 && check3) {
+        Admin admin1 = adminService.getById(admin.getId());
+
+        // 将封装类缺少的元素补上
+        if (admin.getType()==null) {
+            Integer type = admin1.getType();
+            admin.setType(type);
+        }
+
+        if (admin.getStatus()==null) {
+            admin.setStatus(admin1.getStatus());
+        }
+        if (admin.getName()==null) {
+            admin.setName(admin1.getName());
+        }
+        if (admin.getEmail()==null) {
+            admin.setEmail(admin1.getEmail());
+        }
+        if (admin.getPassword()==null) {
+            admin.setPassword(admin1.getPassword());
+        }
+
+        if (admin.getType()>2 || admin.getType()<0) {
             return R.error("信息错误");
+        }
+
+        // 对更改的密码进行md5加密
+        if (admin.getPassword() != admin1.getPassword()) {
+            String password = DigestUtils.md5DigestAsHex(admin.getPassword().getBytes());
+            admin.setPassword(password);
         }
 
         adminService.updateById(admin);

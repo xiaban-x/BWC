@@ -2,9 +2,11 @@ package com.metabubble.BWC.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
+import com.metabubble.BWC.dto.CashableDto;
 import com.metabubble.BWC.dto.RDto;
 import com.metabubble.BWC.dto.RechargeDto;
 import com.metabubble.BWC.entity.*;
@@ -19,7 +21,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/financeList")
@@ -51,7 +52,6 @@ public class RechargeController {
     public R<RDto> recharge_amount(@RequestParam("Type") Integer type, @RequestParam("BeginTime") String beginTime) {
 
 
-        QueryWrapper<Recharge> queryAmount01 = new QueryWrapper<>();
         QueryWrapper<Recharge> queryAmount02 = new QueryWrapper<>();
         QueryWrapper<Recharge> queryAll = new QueryWrapper<>();
         RDto rDto = new RDto();
@@ -75,9 +75,6 @@ public class RechargeController {
             }else {
                 beginTime = "0000-00-00 00:00:00";
             }
-            //统计微信充值条件
-            queryAmount01.likeRight("create_time", beginTime).and(c2 -> c2.eq("recharge_type", 1))
-                    .and(c2 -> c2.eq("status", 1));
             //统计支付宝充值条件
             queryAmount02.likeRight("create_time", beginTime).and(c3 -> c3.eq("recharge_type", 2))
                     .and(c3 -> c3.eq("status", 1));
@@ -86,10 +83,7 @@ public class RechargeController {
             queryAll.likeRight("create_time", beginTime).and(c1 -> c1.eq("status", 1));
 
 
-            //统计微信转账金额
-            queryAmount01.select("IFNULL(sum(recharge_amount),0) AS wx_all");
-            Map<String, Object> map11 = rechargeService.getMap(queryAmount01);
-            BigDecimal sumCount1 = (BigDecimal) map11.get("wx_all");
+
 
             //统计支付宝转账金额
             queryAmount02.select("IFNULL(sum(recharge_amount),0) AS zfb_all");
@@ -102,11 +96,9 @@ public class RechargeController {
             Map<String, Object> map13 = rechargeService.getMap(queryAll);
             BigDecimal sumAll0 = (BigDecimal) map13.get("all0");
 
-            rDto.setWxAmount(sumCount1);
             rDto.setZfbAmount(sumCount2);
             rDto.setAllAmount(sumAll0);
         }else {
-            rDto.setWxAmount(new BigDecimal(0));
             rDto.setZfbAmount(new BigDecimal(0));
             rDto.setAllAmount(new BigDecimal(0));
         }
@@ -121,7 +113,7 @@ public class RechargeController {
      * author Kenlihankun
      * @return
      * @Param membershipTime 选择充值的会员时间 1：月卡 2：季卡 3：年卡
-     *  @Param rechargeType 选择的充值类型 0：零钱 1：微信 2：支付宝
+     *  @Param rechargeType 选择的充值类型 0：零钱 2：支付宝
      */
 
     //待充值
@@ -198,33 +190,39 @@ public class RechargeController {
                                 if (membershipTime.equals(1L)) {
                                     //充值会员
                                     if (user.getGrade().equals(0)) {
-                                        user.setMembershipExpTime(localDateTime.plusMonths(1L));
+                                        user.setMembershipExpTime(localDateTime.plusDays(30L));
+                                        recharge.setDays(30);
                                     }
                                     if (user.getGrade().equals(1)) {
                                         //续费会员
-                                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(1L));
+                                        user.setMembershipExpTime(user.getMembershipExpTime().plusDays(30L));
+                                        recharge.setDays(30);
 
                                     }
                                 }
                                 if (membershipTime.equals(2L)) {
                                     //充值会员
                                     if (user.getGrade().equals(0)) {
-                                        user.setMembershipExpTime(localDateTime.plusMonths(3L));
+                                        user.setMembershipExpTime(localDateTime.plusDays(90L));
+                                        recharge.setDays(90);
                                     }
                                     if (user.getGrade().equals(1)) {
                                         //续费会员
-                                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(3L));
+                                        user.setMembershipExpTime(user.getMembershipExpTime().plusDays(90L));
+                                        recharge.setDays(90);
 
                                     }
                                 }
                                 if (membershipTime.equals(3L)) {
                                     //充值会员
                                     if (user.getGrade().equals(0)) {
-                                        user.setMembershipExpTime(localDateTime.plusYears(1L));
+                                        user.setMembershipExpTime(localDateTime.plusDays(365L));
+                                        recharge.setDays(365);
                                     }
                                     if (user.getGrade().equals(1)) {
                                         //续费会员
-                                        user.setMembershipExpTime(user.getMembershipExpTime().plusYears(1L));
+                                        user.setMembershipExpTime(user.getMembershipExpTime().plusDays(365L));
+                                        recharge.setDays(365);
 
                                     }
                                 }
@@ -242,33 +240,39 @@ public class RechargeController {
                                 if (membershipTime.equals(1L)) {
                                     //充值会员
                                     if (user.getGrade().equals(0)) {
-                                        user.setMembershipExpTime(localDateTime.plusMonths(1L));
+                                        user.setMembershipExpTime(localDateTime.plusDays(30L));
+                                        recharge.setDays(30);
                                     }
                                     if (user.getGrade().equals(1)) {
                                         //续费会员
-                                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(1L));
+                                        user.setMembershipExpTime(user.getMembershipExpTime().plusDays(30L));
+                                        recharge.setDays(30);
 
                                     }
                                 }
                                 if (membershipTime.equals(2L)) {
                                     //充值会员
                                     if (user.getGrade().equals(0)) {
-                                        user.setMembershipExpTime(localDateTime.plusMonths(3L));
+                                        user.setMembershipExpTime(localDateTime.plusDays(90L));
+                                        recharge.setDays(90);
                                     }
                                     if (user.getGrade().equals(1)) {
                                         //续费会员
-                                        user.setMembershipExpTime(user.getMembershipExpTime().plusMonths(3L));
+                                        user.setMembershipExpTime(user.getMembershipExpTime().plusDays(90L));
+                                        recharge.setDays(90);
 
                                     }
                                 }
                                 if (membershipTime.equals(3L)) {
                                     //充值会员
                                     if (user.getGrade().equals(0)) {
-                                        user.setMembershipExpTime(localDateTime.plusYears(1L));
+                                        user.setMembershipExpTime(localDateTime.plusDays(365L));
+                                        recharge.setDays(365);
                                     }
                                     if (user.getGrade().equals(1)) {
                                         //续费会员
-                                        user.setMembershipExpTime(user.getMembershipExpTime().plusYears(1L));
+                                        user.setMembershipExpTime(user.getMembershipExpTime().plusDays(365L));
+                                        recharge.setDays(365);
 
                                     }
                                 }
@@ -352,55 +356,28 @@ public class RechargeController {
      * @return
      */
     @GetMapping("/getRechargePageInfo")
-    public R<Page> Page(int Page, int PageSize, Integer chooseType, String beginTime, String endTime) {
-        Page<Recharge> pageInfo = new Page(Page, PageSize);
-        Page<RechargeDto> rechargeDtoPage = new Page<>();
-        QueryWrapper<Recharge> wrapper = new QueryWrapper<>();
-        String finalEndTime = endTime;
+    public R<IPage> Page(int Page, int PageSize, Integer chooseType, String beginTime, String endTime,String tel) {
+        QueryWrapper<Object> wrapper = new QueryWrapper<>();
 
-
-        if (chooseType.equals(0) || chooseType.equals(1) || chooseType.equals(2)){
-            if (chooseType.equals(0)) {
-                wrapper.ge("create_time", beginTime).and(c -> c.le("create_time", finalEndTime));
-            }
-            if (chooseType.equals(1)){
-                wrapper.ge("create_time", beginTime).and(c -> c.le("create_time", finalEndTime))
-                        .and(c -> c.eq("status", 1));
-
-            }
-            if (chooseType.equals(2)){
-                wrapper.ge("create_time", beginTime).and(c -> c.le("create_time", finalEndTime))
-                        .and(c -> c.eq("status",2));
-            }
-            wrapper.orderByDesc("create_time");
-            //执行分页查询
-            rechargeService.page(pageInfo, wrapper);
-            //联表查询
-            BeanUtils.copyProperties(pageInfo, rechargeDtoPage, "records");
-
-            List<Recharge> records = pageInfo.getRecords();
-
-            List<RechargeDto> list = records.stream().map((item) -> {
-                RechargeDto rechargeDto = new RechargeDto();
-
-                BeanUtils.copyProperties(item, rechargeDto);
-
-                Long userId = item.getUserId();//分类id
-                //根据id查询分类对象
-                User user = userService.getById(userId);
-
-                if (user != null) {
-                    String name = user.getName();
-                    rechargeDto.setName(name);
-                    rechargeDto.setUserId(userId);
-                }
-                return rechargeDto;
-            }).collect(Collectors.toList());
-
-            rechargeDtoPage.setRecords(list);
+        if (chooseType.equals(1) || chooseType.equals(2)){
+            wrapper.and(c -> {c.eq("recharge.status",chooseType);});
 
         }
-        return R.success(rechargeDtoPage);
+        if (tel != null) {
+            wrapper.and(c -> {c.like("user.tel",tel);});
+        }
+        if (beginTime != null) {
+            wrapper.and(c -> {c.ge("recharge.create_time",beginTime);});
+        }
+        if (endTime != null) {
+            wrapper.and(c -> {c.le("recharge.create_time",endTime);});
+        }
+
+        //取出所有用户的所有记录
+        Page<RechargeDto> rechargeDtoPage = new Page<>(Page,PageSize);
+        IPage<RechargeDto> userPage = rechargeService.select(rechargeDtoPage,wrapper);
+
+        return R.success(userPage);
 
     }
 }

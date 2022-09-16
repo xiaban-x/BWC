@@ -21,6 +21,9 @@ public class Cashable {
     //用户id
     private Long userId;
 
+    //用户id
+    private Long adminId;
+
     //转账订单号
     private Long tradeNo;
 
@@ -33,7 +36,7 @@ public class Cashable {
     //提现金额
     private BigDecimal cashableAmount;
 
-    //提现类型 1,支付宝(默认) 2，微信
+    //提现类型 1,支付宝(默认)
     private Integer payType;
 
     //提现状态 1，待转账(默认) 2，已转账 3,已取消

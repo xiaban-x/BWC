@@ -40,16 +40,19 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * @author leitianyu999
      */
     @Override
-    public void cashbackForUserFromFirst(Long id,String tel) {
+    public BigDecimal cashbackForUserFromFirst(Long id,String tel) {
         LambdaQueryWrapper<Team> queryWrapper123 = new LambdaQueryWrapper<>();
         queryWrapper123.eq(Team::getUserId,id);
         Team team = this.getOne(queryWrapper123);
 
         //手机号脱敏处理
         String phone = MobileUtils.blurPhone(tel);
+
+        BigDecimal bigDecimal = null;
         //查询是否为会员
         if (userService.checkGrade(id)) {
             BigDecimal bigDecimalForFirstWithVip = BigDecimal.valueOf(Double.parseDouble(configService.getOnlyContentById(Long.parseLong("18"))));
+            bigDecimal = bigDecimalForFirstWithVip;
             if (!bigDecimalForFirstWithVip.equals(0)) {
                 //会员返现
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithVip));
@@ -59,6 +62,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             }
         }else {
             BigDecimal bigDecimalForFirstWithNtoVip = BigDecimal.valueOf(Double.parseDouble(configService.getOnlyContentById(Long.parseLong("19"))));
+            bigDecimal = bigDecimalForFirstWithNtoVip;
             if (!bigDecimalForFirstWithNtoVip.equals(0)) {
                 //非会员返现
                 BigDecimal add = team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip);
@@ -69,6 +73,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             }
         }
         this.update(team,queryWrapper123);
+        return bigDecimal;
     }
 
     /**
@@ -77,15 +82,16 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * @author leitianyu999
      */
     @Override
-    public void cashbackForUserFromSecond(Long id,String tel) {
+    public BigDecimal cashbackForUserFromSecond(Long id,String tel) {
         LambdaQueryWrapper<Team> queryWrapper123 = new LambdaQueryWrapper<>();
         queryWrapper123.eq(Team::getUserId,id);
         Team team = this.getOne(queryWrapper123);
 
-
+        BigDecimal bigDecimal = null;
         //查询是否为会员
         if (userService.checkGrade(id)) {
             BigDecimal bigDecimalForSecondWithVip = BigDecimal.valueOf(Double.parseDouble(configService.getOnlyContentById(Long.parseLong("20"))));
+            bigDecimal = bigDecimalForSecondWithVip;
             if (!bigDecimalForSecondWithVip.equals(0)) {
                 //会员返现
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithVip));
@@ -95,6 +101,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             }
         }else {
             BigDecimal bigDecimalForSecondWithNtoVip = BigDecimal.valueOf(Double.parseDouble(configService.getOnlyContentById(Long.parseLong("21"))));
+            bigDecimal = bigDecimalForSecondWithNtoVip;
             if (!bigDecimalForSecondWithNtoVip.equals(0)) {
                 //非会员返现
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithNtoVip));
@@ -104,6 +111,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             }
         }
         this.update(team,queryWrapper123);
+        return bigDecimal;
     }
 
     /**
@@ -124,6 +132,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * 创建团队表同时添加上级用户
      * @param user
      * @param invitation
+     * @author leitianyu999
      */
     @Override
     public void save(User user, String invitation) {
@@ -198,5 +207,51 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
         this.update(team,queryWrapper1);
         this.update(teamTop,queryWrapper2);
+    }
+
+    /**
+     * 团队返现驳回
+     * @param orders
+     * @param user
+     * @author leitianyu999
+     */
+    @Override
+    public void overruleCashback(Orders orders, User user) {
+        //查询用户团队信息
+        LambdaQueryWrapper<Team> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Team::getUserId,orders.getUserId());
+        Team team = this.getOne(queryWrapper);
+
+        Long upUser01Id = team.getUpUser01Id();
+        //是否有上一级用户
+        if (upUser01Id!=null&&orders.getRebate01()!=null){
+            //查询上一级用户团队信息
+            LambdaQueryWrapper<Team> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(Team::getUserId,upUser01Id);
+            Team teamTop = this.getOne(queryWrapper1);
+            //修改上一级团队返现信息
+            teamTop.setTotalWithdrawnAmount(teamTop.getTotalWithdrawnAmount().subtract(orders.getRebate01()));
+            this.update(teamTop,queryWrapper1);
+            //记录信息
+            teamMsgService.addCashback(upUser01Id,user.getTel(),"一级成员订单返现驳回"+orders.getRebate01());
+            userMsgService.overruleCashback(upUser01Id,user.getTel(),orders.getRebate01().toString());
+
+            Long upUser02Id = team.getUpUser02Id();
+
+            //查询是否有上二级用户
+            if (upUser02Id!=null&&orders.getRebate02()!=null){
+                //查询上二级用户团队信息
+                LambdaQueryWrapper<Team> queryWrapper2 = new LambdaQueryWrapper<>();
+                queryWrapper2.eq(Team::getUserId,upUser02Id);
+                Team teamTopTop = this.getOne(queryWrapper2);
+                //修改上二级团队信息
+                teamTopTop.setTotalWithdrawnAmount(teamTopTop.getTotalWithdrawnAmount().subtract(orders.getRebate02()));
+                this.update(teamTopTop,queryWrapper2);
+                //记录日志
+                teamMsgService.addCashback(upUser02Id,user.getTel(),"二级成员订单返现驳回"+orders.getRebate02());
+                userMsgService.overruleCashback(upUser02Id,user.getTel(),orders.getRebate02().toString());
+            }
+        }
+
     }
 }
