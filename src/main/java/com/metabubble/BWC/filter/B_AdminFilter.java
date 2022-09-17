@@ -118,6 +118,12 @@ public class B_AdminFilter implements Filter {
                 }
             }
 
+            if (requestURI.equals("/admin") && request.getMethod().equals("GET")) {
+                filterChain.doFilter(request, response);
+                BaseContext.remove();
+                return;
+            }
+
             Long adminId = (Long) request.getSession().getAttribute("admin");
             BaseContext.setCurrentId(adminId);
 
