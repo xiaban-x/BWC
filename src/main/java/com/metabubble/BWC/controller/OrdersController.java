@@ -98,15 +98,7 @@ public class OrdersController {
                 //更新状态
                 item = ordersService.updateStatusFormExpiredTimeAndReturn(item);
             }
-
-            Long merchantId = item.getMerchantId();
-
             OrdersListDto ordersListDto = OrdersConverter.INSTANCES.OrdersToOrdersListDto(item);
-
-            Merchant merchant = merchantService.getById(merchantId);
-
-            ordersListDto.setMerchantPic(merchant.getPic());
-
             return ordersListDto;
         }).collect(Collectors.toList());
 
@@ -129,12 +121,6 @@ public class OrdersController {
         Task task = taskService.getById(orders.getTaskId());
         Merchant merchant = merchantService.getById(orders.getMerchantId());
         OrdersDto ordersDto = OrdersConverter.INSTANCES.OrdersToMerOrdersDto(orders);
-        ordersDto.setRequirement(task.getRequirement());
-        ordersDto.setRemark(task.getRemark());
-        if (merchant!=null){
-            ordersDto.setPic(merchant.getPic());
-            ordersDto.setShowAddress(merchant.getShowAddress());
-        }
         return R.success(ordersDto);
     }
 
@@ -195,11 +181,17 @@ public class OrdersController {
             orders.setStatus(0);
             //订单添加任务信息
             orders.setTaskName(task.getName());
+            orders.setRequirement(task.getRequirement());
+            orders.setRemark(task.getRemark());
+            orders.setStartTime(task.getStartTime());
+            orders.setEndTime(task.getEndTime());
             //查找商家
             Merchant merchant = merchantService.getById(task.getMerchantId());
             //添加商家id
             orders.setMerchantId(merchant.getId());
             orders.setMerchantName(merchant.getName());
+            orders.setMerchantPic(merchant.getPic());
+            orders.setShowAddress(merchant.getShowAddress());
             //查询用户是否为会员
             Boolean aBoolean = userService.checkGrade(userId);
             if (aBoolean){
@@ -380,20 +372,13 @@ public class OrdersController {
                 //更新状态
                 item = ordersService.updateStatusFormExpiredTimeAndReturn(item);
             }
-
-            Long taskId = item.getTaskId();
-            Long merchantId = item.getMerchantId();
             Long userId = item.getUserId();
-            Task task = taskService.getById(taskId);
-            Merchant merchant = merchantService.getById(merchantId);
-            User byId = userService.getById(userId);
+            User user = userService.getById(userId);
 
             OrdersDo ordersDo = OrdersConverter.INSTANCES.OrdersToOrdersDo(item);
 
-            ordersDo.setTask(task);
-            ordersDo.setShowAddress(merchant.getShowAddress());
-            ordersDo.setTel(byId.getTel());
-            ordersDo.setName(byId.getName());
+            ordersDo.setTel(user.getTel());
+            ordersDo.setName(user.getName());
 
             return ordersDo;
         }).collect(Collectors.toList());
@@ -419,17 +404,12 @@ public class OrdersController {
             item = ordersService.updateStatusFormExpiredTimeAndReturn(item);
         }
 
-        Long taskId = item.getTaskId();
-        Long merchantId = item.getMerchantId();
+
         Long userId = item.getUserId();
-        Task task = taskService.getById(taskId);
-        Merchant merchant = merchantService.getById(merchantId);
         User byId = userService.getById(userId);
 
         OrdersDo ordersDo = OrdersConverter.INSTANCES.OrdersToOrdersDo(item);
 
-        ordersDo.setTask(task);
-        ordersDo.setShowAddress(merchant.getShowAddress());
         ordersDo.setTel(byId.getTel());
         ordersDo.setName(byId.getName());
         return R.success(ordersDo);

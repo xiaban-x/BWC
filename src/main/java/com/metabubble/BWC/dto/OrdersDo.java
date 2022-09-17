@@ -13,10 +13,4 @@ public class OrdersDo extends Orders {
 
     //用户名
     private String name;
-
-    //任务对象
-    public Task task;
-
-    //展示地址
-    private String showAddress;
 }
