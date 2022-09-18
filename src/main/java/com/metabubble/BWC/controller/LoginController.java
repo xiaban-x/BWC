@@ -637,7 +637,7 @@ public class LoginController {
         user.setName(name);
         userService.save(user);
         user.setDownId(NumericConvertUtils.toSerialCode(user.getId()));
-        userService.save(user);
+        userService.updateById(user);
         if (!StringUtils.isBlank(invitation)) {
             teamService.save(user,invitation);
         }else {

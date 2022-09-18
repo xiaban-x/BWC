@@ -34,7 +34,7 @@ public class NumericConvertUtils {
         String str=new String(buf, charPos, (32 - charPos));
         // 不够长度的自动随机补全
         if(str.length() < s) {
-            StringBuilder sb=new StringBuilder();
+            StringBuilder sb =new StringBuilder();
             sb.append(b);
             Random rnd=new Random();
             for(int i=1; i < s - str.length(); i++) {
