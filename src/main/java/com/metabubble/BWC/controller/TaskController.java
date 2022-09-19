@@ -133,6 +133,7 @@ public class TaskController {
             task.setTaskLeft(amount);
         }
         //商家名称
+        Long merchantId = task.getMerchantId();
         String name = merchantService.getById(task.getMerchantId()).getName();
         //获取修改任务前的信息
         String taskName = taskService.getById(task.getId()).getName();
@@ -362,7 +363,7 @@ public class TaskController {
         List<Merchant> merchantsByFind = new ArrayList<>();
         if (name != null) {
             for (Merchant m : merchants) {
-                if (m.getName().equals(name)) {
+                if (m.getName().contains(name)) {
                     merchantsByFind.add(m);
                 }
             }

@@ -84,6 +84,9 @@ public class Task implements Serializable {
     //任务结束时间
     private LocalDateTime endTime;
 
+    //营业时间
+    private LocalDateTime businessTime;
+
     //创建时间
     @TableField(fill = FieldFill.INSERT) //插入时填充字段
     private LocalDateTime createTime;
