@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.Time;
 import java.time.LocalDateTime;
 
 /**
@@ -70,6 +71,12 @@ public class Task implements Serializable {
 
     //是否启用，0为禁用(默认)，1为启用
     private Integer status;
+
+    //营业开始时间
+    private Time businessStartTime;
+
+    //营业结束时间
+    private Time businessEndTime;
 
     //任务开始时间
     private LocalDateTime startTime;

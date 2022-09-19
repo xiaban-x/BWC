@@ -170,6 +170,9 @@ public class OrdersController {
                 taskService.updateById(task);
                 return R.error("该任务不在可接取时间范围！");
             }
+            if (taskService.checkBusinessTime(task)){
+                return R.error("当前任务不在营业时间范围内");
+            }
             //更新任务数量
             taskService.updateAmount(taskId);
             Orders orders = new Orders();

@@ -16,4 +16,6 @@ public interface TaskService extends IService<Task> {
     public void addCompleted(Orders orders);
     //检查任务是否在可接取时间
     public Boolean checkTime(Task task);
+    //检查任务是否在可接取时间
+    public Boolean checkBusinessTime(Task task);
 }

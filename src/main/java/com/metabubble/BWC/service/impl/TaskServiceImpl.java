@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.xml.crypto.Data;
+import java.sql.Time;
 import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
@@ -132,6 +133,25 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         LocalDateTime now = LocalDateTime.now();
         boolean after = now.isAfter(startTime);
         boolean before = now.isBefore(endTime);
+        if (after&&before){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 检查任务是否在营业时间
+     * @param task
+     * @author leitianyu999
+     * @return
+     */
+    @Override
+    public Boolean checkBusinessTime(Task task) {
+        Time businessStartTime = task.getBusinessStartTime();
+        Time businessEndTime = task.getBusinessEndTime();
+        Time now = Time.valueOf(LocalTime.now());
+        boolean after = now.after(businessStartTime);
+        boolean before = now.before(businessEndTime);
         if (after&&before){
             return false;
         }
