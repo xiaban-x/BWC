@@ -133,6 +133,7 @@ public class TaskController {
             task.setTaskLeft(amount);
         }
         //商家名称
+        Long merchantId = task.getMerchantId();
         String name = merchantService.getById(task.getMerchantId()).getName();
         //获取修改任务前的信息
         String taskName = taskService.getById(task.getId()).getName();
