@@ -61,7 +61,7 @@ public class TeamMsgController {
         List<TeamMsg> records = page.getRecords();
         List<TeamMsg> collect = records.stream().map(item -> {
             if (item.getType() == 1 || item.getType() == 0) {
-                item.setMsg(MobileUtils.blurPhone(item.getDownPhone()));
+                item.setDownPhone(MobileUtils.blurPhone(item.getDownPhone()));
             }
             return item;
         }).collect(Collectors.toList());

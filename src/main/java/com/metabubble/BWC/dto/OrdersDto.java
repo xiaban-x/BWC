@@ -26,7 +26,7 @@ public class OrdersDto {
     private String showAddress;
 
     //商家图片
-    private String pic;
+    private String merchantPic;
 
     //平台类型：0为美团(默认)，1为饿了么
     private Integer platform;

@@ -58,7 +58,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithVip));
                 //团队信息计入
                 teamMsgService.addCashback(id,tel,"一级成员会员返现"+bigDecimalForFirstWithVip);
-                userMsgService.addCashback(id,tel,"一级成员会员返现"+bigDecimalForFirstWithVip);
             }
         }else {
             BigDecimal bigDecimalForFirstWithNtoVip = BigDecimal.valueOf(Double.parseDouble(configService.getOnlyContentById(Long.parseLong("19"))));
@@ -69,7 +68,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForFirstWithNtoVip));
                 //团队信息计入
                 teamMsgService.addCashback(id,tel,"一级成员非会员返现"+bigDecimalForFirstWithNtoVip);
-                userMsgService.addCashback(id,tel,"一级成员非会员返现"+bigDecimalForFirstWithNtoVip);
             }
         }
         this.update(team,queryWrapper123);
@@ -97,7 +95,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithVip));
                 //团队信息计入
                 teamMsgService.addCashback(id,tel,"二级成员会员返现"+bigDecimalForSecondWithVip);
-                userMsgService.addCashback(id,tel,"二级成员会员返现"+bigDecimalForSecondWithVip);
             }
         }else {
             BigDecimal bigDecimalForSecondWithNtoVip = BigDecimal.valueOf(Double.parseDouble(configService.getOnlyContentById(Long.parseLong("21"))));
@@ -107,7 +104,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                 team.setTotalWithdrawnAmount(team.getTotalWithdrawnAmount().add(bigDecimalForSecondWithNtoVip));
                 //团队信息计入
                 teamMsgService.addCashback(id,tel,"二级成员非会员返现"+bigDecimalForSecondWithNtoVip);
-                userMsgService.addCashback(id,tel,"二级成员非会员返现"+bigDecimalForSecondWithNtoVip);
             }
         }
         this.update(team,queryWrapper123);

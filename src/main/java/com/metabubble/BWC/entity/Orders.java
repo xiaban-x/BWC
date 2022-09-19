@@ -28,6 +28,12 @@ public class Orders implements Serializable {
     //商家名称
     private String merchantName;
 
+    //商家图片
+    private String merchantPic;
+
+    //展示地址
+    private String showAddress;
+
     //任务id
     private Long taskId;
 
@@ -36,6 +42,12 @@ public class Orders implements Serializable {
 
     //任务名称
     private String taskName;
+
+    //任务要求
+    private String requirement;
+
+    //任务备注
+    private String remark;
 
     //订单状态，0为已下单(默认)；1为一审待审核；2为一审通过；3为一审未通过；4为二审待审核；5为二审未通过；6为已完成；7为订单取消；8为订单过期
     private Integer status;
@@ -78,6 +90,12 @@ public class Orders implements Serializable {
 
     //一审核人id
     private Long reviewerIdB;
+
+    //任务开始时间
+    private LocalDateTime startTime;
+
+    //任务结束时间
+    private LocalDateTime endTime;
 
     //过期时间
     private LocalDateTime expiredTime;

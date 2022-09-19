@@ -12,10 +12,7 @@ import com.metabubble.BWC.entity.User;
 import com.metabubble.BWC.service.ConfigService;
 import com.metabubble.BWC.service.TeamService;
 import com.metabubble.BWC.service.UserService;
-import com.metabubble.BWC.utils.CookieUtils;
-import com.metabubble.BWC.utils.MobileUtils;
-import com.metabubble.BWC.utils.SMSUtils;
-import com.metabubble.BWC.utils.ValidateCodeUtils;
+import com.metabubble.BWC.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -638,8 +635,9 @@ public class LoginController {
         user.setPassword(password);
         user.setTel(mobile);
         user.setName(name);
-        user.setDownId(userService.createUUID());
         userService.save(user);
+        user.setDownId(NumericConvertUtils.toSerialCode(user.getId()));
+        userService.updateById(user);
         if (!StringUtils.isBlank(invitation)) {
             teamService.save(user,invitation);
         }else {
