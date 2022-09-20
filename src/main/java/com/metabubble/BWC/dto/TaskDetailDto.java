@@ -3,6 +3,7 @@ package com.metabubble.BWC.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.sql.Time;
 
 @Data
 public class TaskDetailDto {
@@ -41,6 +42,12 @@ public class TaskDetailDto {
 
     //会员满减额
     private BigDecimal rebateB;
+
+    //营业开始时间
+    private Time businessStartTime;
+
+    //营业结束时间
+    private Time businessEndTime;
 
     //任务要求
     private String requirement;
