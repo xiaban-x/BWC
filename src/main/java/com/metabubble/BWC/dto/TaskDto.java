@@ -3,6 +3,7 @@ package com.metabubble.BWC.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.sql.Time;
 import java.time.LocalDateTime;
 
 /**
@@ -76,6 +77,12 @@ public class TaskDto {
 
     //任务结束时间
     private LocalDateTime endTime;
+
+    //营业开始时间
+    private Time businessStartTime;
+
+    //营业结束时间
+    private Time businessEndTime;
 
     //任务创建时间
     private LocalDateTime createTime;
