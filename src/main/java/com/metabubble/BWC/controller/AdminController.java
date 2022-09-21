@@ -194,7 +194,7 @@ public class AdminController {
 
         if (adminService.save(admin)) {
             // 管理员新增日志
-            logsService.saveLog("增加管理员", "增加了 “ " + admin.getName() + " ” 管理员");
+            logsService.saveLog("增加管理员", adminService.getById(BaseContext.getCurrentId()).getName() + "增加了 “ " + admin.getName() + " ” 管理员");
 
             return R.success("添加成功");
 
@@ -314,7 +314,7 @@ public class AdminController {
         Admin admin = adminService.getById(id);
 
         // 管理员删除日志
-        logsService.saveLog("删除管理员", "删除 “ " + admin.getName() + " ” 管理员");
+        logsService.saveLog("删除管理员", adminService.getById(BaseContext.getCurrentId()).getName() + "删除 “ " + admin.getName() + " ” 管理员");
 
         adminService.removeById(id);
 

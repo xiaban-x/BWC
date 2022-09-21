@@ -1,8 +1,11 @@
 package com.metabubble.BWC.controller;
 
+import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.entity.Config;
+import com.metabubble.BWC.service.AdminService;
 import com.metabubble.BWC.service.ConfigService;
+import com.metabubble.BWC.service.LogsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +27,12 @@ public class ConfigController {
      */
     @Autowired
     private ConfigService configService;
+
+    @Autowired
+    private LogsService logsService;
+
+    @Autowired
+    private AdminService adminService;
 
     /**
      * 查询所有配置
@@ -55,7 +64,9 @@ public class ConfigController {
      */
     @PutMapping
     public R<String> updateById(@RequestBody Config config) {
+        Long id = BaseContext.getCurrentId();
         configService.updateById(config);
+        logsService.saveLog("修改配置信息", adminService.getById(id).getName() + "修改了配置信息");
         return R.success("修改成功");
     }
 
