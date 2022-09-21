@@ -264,8 +264,6 @@ public class AdminController {
      */
     @PutMapping
     public R<String> update(@RequestBody Admin admin) {
-        // 管理员更改日志
-        logsService.saveLog(adminService.getById(BaseContext.getCurrentId()).getName(), "修改 “ " + admin.getName() + " ”管理员的基本信息");
 
         Admin admin1 = adminService.getById(admin.getId());
 
@@ -298,7 +296,10 @@ public class AdminController {
             admin.setPassword(password);
         }
 
-        adminService.updateById(admin);
+        // 日志信息
+        logsService.saveLog(adminService.getById(BaseContext.getCurrentId()).getName(), "修改 “ " + admin.getName() + " ”管理员的基本信息");
+
+        adminService.updateById(admin);// 管理员更改日志
 
         return R.success("数据修改成功");
     }
