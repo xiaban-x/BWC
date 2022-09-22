@@ -13,8 +13,6 @@ public interface UserService extends IService<User> {
     public void cashback(Orders orders);
     //检查用户是否为会员
     public Boolean checkGrade(Long id);
-    //邀请码生成
-    public String createUUID();
     //检查手机号是否注册
     public Boolean findUser(String mobile);
     //检查账号是否封禁

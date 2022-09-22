@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.R;
-import com.metabubble.BWC.entity.TeamMsg;
 import com.metabubble.BWC.entity.UserMsg;
 import com.metabubble.BWC.service.UserMsgService;
 import lombok.extern.slf4j.Slf4j;
