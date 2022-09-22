@@ -194,7 +194,7 @@ public class AdminController {
 
         if (adminService.save(admin)) {
             // 管理员新增日志
-            logsService.saveLog("增加管理员", "增加了 “ " + admin.getName() + " ” 管理员");
+            logsService.saveLog("增加管理员", adminService.getById(BaseContext.getCurrentId()).getName() + "增加了 “ " + admin.getName() + " ” 管理员");
 
             return R.success("添加成功");
 
@@ -264,8 +264,6 @@ public class AdminController {
      */
     @PutMapping
     public R<String> update(@RequestBody Admin admin) {
-        // 管理员更改日志
-        logsService.saveLog(adminService.getById(BaseContext.getCurrentId()).getName(), "修改 “ " + admin.getName() + " ”管理员的基本信息");
 
         Admin admin1 = adminService.getById(admin.getId());
 
@@ -298,7 +296,10 @@ public class AdminController {
             admin.setPassword(password);
         }
 
-        adminService.updateById(admin);
+        // 日志信息
+        logsService.saveLog(adminService.getById(BaseContext.getCurrentId()).getName(), "修改 “ " + admin.getName() + " ”管理员的基本信息");
+
+        adminService.updateById(admin);// 管理员更改日志
 
         return R.success("数据修改成功");
     }
@@ -314,7 +315,7 @@ public class AdminController {
         Admin admin = adminService.getById(id);
 
         // 管理员删除日志
-        logsService.saveLog("删除管理员", "删除 “ " + admin.getName() + " ” 管理员");
+        logsService.saveLog("删除管理员", adminService.getById(BaseContext.getCurrentId()).getName() + "删除 “ " + admin.getName() + " ” 管理员");
 
         adminService.removeById(id);
 
