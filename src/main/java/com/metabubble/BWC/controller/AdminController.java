@@ -271,7 +271,7 @@ public class AdminController {
             }
         }
         // 日志信息
-        logsService.saveLog(adminService.getById(BaseContext.getCurrentId()).getName(), "修改 “ " + adminService.getById(admin.getId()).getName() + " ”管理员的基本信息");
+        logsService.saveLog("修改管理员信息", "修改 “ " + adminService.getById(admin.getId()).getName() + " ”管理员的基本信息");
 
         adminService.updateById(admin);
 
