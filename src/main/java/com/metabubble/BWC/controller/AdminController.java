@@ -1,11 +1,13 @@
 package com.metabubble.BWC.controller;
 
+import com.aliyuncs.utils.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.AdminDto;
+import com.metabubble.BWC.dto.Imp.AdminConverter;
 import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.service.AdminService;
 import com.metabubble.BWC.service.LogsService;
@@ -21,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -230,28 +233,13 @@ public class AdminController {
 
         // 查询不显示密码
         List<Admin> records = pageInfo.getRecords();
-        List<AdminDto> list = records.stream().map((item) -> {
-            AdminDto adminDto = new AdminDto();
-            BeanUtils.copyProperties(item, adminDto);
+        List<AdminDto> adminDtos = new ArrayList<>();
+        for (Admin admin : records) {
+            AdminDto adminDto = AdminConverter.INSTANCES.toAdminRoleDto(admin);
+            adminDtos.add(adminDto);
+        }
 
-            Long adminId = item.getId();
-            String name = item.getName();
-            String email = item.getEmail();
-            Integer type = item.getType();
-            Integer status = item.getStatus();
-            LocalDateTime createTime = item.getCreateTime();
-
-            adminDto.setId(adminId);
-            adminDto.setName(name);
-            adminDto.setEmail(email);
-            adminDto.setType(type);
-            adminDto.setStatus(status);
-            adminDto.setCreateTime(createTime);
-
-            return adminDto;
-        }).collect(Collectors.toList());
-
-        adminDtoPage.setRecords(list);
+        adminDtoPage.setRecords(adminDtos);
 
         return  R.success(adminDtoPage);
     }
@@ -265,41 +253,28 @@ public class AdminController {
     @PutMapping
     public R<String> update(@RequestBody Admin admin) {
 
-        Admin admin1 = adminService.getById(admin.getId());
-
-        // 将封装类缺少的元素补上
-        if (admin.getType()==null) {
-            Integer type = admin1.getType();
-            admin.setType(type);
+        if (admin.getType() != null) {
+            if (admin.getType()>2 || admin.getType()<0) {
+                return R.error("信息错误");
+            }
         }
 
-        if (admin.getStatus()==null) {
-            admin.setStatus(admin1.getStatus());
-        }
-        if (admin.getName()==null) {
-            admin.setName(admin1.getName());
-        }
-        if (admin.getEmail()==null) {
-            admin.setEmail(admin1.getEmail());
-        }
-        if (admin.getPassword()==null) {
-            admin.setPassword(admin1.getPassword());
-        }
-
-        if (admin.getType()>2 || admin.getType()<0) {
-            return R.error("信息错误");
-        }
-
-        // 对更改的密码进行md5加密
-        if (admin.getPassword() != admin1.getPassword()) {
+        if (!StringUtils.isEmpty(admin.getPassword())) {
+            // 对更改的密码进行md5加密
             String password = DigestUtils.md5DigestAsHex(admin.getPassword().getBytes());
             admin.setPassword(password);
         }
 
+        if (admin.getStatus() != null) {
+            if (admin.getStatus() != 1 && admin.getStatus() != 0) {
+                return R.error("信息错误");
+            }
+        }
+
+        adminService.updateById(admin);
+
         // 日志信息
         logsService.saveLog(adminService.getById(BaseContext.getCurrentId()).getName(), "修改 “ " + admin.getName() + " ”管理员的基本信息");
-
-        adminService.updateById(admin);// 管理员更改日志
 
         return R.success("数据修改成功");
     }
