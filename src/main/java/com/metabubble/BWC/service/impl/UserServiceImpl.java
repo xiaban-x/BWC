@@ -3,16 +3,12 @@ package com.metabubble.BWC.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.metabubble.BWC.common.CustomException;
-import com.metabubble.BWC.entity.Admin;
 import com.metabubble.BWC.entity.Orders;
-import com.metabubble.BWC.entity.Task;
 import com.metabubble.BWC.entity.User;
-import com.metabubble.BWC.mapper.AdminMapper;
 import com.metabubble.BWC.mapper.UserMapper;
 import com.metabubble.BWC.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -20,19 +16,13 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
 
-    @Autowired
-    private TaskService taskService;
-    @Autowired
-    private TeamService teamService;
-    @Autowired
-    private OrdersService ordersService;
+
     @Autowired
     private UserMsgService userMsgService;
 
@@ -101,16 +91,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     }
 
-    /**
-     * 邀请码生成
-     * @author leitianyu999
-     * @return
-     */
-    @Override
-    public String createUUID() {
-        String s = UUID.randomUUID().toString();
-        return s;
-    }
 
 
     /**

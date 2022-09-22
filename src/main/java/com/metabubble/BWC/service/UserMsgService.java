@@ -14,8 +14,6 @@ public interface UserMsgService extends IService<UserMsg> {
     public void addWithdrawals(Long id,String amount);
     //添加充值信息
     public void addRecharge(Long id,String amount);
-    //添加团队返现信息
-    public void addCashback(Long id,String tel,String amount);
     //添加用户任务驳回返现信息
     public void overruleUserCashback(Orders orders);
     //添加团队驳回返现信息
