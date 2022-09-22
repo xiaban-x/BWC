@@ -185,6 +185,8 @@ public class OrdersController {
             orders.setRemark(task.getRemark());
             orders.setStartTime(task.getStartTime());
             orders.setEndTime(task.getEndTime());
+            orders.setBusinessEndTime(task.getBusinessEndTime());
+            orders.setBusinessStartTime(task.getBusinessStartTime());
             //查找商家
             Merchant merchant = merchantService.getById(task.getMerchantId());
             //添加商家id
