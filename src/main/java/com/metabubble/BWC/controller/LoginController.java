@@ -373,7 +373,7 @@ public class LoginController {
         List<User> list = userService.list(queryWrapper);
         if (list.size()>1){
             throw new CustomException("手机号注册多名用户");
-        }else if (list==null){
+        }else if (list.size()==0){
             return R.error("此手机号未注册");
         }
 
@@ -442,7 +442,7 @@ public class LoginController {
         String successKey = (String) redisTemplate.opsForValue().get(successMobile);
 
         if (successKey!=null&&successKey.equals("ture")){
-            Long expire = redisTemplate.getExpire(successKey);
+            long expire = redisTemplate.getExpire(successKey);
             if(expire>0){
                 return R.success("您的手机号已验证成功，请在"+expire+"秒内完成手机号修改");
             }else {
@@ -466,7 +466,7 @@ public class LoginController {
         List<User> list = userService.list(queryWrapper);
         if (list.size()>1){
             throw new CustomException("手机号注册多名用户");
-        }else if (list==null){
+        }else if (list.size()==0){
             return R.error("此手机号未注册");
         }
 
