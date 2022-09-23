@@ -168,10 +168,6 @@ public class CashableController {
             list0.put(aLong,total);
         }
 
-        for (Long a: list0.keySet()
-             )
-        {System.out.println(a); }
-
         List<CashableDto> list = records.stream().map((item) -> {
             CashableDto cashableDto = new CashableDto();
             BeanUtils.copyProperties(item, cashableDto);
