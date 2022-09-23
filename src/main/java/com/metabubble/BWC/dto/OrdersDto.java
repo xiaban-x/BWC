@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Data
@@ -72,6 +73,18 @@ public class OrdersDto {
 
     //任务备注
     private String remark;
+
+    //任务开始时间
+    private LocalDateTime startTime;
+
+    //任务结束时间
+    private LocalDateTime endTime;
+
+    //营业开始时间
+    private Time businessStartTime;
+
+    //营业结束时间
+    private Time businessEndTime;
 
     //创建时间
     private LocalDateTime createTime;

@@ -270,11 +270,10 @@ public class AdminController {
                 return R.error("信息错误");
             }
         }
+        // 日志信息
+        logsService.saveLog("修改管理员信息", "修改 “ " + adminService.getById(admin.getId()).getName() + " ”管理员的基本信息");
 
         adminService.updateById(admin);
-
-        // 日志信息
-        logsService.saveLog(adminService.getById(BaseContext.getCurrentId()).getName(), "修改 “ " + admin.getName() + " ”管理员的基本信息");
 
         return R.success("数据修改成功");
     }
