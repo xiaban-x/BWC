@@ -528,7 +528,7 @@ public class OrdersController {
         //判断订单是否为二审通过
         if (orders!=null&&orders.getStatus()==6){
             //更改为二审未通过
-            orders.setStatus(5);
+            orders.setStatus(0);
             //添加理由
             orders.setReason(reason);
             //获取用户
