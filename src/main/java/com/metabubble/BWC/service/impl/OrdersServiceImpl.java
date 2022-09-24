@@ -83,17 +83,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         }
         if (orders.getStatus()==8){
             if (!now.isAfter(expiredTime)) {
-                if (orders.getPicComment()!=null){
-                    orders.setStatus(5);
-                    this.updateById(orders);
-                    return orders;
-                }
-                if (orders.getPicOrder1()!=null||orders.getPicOrder2()!=null){
-                    orders.setStatus(2);
-                    this.updateById(orders);
-                    return orders;
-                }
-                orders.setStatus(0);
+                orders.setStatus(3);
                 this.updateById(orders);
                 return orders;
             }
