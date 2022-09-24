@@ -163,8 +163,8 @@ public class OrdersController {
                 return R.error("用户"+task.getTimeInterval()+"日内已接过此任务");
             }
             if (taskService.checkTime(task)){
-                task.setStatus(0);
-                taskService.updateById(task);
+//                task.setStatus(0);
+//                taskService.updateById(task);
                 return R.error("该任务不在可接取时间范围！");
             }
             if (taskService.checkBusinessTime(task)){
