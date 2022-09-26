@@ -89,7 +89,7 @@ public class Orders implements Serializable {
     //一审核人id
     private Long reviewerIdA;
 
-    //一审核人id
+    //二审核人id
     private Long reviewerIdB;
 
     //任务开始时间
