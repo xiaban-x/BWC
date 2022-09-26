@@ -533,6 +533,7 @@ public class OrdersController {
             orders.setStatus(3);
             //添加理由
             orders.setReason(reason);
+            orders.setReviewerIdB(BaseContext.getCurrentId());
             //获取用户
             User user = userService.getById(orders.getUserId());
             //修改用户返现信息
