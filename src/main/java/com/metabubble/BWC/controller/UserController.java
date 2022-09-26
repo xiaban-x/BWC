@@ -80,7 +80,7 @@ public class UserController {
      * @author leitianyu999
      */
     @GetMapping("/page")
-    public R<Page> page(int offset, int limit,String wxId,String grade,String tel){
+    public R<Page> page(int offset, int limit,String wxId,String grade,String tel,Long id){
 
         //分页构造器
         Page<User> pageSearch = new Page(offset,limit);
@@ -89,6 +89,7 @@ public class UserController {
         //添加过滤条件
         queryWrapper.like(StringUtils.isNotEmpty(wxId),User::getWxId,wxId);
         queryWrapper.like(StringUtils.isNotEmpty(tel),User::getTel,tel);
+        queryWrapper.like(id!=null,User::getId,id);
         queryWrapper.eq(StringUtils.isNotEmpty(grade),User::getGrade,grade);
         //添加排序条件
         queryWrapper.orderByDesc(User::getCreateTime);
@@ -97,9 +98,9 @@ public class UserController {
         List<User> records = pageSearch.getRecords();
         List<UserDo> collect = records.stream().map(item -> {
 
-                Long id = item.getId();
+                Long userid = item.getId();
                 LambdaQueryWrapper<Team> queryWrapper1 = new LambdaQueryWrapper<>();
-                queryWrapper1.eq(Team::getUserId, id);
+                queryWrapper1.eq(Team::getUserId, userid);
                 Team team = teamService.getOne(queryWrapper1);
                 UserDo userDo = UserConverter.INSTANCES.UserToUserDo(item);
                 if (team.getUpUser01Id()!=null) {
