@@ -497,7 +497,7 @@ public class OrdersController {
             //添加审核人id
             orders.setReviewerIdA(BaseContext.getCurrentId());
             ordersService.updateById(orders1);
-            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”不通过"+orders.getUserId()+"用户一审");
+            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”不通过"+orders1.getUserId()+"用户一审");
             return R.success("更改成功");
         }
         //待二审
@@ -508,7 +508,7 @@ public class OrdersController {
             //添加审核人id
             orders.setReviewerIdB(BaseContext.getCurrentId());
             ordersService.updateById(orders1);
-            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”不通过"+orders.getUserId()+"用户一审");
+            logsService.saveLog("订单审核","管理员”"+BaseContext.getCurrentId()+"”不通过"+orders1.getUserId()+"用户二审");
             return R.success("更改成功");
         }
         return R.error("订单状态错误");
