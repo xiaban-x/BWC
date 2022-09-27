@@ -502,7 +502,7 @@ public class OrdersController {
         }
         //待二审
         if (orders1.getStatus()==4){
-            orders1.setStatus(5);
+            orders1.setStatus(3);
             //添加理由
             orders1.setReason(orders.getReason());
             //添加审核人id
