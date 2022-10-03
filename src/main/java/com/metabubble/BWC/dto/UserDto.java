@@ -39,6 +39,9 @@ public class UserDto {
     //手机号
     private String tel;
 
+    //支付宝ID
+    private String aliPayId;
+
     //支付宝名称
     private String aliPayName;
 
