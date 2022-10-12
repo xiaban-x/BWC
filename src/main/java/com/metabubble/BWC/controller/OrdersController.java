@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -570,6 +571,24 @@ public class OrdersController {
         ordersService.updateById(orders1);
         ordersService.updateStatusFormExpiredTimeAndReturn(orders1);
         return R.success("修改成功");
+    }
+
+    @DeleteMapping
+    @Transactional
+    public R<String> deleteOrders(LocalDateTime endTime,LocalDateTime startTime){
+        if(endTime==null||startTime==null){
+            return R.error("参数不齐全");
+        }
+
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.ge(Orders::getCreateTime,startTime);
+        queryWrapper.le(Orders::getCreateTime,endTime);
+
+        ordersService.remove(queryWrapper);
+
+        logsService.saveLog("删除订单信息","管理员”"+BaseContext.getCurrentId()+"删除时间在"+startTime+"至"+endTime+"时间段的订单");
+
+        return R.success("删除成功");
     }
 
     /**
