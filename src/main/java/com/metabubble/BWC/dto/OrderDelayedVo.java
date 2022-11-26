@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 
 @Data
-@Component
 public class OrderDelayedVo implements Delayed , Serializable {
 
 
