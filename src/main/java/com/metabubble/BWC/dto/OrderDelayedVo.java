@@ -2,12 +2,8 @@ package com.metabubble.BWC.dto;
 
 
 import com.metabubble.BWC.entity.Orders;
-import com.metabubble.BWC.service.ConfigService;
-import com.metabubble.BWC.utils.RedisUtil;
+
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
