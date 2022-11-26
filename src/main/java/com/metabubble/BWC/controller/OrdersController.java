@@ -13,6 +13,7 @@ import com.metabubble.BWC.dto.OrdersDto;
 import com.metabubble.BWC.dto.OrdersListDto;
 import com.metabubble.BWC.entity.*;
 import com.metabubble.BWC.service.*;
+import com.metabubble.BWC.service.impl.DelayDepositService;
 import com.metabubble.BWC.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -52,12 +53,16 @@ public class OrdersController {
     private RedisTemplate redisTemplate;
     @Autowired
     private UserMsgService userMsgService;
+    @Autowired
+    private DelayDepositService delayDepositService;
 
     String normal = "normal";
     String right = "right";
     String stringSession = "session";
     String userId = "userId";
     String userKey = "userKey";
+    private static final String TYPEONE = "初审";
+    private static final String TYPESEC = "一二审";
 
     /**
      * 用户端查看全部订单（根据状态查询）
@@ -218,6 +223,7 @@ public class OrdersController {
             }
             //添加订单过期时间
             orders = ordersService.addExpiredTime(orders);
+            delayDepositService.save(orders,orders.getExpiredTime().toString(),TYPEONE);
             //保存orders
             ordersService.save(orders);
 
@@ -265,6 +271,7 @@ public class OrdersController {
             //更改订单状态为一审待审核
             orders.setStatus(2);
             orders = ordersService.addExpiredTime(orders);
+            delayDepositService.save(orders,orders.getExpiredTime().toString(),TYPESEC);
             ordersService.updateById(orders);
             return R.success("上传成功");
         }
@@ -570,9 +577,16 @@ public class OrdersController {
         orders1.setExpiredTime(orders.getExpiredTime());
         ordersService.updateById(orders1);
         ordersService.updateStatusFormExpiredTimeAndReturn(orders1);
+        delayDepositService.save(orders1,orders1.getExpiredTime().toString(),TYPESEC);
         return R.success("修改成功");
     }
 
+    /**
+     * 根据时间段删除订单
+     * @param endTime
+     * @param startTime
+     * @return
+     */
     @DeleteMapping
     @Transactional
     public R<String> deleteOrders(LocalDateTime endTime,LocalDateTime startTime){
@@ -619,4 +633,6 @@ public class OrdersController {
         return R.error("订单已取消");
 
     }
+
+
 }
