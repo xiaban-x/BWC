@@ -54,8 +54,8 @@ public class LogsController {
 //        QueryWrapper<Logs> queryWrapper = new QueryWrapper<>();
 //        LambdaQueryWrapper<Logs> lambdaQueryWrapper = queryWrapper.lambda().ge(Func.isNotEmpty(goods.getStartTime()),Goods::getCreateTime, goods.getStartTime());
 //        ambdaQueryWrapper = lambdaQueryWrapper.le(Func.isNotEmpty(goods.getEndTime()),Goods::getCreateTime, goods.getEndTime());
-        queryWrapperLogs.ge(Logs::getCreateTime,beginTime); //大于等于创建时间
-        queryWrapperLogs.le(Logs::getCreateTime,endTime); //小于等于创建时间
+        queryWrapperLogs.ge(beginTime != null,Logs::getCreateTime,beginTime); //大于等于创建时间
+        queryWrapperLogs.le(endTime != null,Logs::getCreateTime,endTime); //小于等于创建时间
 
         //执行查询 传入分页数据
         Page<Logs> page = logService.page(pageInfo, queryWrapperLogs);
