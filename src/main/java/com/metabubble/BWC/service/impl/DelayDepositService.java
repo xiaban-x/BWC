@@ -97,7 +97,7 @@ public class DelayDepositService {
                 throw new CustomException("发送订单提醒信息有误");
         }
 
-        Boolean msg = SMSUtils.sendMessage("瑞吉外卖",modelCode,user.getTel(),orders.getExpiredTime().toString());
+        Boolean msg = SMSUtils.sendMessage("瑞吉外卖",modelCode,user.getTel(),"内容");
         if (!msg) {
             throw new CustomException("发送订单提醒短信失败");
         }

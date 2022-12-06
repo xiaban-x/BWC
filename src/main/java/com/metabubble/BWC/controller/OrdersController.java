@@ -4,6 +4,7 @@ package com.metabubble.BWC.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.metabubble.BWC.common.BaseContext;
+import com.metabubble.BWC.common.CustomException;
 import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
 import com.metabubble.BWC.dto.Imp.OrdersConverter;
@@ -15,6 +16,7 @@ import com.metabubble.BWC.entity.*;
 import com.metabubble.BWC.service.*;
 import com.metabubble.BWC.service.impl.DelayDepositService;
 import com.metabubble.BWC.utils.CookieUtils;
+import com.metabubble.BWC.utils.SMSUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -556,6 +558,10 @@ public class OrdersController {
             ordersService.updateById(orders);
             //记录日志
             logsService.saveLog("驳回订单","管理员”"+BaseContext.getCurrentId()+"将订单"+orders.getId()+"驳回");
+            Boolean msg = SMSUtils.sendMessage("瑞吉外卖","",user.getTel(),"内容");
+//            if (!msg) {
+//                throw new CustomException("发送订单提醒短信失败");
+//            }
 
             return R.success("驳回成功");
         }
