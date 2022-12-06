@@ -383,7 +383,8 @@ public class TaskController {
                 //用以存放任务按距离进行排序 从近到远后的集合
                 ArrayList<Task> taskList = new ArrayList<>();
                 //获取所有订单
-                //添加过滤条件
+                //添加过滤条件201
+
                 //通过名字搜索
 //                mLqw2.like(StringUtils.isNotEmpty(name), Task::getName,name);
 
@@ -439,12 +440,9 @@ public class TaskController {
                 //用以存放没过期的任务
                 List<Task> tasksNotExpired = new ArrayList<>();
                 for (Task record : taskList) {
-                    LocalDateTime now = LocalDateTime.now();
-                    if (record.getStartTime().isBefore(now) && record.getEndTime().isAfter(now)) {
-                        //如果 任务开始时间在 现在 之前， 任务结束时间在 现在 之后， 说明此时任务还未过期
+                    if (record.getTaskLeft() != 0) {
                         tasksNotExpired.add(record);
                     } else {
-                        //反之，则过期
                         tasksExpired.add(record);
                     }
                 }
@@ -459,9 +457,7 @@ public class TaskController {
                         //获取商家
                         Merchant merchant = merchantService.getById(record.getMerchantId());
                         //获取商家名字
-                        if (merchantName == null) {
-                            merchantName = merchant.getName();
-                        }
+                        merchantName = merchant.getName();
                         //获取商家照片
                         String merchantPic = merchant.getPic();
                         //获取商家与用户之间的距离
@@ -583,7 +579,7 @@ public class TaskController {
                     //获取任务对应的商家
                     Merchant merchant = merchantService.getById(record.getMerchantId());
                     //获取商家名字
-                    if (merchantName == null) {
+                    if (merchant.getName()== null) {
                         merchantName = merchant.getName();
                     }
                     //获取商家图片
@@ -605,20 +601,19 @@ public class TaskController {
         } else {
             tasksAc = records;
         }
-        //该集合用以存放区别任务是否过期后的排序结果
+
+        //用以存放名额抢完与未抢完的结果
         List<Task> tasksByDetermineWhetherExpired = new ArrayList<>();
         if (tasksAc != null) {
-            //用以存放过期的任务
+//            用以存放名额用完的任务
             List<Task> tasksExpired = new ArrayList<>();
             //用以存放没过期的任务
+            //用以存放名额没用完的任务
             List<Task> tasksNotExpired = new ArrayList<>();
             for (Task record : tasksAc) {
-                LocalDateTime now = LocalDateTime.now();
-                if (record.getStartTime().isBefore(now) && record.getEndTime().isAfter(now)) {
-                    //如果 任务开始时间在 现在 之前， 任务结束时间在 现在 之后， 说明此时任务还未过期
+                if (record.getTaskLeft() != 0) {
                     tasksNotExpired.add(record);
                 } else {
-                    //反之，则过期
                     tasksExpired.add(record);
                 }
             }
@@ -731,7 +726,7 @@ public class TaskController {
             //得到商家与用户之间的距离
             BigDecimal distance = getDistance(userLng, userLat, merchantLng, merchantLat);
             //将商家和 商家与用户之间的距离 作为一对键值对存储起来
-            if (!distance.equals(BigDecimal.valueOf(-1))) {
+            if (!distance.equals(BigDecimal.valueOf(-1)) && distance.compareTo(new BigDecimal(20001)) < 0) {
                 map.put(merchant, distance);
             }
         }
