@@ -1,6 +1,13 @@
+http-port: 3001
+
 server:
-  # 服务器端口
   port: 8080
+  ssl:
+    enabled: true
+    key-store: 9036535_fter.cc(1).pfx
+    key-store-password: bx8ppwpr
+    key-store-type: PKCS12
+
 spring:
   application:
 #    应用的名称，可选
@@ -8,11 +15,11 @@ spring:
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://120.78.11.162:13542/bwc?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      url: jdbc:mysql://117.34.215.79:13542/bwc?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
       username: root
       password: metabubble207!
   redis:
-    host: 120.78.11.162
+    host: 117.34.215.79
     port: 6379
     database: 0
   cache:

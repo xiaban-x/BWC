@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9ac42f38-a692-4839-8c71-9e651028802c" name="Changes" comment="" />
+    <list default="true" id="9ac42f38-a692-4839-8c71-9e651028802c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/9036535_fter.cc(1).pfx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/config/HttpsConfiguration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,7 +26,6 @@
       <MavenGeneralSettings>
         <option name="mavenHome" value="$PROJECT_DIR$/../../software/apache-maven-3.6.1" />
         <option name="useMavenConfig" value="true" />
-        <option name="userSettingsFile" value="E:\software\apache-maven-3.6.1\conf\settings.xml" />
       </MavenGeneralSettings>
     </option>
   </component>
@@ -38,13 +42,15 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "E:/project/BWC",
+    "last_opened_file_path": "E:/project/BWC/src/main/java/com/metabubble/BWC/config",
     "settings.editor.selected.configurable": "MavenSettings",
     "spring.configuration.checksum": "c3540c2754a86f87d95d74f84efd4294"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\project\BWC\src\main\java\com\metabubble\BWC\config" />
+      <recent name="E:\project\BWC\src\main\resources" />
       <recent name="E:\project\BWC" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -71,6 +77,8 @@
       <updated>1673283773318</updated>
       <workItem from="1673283775348" duration="1493000" />
       <workItem from="1673330496948" duration="2807000" />
+      <workItem from="1675347745221" duration="36000" />
+      <workItem from="1675347791906" duration="2055000" />
     </task>
     <servers />
   </component>
