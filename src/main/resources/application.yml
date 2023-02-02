@@ -4,7 +4,7 @@ server:
   port: 8080
   ssl:
     enabled: true
-    key-store: 9036535_fter.cc(1).pfx
+    key-store: classpath:9036535_fter.cc(1).pfx
     key-store-password: bx8ppwpr
     key-store-type: PKCS12
 
