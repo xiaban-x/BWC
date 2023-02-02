@@ -28,9 +28,7 @@ public class HttpsConfiguration {
                 securityConstraint.setUserConstraint("CONFIDENTIAL");
                 SecurityCollection collection = new SecurityCollection();
                 collection.addPattern("/*");
-
                 collection.addMethod(DEFAULT_PROTOCOL);
-                
                 securityConstraint.addCollection(collection);
                 context.addConstraint(securityConstraint);
             }
