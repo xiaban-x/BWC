@@ -5,14 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ac42f38-a692-4839-8c71-9e651028802c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_springframework_session_spring_session_1_3_1_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_springframework_session_spring_session_core_2_4_3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/config/SessionConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/SessionListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_projectlombok_lombok_1_18_24.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_projectlombok_lombok_1_18_26.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BWC.iml" beforeDir="false" afterPath="$PROJECT_DIR$/BWC.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/config/HttpsConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/config/HttpsConfiguration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/A_LoginCheckFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/F_LoginCheckFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/B_AdminFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/G_AdminFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/C_UserFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/H_UserFilter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -40,12 +56,16 @@
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "last_opened_file_path": "E:/project/BWC/src/main/java/com/metabubble/BWC/config",
     "settings.editor.selected.configurable": "MavenSettings",
     "spring.configuration.checksum": "c3540c2754a86f87d95d74f84efd4294"
   }
 }]]></component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\project\BWC\src\main\java\com\metabubble\BWC\config" />
@@ -77,7 +97,10 @@
       <workItem from="1673283775348" duration="1493000" />
       <workItem from="1673330496948" duration="2807000" />
       <workItem from="1675347745221" duration="36000" />
-      <workItem from="1675347791906" duration="4178000" />
+      <workItem from="1675347791906" duration="5047000" />
+      <workItem from="1675429689708" duration="786000" />
+      <workItem from="1675761547182" duration="1115000" />
+      <workItem from="1675762675656" duration="9402000" />
     </task>
     <servers />
   </component>
@@ -94,5 +117,41 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/metabubble/BWC/controller/LoginController.java</url>
+          <line>220</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/G_AdminFilter.java</url>
+          <line>48</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/H_UserFilter.java</url>
+          <line>49</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/H_UserFilter.java</url>
+          <line>212</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/A_SessionFiler.java</url>
+          <line>20</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/metabubble/BWC/filter/F_LoginCheckFilter.java</url>
+          <line>43</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

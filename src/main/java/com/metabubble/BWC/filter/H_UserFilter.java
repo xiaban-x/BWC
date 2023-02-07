@@ -25,7 +25,7 @@ import java.io.IOException;
 @Order(10)
 @WebFilter(filterName = "userFilter", urlPatterns = "/*")
 @Slf4j
-public class C_UserFilter implements Filter {
+public class H_UserFilter implements Filter {
 
     //路径匹配器，支持通配符
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();

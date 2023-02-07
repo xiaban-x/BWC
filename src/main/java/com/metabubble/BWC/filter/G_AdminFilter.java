@@ -23,7 +23,7 @@ import java.io.IOException;
 @Order(5)
 @WebFilter(filterName = "adminFilter", urlPatterns = "/*")
 @Slf4j
-public class B_AdminFilter implements Filter {
+public class G_AdminFilter implements Filter {
 
     //路径匹配器，支持通配符
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();

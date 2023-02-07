@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * 过滤器
@@ -23,7 +25,7 @@ import java.io.IOException;
 @Order(1)   // @Order用于多个过滤器时定义执行顺序，值越小越先执行
 @WebFilter(filterName = "loginCheckFilter",urlPatterns = "/*")
 @Slf4j
-public class A_LoginCheckFilter implements Filter {
+public class F_LoginCheckFilter implements Filter {
     //路径匹配器，支持通配符
     public static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
