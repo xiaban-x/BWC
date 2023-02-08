@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.metabubble.BWC.common.BaseContext;
 import com.metabubble.BWC.common.ManageSession;
 import com.metabubble.BWC.common.R;
+import com.metabubble.BWC.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -49,8 +50,17 @@ public class F_LoginCheckFilter implements Filter {
 
         BaseContext.remove();
 
-//        String cookieSessionId = CookieUtils.getCookieValue(request, this.stringSession, true);
-//        String cookieUserId = CookieUtils.getCookieValue(request, this.userId, true);
+        String cookieSessionId = CookieUtils.getCookieValue(request, this.stringSession, true);
+        String cookieUserId = CookieUtils.getCookieValue(request, this.userId, true);
+
+        if (cookieUserId!=null&&cookieSessionId!=null) {
+            HttpSession publicSession = manageSession.getManageSession().get(cookieUserId);
+            if (publicSession!=null&&publicSession.getId().equals(cookieSessionId)){
+                HttpSession session = request.getSession();
+                session.setAttribute("user",Long.parseLong(cookieUserId));
+                session.setMaxInactiveInterval(publicSession.getMaxInactiveInterval());
+            }
+        }
 
         //定义不需要处理的请求路径
         if(request.getSession().getAttribute("user") != null){
