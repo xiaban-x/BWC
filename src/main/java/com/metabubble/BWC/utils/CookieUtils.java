@@ -198,7 +198,7 @@ public final class CookieUtils {
             if (cookieMaxage > 0)
                 cookie.setMaxAge(cookieMaxage);
             if (null != request) {// 设置域名的cookie
-                String domainName = "bwc-fontend.vercel.app";
+                String domainName = "fter.cc";
                 logger.info("========== domainName: {} ==========", domainName);
                 if (!"localhost".equals(domainName)) {
                     cookie.setDomain(domainName);
