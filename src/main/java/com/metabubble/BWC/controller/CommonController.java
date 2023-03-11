@@ -44,8 +44,8 @@ public class CommonController {
         //生成验证码
         ServletOutputStream os = response.getOutputStream();
         //验证码信息：宽度100，高度50，生成到response传输到页面，长度为4
-        String checkCode = CheckCodeUtil.outputVerifyImage(100,50,os,4);
-//        String checkCode = "1234";
+//        String checkCode = CheckCodeUtil.outputVerifyImage(100,50,os,4);
+        String checkCode = "1234";
         //存入session对象
         session.setAttribute("checkCodeGen",checkCode);
         return R.success(checkCode);

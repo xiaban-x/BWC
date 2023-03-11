@@ -24,5 +24,11 @@ public class BWCApplication {
         System.out.println(LocalDateTime.now());
     }
     /* 全局session变量 */
-     public static ManageSession manageSession;
+    public static ManageSession manageSession;
+    /*
+     * 解决druid 日志报错：discard long time none received connection:xxx
+     * */
+    static {
+        System.setProperty("druid.mysql.usePingMethod","false");
+    }
 }

@@ -1,7 +1,7 @@
 http-port: 3001
 
 server:
-  port: 8080
+  port: 9000
   ssl:
     enabled: true
     key-store: classpath:9036535_fter.cc(1).pfx
@@ -41,7 +41,7 @@ mybatis-plus:
       id-type: auto
     # 雪花算法生成id
 #      id-type: ASSIGN_ID
-#      图片存放位置
+#      图片存放位置 这里是存放到项目容器的地址
 BWC:
   path: /data/images/
 #  E:/IDEA/BWC/src/main/resources/photo/
