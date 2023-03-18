@@ -1,5 +1,8 @@
 package com.metabubble.BWC.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import javax.annotation.PostConstruct;
 
 /**
@@ -8,6 +11,7 @@ import javax.annotation.PostConstruct;
  * @description TODO
  * @date 2023/3/11 16:09
  */
+@Configuration
 public class setProperties {
     /*
      * 解决druid 日志报错：discard long time none received connection:xxx
