@@ -65,7 +65,7 @@ public class LoginController {
 
         mobile = mobile.trim();
         // 判断传入的手机号格式是否正确
-        if (mobile.length() != 11 || !MobileUtils.isMobileNum(mobile)) {
+        if (mobile.length() != 11) {
 
             return R.error("手机号格式不正确");
         }
@@ -224,7 +224,7 @@ public class LoginController {
 
         mobile = mobile.trim();
         // 判断传入的手机号格式是否正确
-        if (mobile.length() != 11 || !MobileUtils.isMobileNum(mobile)) {
+        if (mobile.length() != 11) {
             return R.error("传入的手机号格式不正确");
         }
 
@@ -360,7 +360,7 @@ public class LoginController {
 
         mobile = mobile.trim();
         // 判断传入的手机号格式是否正确
-        if (mobile.length() != 11 || !MobileUtils.isMobileNum(mobile)) {
+        if (mobile.length() != 11) {
             return R.error("传入的手机号格式不正确");
         }
 
@@ -453,7 +453,7 @@ public class LoginController {
 
         mobile = mobile.trim();
         // 判断传入的手机号格式是否正确
-        if (mobile.length() != 11 || !MobileUtils.isMobileNum(mobile)) {
+        if (mobile.length() != 11) {
             return R.error("传入的手机号格式不正确");
         }
 
@@ -510,7 +510,7 @@ public class LoginController {
 
         mobile = mobile.trim();
         // 判断传入的手机号格式是否正确
-        if (mobile.length() != 11 || !MobileUtils.isMobileNum(mobile)) {
+        if (mobile.length() != 11) {
             return R.error("传入的手机号格式不正确");
         }
 
@@ -605,7 +605,7 @@ public class LoginController {
 
         mobile = mobile.trim();
         // 判断传入的手机号格式是否正确
-        if (mobile.length() != 11 || !MobileUtils.isMobileNum(mobile)) {
+        if (mobile.length() != 11) {
             return R.error("传入的手机号格式不正确");
         }
 

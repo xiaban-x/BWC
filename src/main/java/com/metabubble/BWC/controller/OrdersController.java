@@ -76,7 +76,7 @@ public class OrdersController {
      */
     @GetMapping("/user/page")
     @Transactional
-    public R<Page> userPage(int offset, int limit,@RequestParam List<String> status){
+    public R<Page> userPage(int offset, int limit,@RequestParam List<String> status,String beginTime, String endTime){
         Long id = BaseContext.getCurrentId();
         //分页构造器
         Page<Orders> pageSearch = new Page(offset,limit);
@@ -93,6 +93,9 @@ public class OrdersController {
                 });
             }
         }
+
+        queryWrapper.ge(beginTime != null,Orders::getCreateTime,beginTime); //大于等于创建时间
+        queryWrapper.le(endTime != null,Orders::getCreateTime,endTime); //小于等于创建时间
 
         //添加排序条件
         queryWrapper.orderByDesc(Orders::getUpdateTime);
