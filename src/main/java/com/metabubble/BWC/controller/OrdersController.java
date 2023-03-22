@@ -76,7 +76,7 @@ public class OrdersController {
      */
     @GetMapping("/user/page")
     @Transactional
-    public R<Page> userPage(int offset, int limit,@RequestParam List<String> status,String beginTime, String endTime){
+    public R<Page> userPage(int offset, int limit,@RequestParam List<String> status){
         Long id = BaseContext.getCurrentId();
         //分页构造器
         Page<Orders> pageSearch = new Page(offset,limit);
@@ -94,8 +94,6 @@ public class OrdersController {
             }
         }
 
-        queryWrapper.ge(beginTime != null,Orders::getCreateTime,beginTime); //大于等于创建时间
-        queryWrapper.le(endTime != null,Orders::getCreateTime,endTime); //小于等于创建时间
 
         //添加排序条件
         queryWrapper.orderByDesc(Orders::getUpdateTime);
@@ -321,7 +319,7 @@ public class OrdersController {
      */
     @GetMapping("/page")
     @Transactional
-    public R<Page> page(String name,int offset,int limit,String merchantName,@RequestParam List<String> status,String orderNumber,String tel){
+    public R<Page> page(String name,int offset,int limit,String beginTime, String endTime,String merchantName,@RequestParam List<String> status,String orderNumber,String tel){
         Page<Orders> page = new Page(offset,limit);
 
         LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper();
@@ -372,6 +370,8 @@ public class OrdersController {
                 });
             }
         }
+        queryWrapper3.ge(beginTime != null,Orders::getCreateTime,beginTime); //大于等于创建时间
+        queryWrapper3.le(endTime != null,Orders::getCreateTime,endTime); //小于等于创建时间
         //添加orderNumber
         queryWrapper3.like(StringUtils.isNotEmpty(orderNumber),Orders::getOrderNumber,orderNumber);
         //根据创建时间排序
