@@ -86,18 +86,18 @@ public class DelayDepositService {
         String modelCode;
         switch (type) {
             case "一二审":// 发送注册的短信验证码
-                modelCode = "";
+                modelCode = "SMS_267115517";
                 break;
 
             case "初审":// 发送重置登录密码的短信验证码
-                modelCode = "";
+                modelCode = "SMS_267115517";
                 break;
 
             default:
                 throw new CustomException("发送订单提醒信息有误");
         }
 
-        Boolean msg = SMSUtils.sendMessage("瑞吉外卖",modelCode,user.getTel(),"内容");
+        Boolean msg = SMSUtils.sendMessage("饭团霸王餐",modelCode,user.getTel(),"");
         if (!msg) {
             throw new CustomException("发送订单提醒短信失败");
         }

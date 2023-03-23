@@ -20,7 +20,7 @@ public class SMSUtils {
 	 * @param param 参数
 	 */
 	public static Boolean sendMessage(String signName, String templateCode,String phoneNumbers,String param){
-		DefaultProfile profile = DefaultProfile.getProfile("cn-hangzhou", "", "");
+		DefaultProfile profile = DefaultProfile.getProfile("cn-hangzhou", "LTAI5tJkMh5TQhAsSHYkAcwC", "qM6fmWpq5mCNnOKa9PlCJSkGI0Pavo");
 		IAcsClient client = new DefaultAcsClient(profile);
 
 		SendSmsRequest request = new SendSmsRequest();

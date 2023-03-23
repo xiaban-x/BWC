@@ -78,8 +78,7 @@ public class LoginController {
 
         //生成验证码
 
-        //String mobileCode = ValidateCodeUtils.generateValidateCode(4).toString();
-        String mobileCode = "123456";
+        String mobileCode = ValidateCodeUtils.generateValidateCode(6).toString();
         log.info("验证码是："+mobileCode);
 
         String modelCode = null;
@@ -102,7 +101,7 @@ public class LoginController {
                     return R.error("当前手机号已注册，请直接登录");
                 }
 
-                modelCode = "";
+                modelCode = "SMS_267440007";
                 break;
 
             case "reset":// 发送重置登录密码的短信验证码
@@ -112,7 +111,7 @@ public class LoginController {
                     return R.error("当前手机号未注册，请先注册");
                 }
 
-                modelCode = "";
+                modelCode = "SMS_267440007";
                 break;
             case "login":
 
@@ -120,21 +119,21 @@ public class LoginController {
                 if (status==null){
                     return R.error("当前手机号未注册，请先注册");
                 }
-                modelCode = "";
+                modelCode = "SMS_267440007";
                 break;
             case "resetphone"://发送更改手机号第一步的验证码
                 //判断手机号是否注册
                 if (status==null){
                     return R.error("当前手机号未注册，请先注册");
                 }
-                modelCode = "";
+                modelCode = "SMS_267440007";
                 break;
             case "addphone"://发送更改手机号第二步的验证码
                 //判断手机号是否注册
                 if (normal!=null){
                     return R.error("当前手机号已注册");
                 }
-                modelCode = "";
+                modelCode = "SMS_267440007";
                 break;
             default:
 
@@ -173,17 +172,17 @@ public class LoginController {
 
         Boolean msg = null;//发送短信验证码是否成功与失败
 
-//        try {
+        try {
 
             //发送短信验证码，请求成功后返回指定标识，请求失败，可以返回失败的信息，
             //方便开发人员排查bug。此处使用的是阿里云的短信服务，
             //你也可以使用其他的短信服务，此处不做赘述
             //调用阿里云短信服务
-            msg = SMSUtils.sendMessage("瑞吉外卖",modelCode,mobile,mobileCode);
+            msg = SMSUtils.sendMessage("饭团霸王餐",modelCode,mobile,mobileCode);
 
             log.info("手机号:" + mobile + " 的验证码是：" + mobileCode);
 
-//            if (msg) {
+            if (msg) {
 
                 // 保存验证码到redis
                 redisTemplate.opsForValue().set(mobileKey, mobileCode, limitMsg, TimeUnit.SECONDS);//redis中的code比实际要多5秒
@@ -193,14 +192,14 @@ public class LoginController {
 
 
 
-//            } else {
-//                return R.error("短信验证码发送失败");
-//            }
+            } else {
+                return R.error("短信验证码发送失败");
+            }
 
-//        } catch (Exception e) {
-//            log.info("获取手机验证码异常：" + e.getMessage());
-//            return R.error("获取短信验证码异常");
-//        }
+        } catch (Exception e) {
+            log.info("获取手机验证码异常：" + e.getMessage());
+            return R.error("获取短信验证码异常");
+        }
 
         return R.success("发送成功");
     }

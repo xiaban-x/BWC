@@ -21,7 +21,7 @@ public class OrderDelayedVo implements Delayed , Serializable {
 
 
     private static final long serialVersionUID = 1;
-    private static final long warnTime = 300000L;
+    private static final long warnTime = 1800000L;
 
     private String type;
     private Orders order;// 订单号

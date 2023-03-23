@@ -561,10 +561,10 @@ public class OrdersController {
             ordersService.updateById(orders);
             //记录日志
             logsService.saveLog("驳回订单","管理员”"+BaseContext.getCurrentId()+"将订单"+orders.getId()+"驳回");
-            Boolean msg = SMSUtils.sendMessage("瑞吉外卖","",user.getTel(),"内容");
-//            if (!msg) {
-//                throw new CustomException("发送订单提醒短信失败");
-//            }
+            Boolean msg = SMSUtils.sendMessage("饭团霸王餐","SMS_267745303",user.getTel(),"");
+            if (!msg) {
+                throw new CustomException("发送订单提醒短信失败");
+            }
 
             return R.success("驳回成功");
         }
