@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,12 +45,12 @@ public class BWCApplication {
     @Autowired
     private ConfigService configService;
     //定时调用客服接口（解决数据库懒加载问题）
-    @Scheduled(cron="0 0/5 * * * ?")   //每5分钟执行一次
+    @PostConstruct //启动项目先执行
+    @Scheduled(cron="0/1 * 0-7 * * ?")   //每7小时执行一次
     public void execute(){
         LambdaQueryWrapper<Config> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Config::getType,9);
-        List<Config> list = configService.list(queryWrapper);
-        System.out.println(list);
+        configService.list(queryWrapper);
     }
 
 
