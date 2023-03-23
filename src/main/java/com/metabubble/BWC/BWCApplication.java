@@ -46,7 +46,7 @@ public class BWCApplication {
     private ConfigService configService;
     //定时调用客服接口（解决数据库懒加载问题）
     @PostConstruct //启动项目先执行
-    @Scheduled(cron="0/1 * 0-7 * * ?")   //每7小时执行一次
+    @Scheduled(cron="0 0 0/7 * * ?")   //每7小时执行一次
     public void execute(){
         LambdaQueryWrapper<Config> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Config::getType,9);
